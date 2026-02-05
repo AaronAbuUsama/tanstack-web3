@@ -1,0 +1,83 @@
+# Local Safe development infrastructure
+# Usage: cd docker && docker compose up -d
+
+services:
+  # Local Ethereum node
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:latest
+    command: anvil --host 0.0.0.0 --block-time 5
+    ports:
+      - "8545:8545"
+    healthcheck:
+      test: ["CMD", "cast", "block-number", "--rpc-url", "http://localhost:8545"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # PostgreSQL for Safe Transaction Service
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: safe
+      POSTGRES_PASSWORD: safe
+      POSTGRES_DB: safe_txs
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U safe"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Redis for Safe Transaction Service caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Safe Transaction Service
+  # Note: In production, use the official safe-transaction-service image.
+  # For local development, this provides a compatible API.
+  # See: https://github.com/safe-global/safe-transaction-service
+  safe-transaction-service:
+    image: safeglobal/safe-transaction-service:latest
+    environment:
+      - DATABASE_URL=postgresql://safe:safe@postgres:5432/safe_txs
+      - REDIS_URL=redis://redis:6379/0
+      - ETHEREUM_NODE_URL=http://anvil:8545
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-insecure-dev-key-change-in-production}
+      - ETHEREUM_CHAIN_ID=31337
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      anvil:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Safe Config Service
+  # Provides chain configuration and Safe App registry
+  safe-config-service:
+    image: safeglobal/safe-config-service:latest
+    environment:
+      - DATABASE_URL=postgresql://safe:safe@postgres:5432/safe_txs
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-insecure-dev-key-change-in-production}
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
