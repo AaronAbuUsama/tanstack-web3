@@ -14,6 +14,7 @@ import { Route as DemoWeb3RouteImport } from './routes/demo/web3'
 import { Route as DemoSafeRouteImport } from './routes/demo/safe'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
+import { Route as DemoSafeTransactionsRouteImport } from './routes/demo/safe.transactions'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
 import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
@@ -45,6 +46,11 @@ const DemoStartApiRequestRoute = DemoStartApiRequestRouteImport.update({
   path: '/demo/start/api-request',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoSafeTransactionsRoute = DemoSafeTransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => DemoSafeRoute,
+} as any)
 const DemoApiNamesRoute = DemoApiNamesRouteImport.update({
   id: '/demo/api/names',
   path: '/demo/api/names',
@@ -73,9 +79,10 @@ const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/demo/safe': typeof DemoSafeRoute
+  '/demo/safe': typeof DemoSafeRouteWithChildren
   '/demo/web3': typeof DemoWeb3Route
   '/demo/api/names': typeof DemoApiNamesRoute
+  '/demo/safe/transactions': typeof DemoSafeTransactionsRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
@@ -85,9 +92,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/demo/safe': typeof DemoSafeRoute
+  '/demo/safe': typeof DemoSafeRouteWithChildren
   '/demo/web3': typeof DemoWeb3Route
   '/demo/api/names': typeof DemoApiNamesRoute
+  '/demo/safe/transactions': typeof DemoSafeTransactionsRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
@@ -98,9 +106,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/demo/safe': typeof DemoSafeRoute
+  '/demo/safe': typeof DemoSafeRouteWithChildren
   '/demo/web3': typeof DemoWeb3Route
   '/demo/api/names': typeof DemoApiNamesRoute
+  '/demo/safe/transactions': typeof DemoSafeTransactionsRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/demo/safe'
     | '/demo/web3'
     | '/demo/api/names'
+    | '/demo/safe/transactions'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
     | '/demo/start/ssr/data-only'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/demo/safe'
     | '/demo/web3'
     | '/demo/api/names'
+    | '/demo/safe/transactions'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
     | '/demo/start/ssr/data-only'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/demo/safe'
     | '/demo/web3'
     | '/demo/api/names'
+    | '/demo/safe/transactions'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
     | '/demo/start/ssr/data-only'
@@ -149,7 +161,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DemoSafeRoute: typeof DemoSafeRoute
+  DemoSafeRoute: typeof DemoSafeRouteWithChildren
   DemoWeb3Route: typeof DemoWeb3Route
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
@@ -197,6 +209,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoStartApiRequestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/safe/transactions': {
+      id: '/demo/safe/transactions'
+      path: '/transactions'
+      fullPath: '/demo/safe/transactions'
+      preLoaderRoute: typeof DemoSafeTransactionsRouteImport
+      parentRoute: typeof DemoSafeRoute
+    }
     '/demo/api/names': {
       id: '/demo/api/names'
       path: '/demo/api/names'
@@ -235,9 +254,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DemoSafeRouteChildren {
+  DemoSafeTransactionsRoute: typeof DemoSafeTransactionsRoute
+}
+
+const DemoSafeRouteChildren: DemoSafeRouteChildren = {
+  DemoSafeTransactionsRoute: DemoSafeTransactionsRoute,
+}
+
+const DemoSafeRouteWithChildren = DemoSafeRoute._addFileChildren(
+  DemoSafeRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DemoSafeRoute: DemoSafeRoute,
+  DemoSafeRoute: DemoSafeRouteWithChildren,
   DemoWeb3Route: DemoWeb3Route,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,

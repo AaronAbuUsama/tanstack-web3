@@ -1,9 +1,7 @@
-import Safe from '@safe-global/protocol-kit'
-import {
-  type MetaTransactionData,
-  type SafeTransactionDataPartial,
-  OperationType,
-} from '@safe-global/protocol-kit'
+/**
+ * Protocol Kit integration for standalone Safe management.
+ * Uses dynamic imports to avoid bundler issues with Node.js dependencies.
+ */
 
 export interface SafeConfig {
   provider: string
@@ -18,10 +16,27 @@ export interface DeploySafeConfig {
   threshold: number
 }
 
+export interface SafeInfo {
+  address: string
+  owners: string[]
+  threshold: number
+  nonce: number
+  chainId: bigint
+}
+
+/**
+ * Dynamically import Protocol Kit to avoid build-time ESM issues.
+ */
+async function getProtocolKit() {
+  const mod = await import('@safe-global/protocol-kit')
+  return mod.default ?? mod
+}
+
 /**
  * Initialize a Safe Protocol Kit instance for an existing Safe.
  */
-export async function createSafeInstance(config: SafeConfig): Promise<Safe> {
+export async function createSafeInstance(config: SafeConfig) {
+  const Safe = await getProtocolKit()
   const safe = await Safe.init({
     provider: config.provider,
     signer: config.signer,
@@ -33,7 +48,8 @@ export async function createSafeInstance(config: SafeConfig): Promise<Safe> {
 /**
  * Deploy a new Safe with the given owners and threshold.
  */
-export async function deploySafe(config: DeploySafeConfig): Promise<Safe> {
+export async function deploySafe(config: DeploySafeConfig) {
+  const Safe = await getProtocolKit()
   const safe = await Safe.init({
     provider: config.provider,
     signer: config.signer,
@@ -50,7 +66,7 @@ export async function deploySafe(config: DeploySafeConfig): Promise<Safe> {
 /**
  * Get info about a Safe instance.
  */
-export async function getSafeInfo(safe: Safe) {
+export async function getSafeInfo(safe: any): Promise<SafeInfo> {
   const [address, owners, threshold, nonce, chainId] = await Promise.all([
     safe.getAddress(),
     safe.getOwners(),
@@ -65,8 +81,8 @@ export async function getSafeInfo(safe: Safe) {
  * Create a Safe transaction from transaction data.
  */
 export async function createTransaction(
-  safe: Safe,
-  transactions: MetaTransactionData[],
+  safe: any,
+  transactions: Array<{ to: string; value: string; data: string; operation?: number }>,
 ) {
   return safe.createTransaction({ transactions })
 }
@@ -74,22 +90,13 @@ export async function createTransaction(
 /**
  * Sign a Safe transaction.
  */
-export async function signTransaction(
-  safe: Safe,
-  safeTransaction: Awaited<ReturnType<Safe['createTransaction']>>,
-) {
+export async function signTransaction(safe: any, safeTransaction: any) {
   return safe.signTransaction(safeTransaction)
 }
 
 /**
  * Execute a Safe transaction (requires enough signatures).
  */
-export async function executeTransaction(
-  safe: Safe,
-  safeTransaction: Awaited<ReturnType<Safe['createTransaction']>>,
-) {
+export async function executeTransaction(safe: any, safeTransaction: any) {
   return safe.executeTransaction(safeTransaction)
 }
-
-export { OperationType }
-export type { MetaTransactionData, SafeTransactionDataPartial }
