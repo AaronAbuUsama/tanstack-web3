@@ -52,11 +52,11 @@ tanstack-web3/
 ## Roadmap
 
 - [x] **Phase 1:** Core Web3 infrastructure (wagmi, viem, wallet connection)
-- [ ] **Phase 2:** Dev infrastructure & monorepo (Turborepo, dev wallet, Foundry, Anvil)
-- [ ] **Phase 3:** Safe foundation (environment detection, Protocol Kit, API Kit, unified provider)
-- [ ] **Phase 4:** Transaction layer (tx builder, multi-sig flow, relay)
-- [ ] **Phase 5:** UI components & examples (Safe management, tx components, example contracts)
-- [ ] **Phase 6:** DX, docs & advanced (Docker, testing utils, deployment guides, ERC-4337)
+- [x] **Phase 2:** Dev infrastructure & monorepo (Turborepo, dev wallet, Foundry, Anvil)
+- [x] **Phase 3:** Safe foundation (environment detection, Protocol Kit, API Kit, unified provider)
+- [x] **Phase 4:** Transaction layer (tx builder, multi-sig flow, relay)
+- [x] **Phase 5:** UI components & examples (Safe management, tx components, example contracts)
+- [x] **Phase 6:** DX, docs & advanced (Docker, testing utils, deployment guides, ERC-4337)
 
 ## Development
 
