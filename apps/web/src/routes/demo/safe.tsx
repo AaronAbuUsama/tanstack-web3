@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useAccount } from 'wagmi'
 import ConnectWallet from '../../components/ConnectWallet'
 import { useSafe } from '../../lib/safe/hooks'
@@ -86,6 +86,8 @@ function SafeDemo() {
             </p>
           </div>
         )}
+
+        <Outlet />
       </div>
     </div>
   )

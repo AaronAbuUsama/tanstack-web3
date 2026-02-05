@@ -1,0 +1,6 @@
+# Foundry build artifacts
+out/
+cache/
+
+# Broadcast transaction logs
+broadcast/

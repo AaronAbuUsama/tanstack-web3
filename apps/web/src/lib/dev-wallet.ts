@@ -10,7 +10,7 @@ const HARDHAT_PRIVATE_KEY =
 const account = privateKeyToAccount(HARDHAT_PRIVATE_KEY)
 
 export function devWallet() {
-  return createConnector((config) => {
+  return createConnector(((config: Parameters<Parameters<typeof createConnector>[0]>[0]) => {
     let currentChainId: number
 
     return {
@@ -22,7 +22,7 @@ export function devWallet() {
         const chain = config.chains.find((c) => c.id === chainId) ?? config.chains[0]
         currentChainId = chain.id
         return {
-          accounts: [account.address],
+          accounts: [account.address] as readonly `0x${string}`[],
           chainId: chain.id,
         }
       },
@@ -30,7 +30,7 @@ export function devWallet() {
       async disconnect() {},
 
       async getAccounts() {
-        return [account.address]
+        return [account.address] as readonly `0x${string}`[]
       },
 
       async getChainId() {
@@ -65,5 +65,5 @@ export function devWallet() {
       onChainChanged() {},
       onDisconnect() {},
     }
-  })
+  }) as Parameters<typeof createConnector>[0])
 }

@@ -6,6 +6,7 @@
     "dev": "turbo dev",
     "dev:anvil": "anvil --host 0.0.0.0",
     "dev:web": "turbo dev --filter=@tanstack-web3/web",
+    "dev:all": "bun run dev:anvil & turbo dev",
     "build": "turbo build",
     "test": "turbo test",
     "lint": "turbo lint",

@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useAccount, useBalance, useSwitchChain } from 'wagmi'
+import { formatUnits } from 'viem'
 import ConnectWallet from '../../components/ConnectWallet'
 
 export const Route = createFileRoute('/demo/web3')({
@@ -37,7 +38,7 @@ function Web3Demo() {
                   <p className="text-gray-400 text-sm">Balance</p>
                   <p className="text-lg font-semibold">
                     {balance?.value !== undefined
-                      ? Number.parseFloat(balance.formatted).toFixed(4)
+                      ? Number.parseFloat(formatUnits(balance.value, balance.decimals)).toFixed(4)
                       : '0.0000'}{' '}
                     {balance?.symbol ?? 'ETH'}
                   </p>

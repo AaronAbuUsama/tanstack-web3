@@ -1,4 +1,5 @@
 import { useAccount, useConnect, useDisconnect, useBalance, useSwitchChain } from 'wagmi'
+import { formatUnits } from 'viem'
 
 export default function ConnectWallet() {
   const { address, isConnected, chain } = useAccount()
@@ -24,7 +25,7 @@ export default function ConnectWallet() {
   }
 
   const displayBalance = balance?.value !== undefined
-    ? Number.parseFloat(balance.formatted).toFixed(4)
+    ? Number.parseFloat(formatUnits(balance.value, balance.decimals)).toFixed(4)
     : '0.0000'
 
   return (

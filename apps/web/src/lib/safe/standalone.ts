@@ -40,8 +40,8 @@ export async function createSafeInstance(config: SafeConfig) {
   const safe = await Safe.init({
     provider: config.provider,
     signer: config.signer,
-    safeAddress: config.safeAddress,
-  })
+    safeAddress: config.safeAddress!,
+  } as any)
   return safe
 }
 
