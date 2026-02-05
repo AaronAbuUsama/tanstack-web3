@@ -1,152 +1,218 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useAccount } from 'wagmi'
-import ConnectWallet from '../components/ConnectWallet'
 import { useSafe } from '../lib/safe/hooks'
-import { buildTransaction, type TransactionParams } from '../lib/safe/transactions'
+import TxBuilder from '../components/safe/TxBuilder'
+import TxQueue from '../components/safe/TxQueue'
+import TxHistory from '../components/safe/TxHistory'
+import TransactionFlow from '../components/safe/TransactionFlow'
+import { buildTransaction } from '../lib/safe/transactions'
+import { createTransaction, signTransaction, executeTransaction } from '../lib/safe/standalone'
 
 export const Route = createFileRoute('/safe/transactions')({
-  component: TransactionsDemo,
+  component: TransactionsPage,
 })
 
-function TransactionsDemo() {
-  const { isConnected, address } = useAccount()
+interface LocalTx {
+  id: string
+  to: string
+  value: string
+  data: string
+  safeTransaction: any
+  status: 'pending' | 'signed' | 'executed'
+  txHash?: string
+}
+
+function TransactionsPage() {
   const safe = useSafe()
+  const { address } = useAccount()
 
-  const [to, setTo] = useState('')
-  const [value, setValue] = useState('')
-  const [data, setData] = useState('')
-  const [builtTx, setBuiltTx] = useState<ReturnType<typeof buildTransaction> | null>(null)
+  const [transactions, setTransactions] = useState<LocalTx[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
 
-  const handleBuild = () => {
-    if (!to) return
-    const params: TransactionParams = {
-      to: to as `0x${string}`,
-      value: value || undefined,
-      data: (data || undefined) as `0x${string}` | undefined,
+  if (!safe.isInSafe) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white p-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-2">Safe Transactions</h1>
+          <p className="text-gray-400 mb-8">Build and manage multi-sig transactions</p>
+          <div className="bg-gray-800 rounded-xl p-12 text-center">
+            <h2 className="text-2xl font-semibold mb-4">No Safe Connected</h2>
+            <p className="text-gray-400 mb-6">Connect to a Safe first to build and manage transactions.</p>
+            <Link
+              to="/safe"
+              className="inline-block px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-colors"
+            >
+              Go to Safe Dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const handleBuild = async (tx: { to: string; value: string; data: string }) => {
+    setError(null)
+    setBusy(true)
+    try {
+      const txData = buildTransaction({
+        to: tx.to as `0x${string}`,
+        value: tx.value !== '0' ? tx.value : undefined,
+        data: tx.data !== '0x' ? (tx.data as `0x${string}`) : undefined,
+      })
+
+      const safeTx = await createTransaction(safe.safeInstance, [txData])
+
+      const localTx: LocalTx = {
+        id: crypto.randomUUID(),
+        to: tx.to,
+        value: tx.value,
+        data: tx.data,
+        safeTransaction: safeTx,
+        status: 'pending',
+      }
+
+      // For 1-of-1 threshold: auto-sign + auto-execute
+      if (safe.threshold === 1) {
+        const signed = await signTransaction(safe.safeInstance, safeTx)
+        localTx.safeTransaction = signed
+        localTx.status = 'signed'
+
+        const result = await executeTransaction(safe.safeInstance, signed)
+        localTx.status = 'executed'
+        localTx.txHash = result.hash
+      }
+
+      setTransactions((prev) => [localTx, ...prev])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to build transaction')
+    } finally {
+      setBusy(false)
     }
-    const tx = buildTransaction(params)
-    setBuiltTx(tx)
   }
 
-  const handleReset = () => {
-    setTo('')
-    setValue('')
-    setData('')
-    setBuiltTx(null)
+  const handleConfirm = async (safeTxHash: string) => {
+    setError(null)
+    setBusy(true)
+    try {
+      const tx = transactions.find((t) => t.id === safeTxHash)
+      if (!tx) return
+
+      const signed = await signTransaction(safe.safeInstance, tx.safeTransaction)
+
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.id === safeTxHash ? { ...t, safeTransaction: signed, status: 'signed' as const } : t,
+        ),
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign transaction')
+    } finally {
+      setBusy(false)
+    }
   }
+
+  const handleExecute = async (safeTxHash: string) => {
+    setError(null)
+    setBusy(true)
+    try {
+      const tx = transactions.find((t) => t.id === safeTxHash)
+      if (!tx) return
+
+      const result = await executeTransaction(safe.safeInstance, tx.safeTransaction)
+
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.id === safeTxHash
+            ? { ...t, status: 'executed' as const, txHash: result.hash }
+            : t,
+        ),
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to execute transaction')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const pendingTxs = transactions
+    .filter((t) => t.status !== 'executed')
+    .map((t) => ({
+      safeTxHash: t.id,
+      to: t.to,
+      value: t.value,
+      confirmations: t.status === 'signed' ? safe.threshold : 0,
+      threshold: safe.threshold,
+    }))
+
+  const executedTxs = transactions
+    .filter((t) => t.status === 'executed')
+    .map((t) => ({
+      safeTxHash: t.id,
+      to: t.to,
+      value: t.value,
+      transactionHash: t.txHash || '',
+    }))
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-2">Safe Transactions</h1>
-        <p className="text-gray-400 mb-8">Build and manage multi-sig transactions</p>
+        <p className="text-gray-400 mb-8">
+          Build and manage multi-sig transactions for{' '}
+          <span className="font-mono text-cyan-400">
+            {safe.safeAddress?.slice(0, 10)}...{safe.safeAddress?.slice(-8)}
+          </span>
+        </p>
 
-        {!isConnected ? (
-          <div className="bg-gray-800 rounded-xl p-12 text-center">
-            <h2 className="text-2xl font-semibold mb-4">Connect Your Wallet</h2>
-            <p className="text-gray-400 mb-6">Connect a wallet to build and propose transactions.</p>
-            <ConnectWallet />
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Transaction Builder */}
-            <div className="bg-gray-800 rounded-xl p-6">
-              <h2 className="text-xl font-semibold mb-4">Build Transaction</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-gray-400 text-sm mb-1">To Address</label>
-                  <input
-                    type="text"
-                    value={to}
-                    onChange={(e) => setTo(e.target.value)}
-                    placeholder="0x..."
-                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:border-cyan-500 focus:outline-none font-mono text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-1">Value (ETH)</label>
-                  <input
-                    type="text"
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    placeholder="0.0"
-                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:border-cyan-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-1">Data (optional)</label>
-                  <input
-                    type="text"
-                    value={data}
-                    onChange={(e) => setData(e.target.value)}
-                    placeholder="0x..."
-                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:border-cyan-500 focus:outline-none font-mono text-sm"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleBuild}
-                    disabled={!to}
-                    className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Build Transaction
-                  </button>
-                  <button
-                    onClick={handleReset}
-                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-sm transition-colors"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Built Transaction Preview */}
-            {builtTx && (
-              <div className="bg-gray-800 rounded-xl p-6">
-                <h2 className="text-xl font-semibold mb-4">Transaction Preview</h2>
-                <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm space-y-2">
-                  <div>
-                    <span className="text-gray-400">to: </span>
-                    <span className="text-cyan-400">{builtTx.to}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">value: </span>
-                    <span className="text-white">{builtTx.value} wei</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">data: </span>
-                    <span className="text-gray-300">{builtTx.data}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">operation: </span>
-                    <span className="text-white">{builtTx.operation === 0 ? 'Call' : 'DelegateCall'}</span>
-                  </div>
-                </div>
-                <p className="text-gray-500 text-sm mt-3">
-                  In a real Safe context, this transaction would be proposed to the Transaction Service
-                  for multi-sig approval.
-                </p>
-              </div>
-            )}
-
-            {/* Safe Context Info */}
-            <div className="bg-gray-800 rounded-xl p-6">
-              <h2 className="text-xl font-semibold mb-4">Safe Context</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-gray-400 text-sm">Mode</p>
-                  <p className="capitalize">{safe.mode}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Connected Address</p>
-                  <p className="font-mono text-sm">{address?.slice(0, 10)}...{address?.slice(-8)}</p>
-                </div>
-              </div>
-            </div>
+        {error && (
+          <div className="bg-red-900/50 border border-red-700 rounded-xl p-4 mb-6">
+            <p className="text-red-300 text-sm">{error}</p>
           </div>
         )}
+
+        {busy && (
+          <div className="bg-cyan-900/30 border border-cyan-700 rounded-xl p-4 mb-6">
+            <p className="text-cyan-300 text-sm">Processing transaction...</p>
+          </div>
+        )}
+
+        <div className="space-y-6">
+          <TxBuilder onBuild={handleBuild} />
+
+          {/* Show most recent non-executed tx in TransactionFlow detail view */}
+          {transactions.filter((t) => t.status !== 'executed').length > 0 && (() => {
+            const latest = transactions.find((t) => t.status !== 'executed')!
+            return (
+              <TransactionFlow
+                transaction={{
+                  safeTxHash: latest.id,
+                  to: latest.to,
+                  value: latest.value,
+                  data: latest.data,
+                  status: {
+                    safeTxHash: latest.id,
+                    confirmations: latest.status === 'signed' ? safe.threshold : 0,
+                    threshold: safe.threshold,
+                    isReady: latest.status === 'signed',
+                    isExecuted: false,
+                  },
+                }}
+                currentAddress={address}
+                onConfirm={handleConfirm}
+                onExecute={handleExecute}
+              />
+            )
+          })()}
+
+          <TxQueue
+            transactions={pendingTxs}
+            onConfirm={handleConfirm}
+            onExecute={handleExecute}
+          />
+          <TxHistory transactions={executedTxs} />
+        </div>
       </div>
     </div>
   )

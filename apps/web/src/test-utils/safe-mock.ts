@@ -10,6 +10,11 @@ export function createMockSafeContext(overrides?: Partial<SafeContextValue>): Sa
     threshold: 0,
     chainId: null,
     loading: false,
+    safeInstance: null,
+    error: null,
+    connectSafe: async () => {},
+    deploySafe: async () => '',
+    disconnectSafe: () => {},
     ...overrides,
   }
 }
@@ -26,6 +31,11 @@ export function createMockIframeSafeContext(overrides?: Partial<SafeContextValue
     threshold: 1,
     chainId: 1,
     loading: false,
+    safeInstance: null,
+    error: null,
+    connectSafe: async () => {},
+    deploySafe: async () => '',
+    disconnectSafe: () => {},
     ...overrides,
   }
 }
