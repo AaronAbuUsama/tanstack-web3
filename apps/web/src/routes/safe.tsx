@@ -1,9 +1,9 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useAccount } from 'wagmi'
-import ConnectWallet from '../../components/ConnectWallet'
-import { useSafe } from '../../lib/safe/hooks'
+import ConnectWallet from '../components/ConnectWallet'
+import { useSafe } from '../lib/safe/hooks'
 
-export const Route = createFileRoute('/demo/safe')({
+export const Route = createFileRoute('/safe')({
   component: SafeDemo,
 })
 

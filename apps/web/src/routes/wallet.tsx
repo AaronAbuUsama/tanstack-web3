@@ -1,13 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useAccount, useBalance, useSwitchChain } from 'wagmi'
 import { formatUnits } from 'viem'
-import ConnectWallet from '../../components/ConnectWallet'
+import ConnectWallet from '../components/ConnectWallet'
 
-export const Route = createFileRoute('/demo/web3')({
-  component: Web3Demo,
+export const Route = createFileRoute('/wallet')({
+  component: WalletPage,
 })
 
-function Web3Demo() {
+function WalletPage() {
   const { address, isConnected, chain } = useAccount()
   const { data: balance } = useBalance({ address })
   const { chains, switchChain } = useSwitchChain()
