@@ -1,149 +1,73 @@
-# TanStack Web3 - Gnosis Safe App Boilerplate
+# TanStack Web3 - Gnosis Safe Boilerplate
 
-A modern Web3 boilerplate for building [Gnosis Safe](https://safe.global/) (Safe) applications using the TanStack ecosystem.
+A full-stack Web3 starter kit built with TanStack Start and Gnosis Safe SDK. Supports both **Safe App (iframe)** mode and **Standalone dApp** mode with a unified developer experience.
 
-## Overview
+## Quick Start
 
-This boilerplate provides a solid foundation for developing Safe Apps - decentralized applications that run inside the Safe wallet interface. It combines the power of TanStack's modern React tooling with Web3 capabilities.
+```bash
+# Install dependencies
+bun install
 
-### Tech Stack
+# Start development server
+bun run dev
 
-- **[TanStack Router](https://tanstack.com/router)** - Type-safe file-based routing
-- **[TanStack Query](https://tanstack.com/query)** - Async state management for Web3 data
-- **[TanStack Store](https://tanstack.com/store)** - Lightweight state management
-- **[Vite](https://vitejs.dev/)** - Fast build tooling
-- **[Tailwind CSS v4](https://tailwindcss.com/)** - Utility-first styling
-- **[Biome](https://biomejs.dev/)** - Fast linting and formatting
-- **[Vitest](https://vitest.dev/)** - Unit testing
-- **[Bun](https://bun.sh/)** - Fast JavaScript runtime and package manager
+# Open http://localhost:3000
+```
+
+## Tech Stack
+
+- **Framework:** [TanStack Start](https://tanstack.com/start) — Full-stack React with SSR, file-based routing, server functions
+- **Web3:** [wagmi](https://wagmi.sh) + [viem](https://viem.sh) — Type-safe Ethereum interactions
+- **Safe:** [Safe SDK](https://docs.safe.global/sdk) — Gnosis Safe smart account integration
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com) — Utility-first CSS
+- **Build:** [Vite](https://vite.dev) — Fast development and optimized builds
+- **Monorepo:** [Turborepo](https://turbo.build) — Incremental builds and task orchestration
+
+## Architecture
+
+### Dual-Mode Safe Integration
+
+| Mode | When | How |
+|------|------|-----|
+| **Safe App** | Running inside app.safe.global iframe | Safe Apps SDK via postMessage |
+| **Standalone** | Direct browser access with custom UI | Safe Protocol Kit as smart account backend |
+
+A unified `useSafe()` hook abstracts both modes — your components work identically regardless of context.
+
+### Project Structure
+
+```
+tanstack-web3/
+├── apps/web/                 # TanStack Start app
+│   └── src/
+│       ├── lib/wagmi.ts      # Chain & wallet configuration
+│       ├── lib/safe/         # Safe SDK abstractions
+│       ├── components/       # UI components
+│       └── routes/           # File-based routes
+├── packages/contracts/       # Foundry smart contracts
+├── turbo.json
+└── package.json
+```
 
 ## Roadmap
 
-### Phase 1: Core Web3 Infrastructure
-- [ ] Add wagmi for React hooks for Ethereum
-- [ ] Add viem for TypeScript Ethereum utilities
-- [ ] Configure chain providers (mainnet, testnets)
-- [ ] Set up wallet connection components
+- [x] **Phase 1:** Core Web3 infrastructure (wagmi, viem, wallet connection)
+- [ ] **Phase 2:** Dev infrastructure & monorepo (Turborepo, dev wallet, Foundry, Anvil)
+- [ ] **Phase 3:** Safe foundation (environment detection, Protocol Kit, API Kit, unified provider)
+- [ ] **Phase 4:** Transaction layer (tx builder, multi-sig flow, relay)
+- [ ] **Phase 5:** UI components & examples (Safe management, tx components, example contracts)
+- [ ] **Phase 6:** DX, docs & advanced (Docker, testing utils, deployment guides, ERC-4337)
 
-### Phase 2: Safe Integration
-- [ ] Integrate `@safe-global/safe-apps-sdk` for Safe wallet communication
-- [ ] Integrate `@safe-global/safe-apps-react-sdk` for React hooks
-- [ ] Add Safe context provider to detect Safe environment
-- [ ] Implement Safe transaction service integration
-- [ ] Create Safe-aware transaction components
-
-### Phase 3: UI Components
-- [ ] Build reusable Web3 UI components (address display, token balances, etc.)
-- [ ] Create Safe-specific components (transaction queue, signers list, etc.)
-- [ ] Add loading states and error boundaries for async Web3 operations
-- [ ] Implement responsive layouts for Safe App iframe
-
-### Phase 4: Developer Experience
-- [ ] Add Safe Apps testing utilities
-- [ ] Create example Safe App demonstrating all features
-- [ ] Document Safe App manifest configuration
-- [ ] Add deployment guides for Safe App hosting
-
-### Phase 5: Advanced Features
-- [ ] Multi-chain Safe support
-- [ ] Safe modules integration
-- [ ] Transaction batching utilities
-- [ ] Gas estimation helpers
-
-## Getting Started
-
-### Prerequisites
-
-- [Bun](https://bun.sh/) installed on your machine
-- A Web3 wallet (MetaMask, etc.) for development testing
-
-### Installation
+## Development
 
 ```bash
-bun install
+bun run dev        # Start dev server
+bun run build      # Production build
+bun run test       # Run tests
+bun run lint       # Lint code
+bun run format     # Format code
 ```
-
-### Development
-
-```bash
-bun run dev
-```
-
-The app will be available at `http://localhost:3000`.
-
-### Building for Production
-
-```bash
-bun run build
-```
-
-### Testing
-
-```bash
-bun run test
-```
-
-### Linting & Formatting
-
-```bash
-bun run lint    # Run linter
-bun run format  # Format code
-bun run check   # Run all checks
-```
-
-## Project Structure
-
-```
-src/
-├── routes/          # File-based routes (TanStack Router)
-├── components/      # Reusable UI components
-├── hooks/           # Custom React hooks
-├── lib/             # Utilities and helpers
-├── styles/          # Global styles
-└── main.tsx         # Application entry point
-```
-
-## Safe App Development
-
-### What is a Safe App?
-
-Safe Apps are web applications that run inside the Safe wallet interface. They can:
-- Read the connected Safe's address and chain
-- Propose transactions to the Safe
-- Access Safe owner and threshold information
-- Batch multiple transactions together
-
-### Testing Your Safe App
-
-1. Run your app locally with `bun run dev`
-2. Go to the [Safe Wallet](https://app.safe.global/)
-3. Navigate to Apps > My Custom Apps
-4. Add your local URL: `http://localhost:3000`
-
-### Safe App Manifest
-
-Your Safe App needs a `manifest.json` in the public folder. Example:
-
-```json
-{
-  "name": "My Safe App",
-  "description": "Description of your Safe App",
-  "iconPath": "logo.svg"
-}
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
 MIT
-
-## Resources
-
-- [Safe Developer Docs](https://docs.safe.global/)
-- [Safe Apps SDK](https://github.com/safe-global/safe-apps-sdk)
-- [TanStack Documentation](https://tanstack.com/)
-- [Viem Documentation](https://viem.sh/)
-- [Wagmi Documentation](https://wagmi.sh/)
