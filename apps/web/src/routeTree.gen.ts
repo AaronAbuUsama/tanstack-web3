@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoWeb3RouteImport } from './routes/demo/web3'
+import { Route as DemoSafeRouteImport } from './routes/demo/safe'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
@@ -27,6 +28,11 @@ const IndexRoute = IndexRouteImport.update({
 const DemoWeb3Route = DemoWeb3RouteImport.update({
   id: '/demo/web3',
   path: '/demo/web3',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoSafeRoute = DemoSafeRouteImport.update({
+  id: '/demo/safe',
+  path: '/demo/safe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
@@ -67,6 +73,7 @@ const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/demo/safe': typeof DemoSafeRoute
   '/demo/web3': typeof DemoWeb3Route
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demo/safe': typeof DemoSafeRoute
   '/demo/web3': typeof DemoWeb3Route
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/demo/safe': typeof DemoSafeRoute
   '/demo/web3': typeof DemoWeb3Route
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/demo/safe'
     | '/demo/web3'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/demo/safe'
     | '/demo/web3'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/demo/safe'
     | '/demo/web3'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DemoSafeRoute: typeof DemoSafeRoute
   DemoWeb3Route: typeof DemoWeb3Route
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
@@ -161,6 +174,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/web3'
       fullPath: '/demo/web3'
       preLoaderRoute: typeof DemoWeb3RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/safe': {
+      id: '/demo/safe'
+      path: '/demo/safe'
+      fullPath: '/demo/safe'
+      preLoaderRoute: typeof DemoSafeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/start/server-funcs': {
@@ -217,6 +237,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DemoSafeRoute: DemoSafeRoute,
   DemoWeb3Route: DemoWeb3Route,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,
