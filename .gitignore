@@ -11,3 +11,9 @@ count.txt
 .output
 .vinxi
 todos.json
+.turbo
+
+# Foundry
+packages/contracts/out/
+packages/contracts/cache/
+packages/contracts/broadcast/
