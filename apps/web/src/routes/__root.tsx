@@ -1,8 +1,8 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 
-import Header from '../components/Header'
-import Web3Provider from '../components/Web3Provider'
-import SafeProvider from '../lib/safe/provider'
+import Header from '../components/layout/Header'
+import Web3Provider from '../web3/Web3Provider'
+import SafeProvider from '../safe/core/provider'
 
 import appCss from '../styles.css?url'
 

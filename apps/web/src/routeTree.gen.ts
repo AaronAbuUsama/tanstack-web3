@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as SafeRouteImport } from './routes/safe'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SafeTransactionsRouteImport } from './routes/safe.transactions'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -29,42 +28,34 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SafeTransactionsRoute = SafeTransactionsRouteImport.update({
-  id: '/transactions',
-  path: '/transactions',
-  getParentRoute: () => SafeRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/safe': typeof SafeRouteWithChildren
+  '/safe': typeof SafeRoute
   '/wallet': typeof WalletRoute
-  '/safe/transactions': typeof SafeTransactionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/safe': typeof SafeRouteWithChildren
+  '/safe': typeof SafeRoute
   '/wallet': typeof WalletRoute
-  '/safe/transactions': typeof SafeTransactionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/safe': typeof SafeRouteWithChildren
+  '/safe': typeof SafeRoute
   '/wallet': typeof WalletRoute
-  '/safe/transactions': typeof SafeTransactionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/safe' | '/wallet' | '/safe/transactions'
+  fullPaths: '/' | '/safe' | '/wallet'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/safe' | '/wallet' | '/safe/transactions'
-  id: '__root__' | '/' | '/safe' | '/wallet' | '/safe/transactions'
+  to: '/' | '/safe' | '/wallet'
+  id: '__root__' | '/' | '/safe' | '/wallet'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  SafeRoute: typeof SafeRouteWithChildren
+  SafeRoute: typeof SafeRoute
   WalletRoute: typeof WalletRoute
 }
 
@@ -91,29 +82,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/safe/transactions': {
-      id: '/safe/transactions'
-      path: '/transactions'
-      fullPath: '/safe/transactions'
-      preLoaderRoute: typeof SafeTransactionsRouteImport
-      parentRoute: typeof SafeRoute
-    }
   }
 }
 
-interface SafeRouteChildren {
-  SafeTransactionsRoute: typeof SafeTransactionsRoute
-}
-
-const SafeRouteChildren: SafeRouteChildren = {
-  SafeTransactionsRoute: SafeTransactionsRoute,
-}
-
-const SafeRouteWithChildren = SafeRoute._addFileChildren(SafeRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  SafeRoute: SafeRouteWithChildren,
+  SafeRoute: SafeRoute,
   WalletRoute: WalletRoute,
 }
 export const routeTree = rootRouteImport

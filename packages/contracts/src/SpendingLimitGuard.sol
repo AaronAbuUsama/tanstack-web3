@@ -1,6 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+interface IERC165 {
+    function supportsInterface(bytes4 interfaceId) external view returns (bool);
+}
+
+/// @notice Minimal Guard interface matching Safe v1.3.0's Guard (for ERC165 interface ID)
+interface IGuard {
+    function checkTransaction(
+        address to, uint256 value, bytes memory data,
+        uint8 operation, uint256 safeTxGas, uint256 baseGas,
+        uint256 gasPrice, address gasToken, address payable refundReceiver,
+        bytes memory signatures, address msgSender
+    ) external;
+    function checkAfterExecution(bytes32 hash, bool success) external;
+}
+
 /// @title SpendingLimitGuard - Transaction guard that limits ETH transfer amounts
 /// @notice Implements ITransactionGuard to block ETH transfers exceeding a configured limit
 interface ITransactionGuard {
@@ -18,7 +33,7 @@ interface ITransactionGuard {
     function checkAfterModuleExecution(bytes32 hash, bool success) external;
 }
 
-contract SpendingLimitGuard is ITransactionGuard {
+contract SpendingLimitGuard is ITransactionGuard, IERC165 {
     address public immutable safe;
     uint256 public spendingLimit;
 
@@ -55,4 +70,9 @@ contract SpendingLimitGuard is ITransactionGuard {
     }
 
     function checkAfterModuleExecution(bytes32, bool) external override {}
+
+    function supportsInterface(bytes4 interfaceId) external pure override returns (bool) {
+        return interfaceId == type(IGuard).interfaceId
+            || interfaceId == type(IERC165).interfaceId;
+    }
 }

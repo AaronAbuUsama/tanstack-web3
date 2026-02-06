@@ -13,6 +13,10 @@ A comprehensive guide to building multi-signature dApps with Gnosis Safe, TanSta
 3. [Creating a Safe](#3-creating-a-safe)
 4. [Safe Dashboard](#4-safe-dashboard)
 5. [Transactions](#5-transactions)
+   - [Owner & Threshold Management](#owner--threshold-management)
+   - [Guard Management](#guard-management)
+   - [Module Management](#module-management)
+   - [ABI Bridge](#abi-bridge)
 6. [Smart Contracts](#6-smart-contracts)
 7. [Architecture Deep Dive](#7-architecture-deep-dive)
 8. [Extending the Boilerplate](#8-extending-the-boilerplate)
@@ -56,19 +60,19 @@ Bun workspaces will hoist all dependencies to the root `node_modules/` directory
 The quickest way to get the full stack running is:
 
 ```bash
-bun run dev:all
+bun run dev
 ```
 
-This starts both Anvil (a local Ethereum node on port 8545) and the TanStack dev server in parallel.
+This starts both Anvil and the TanStack dev server via Turborepo. Anvil forks Gnosis Chiado, giving you a local blockchain with all Safe infrastructure contracts pre-deployed.
 
 Alternatively, you can run them separately in two terminals:
 
 ```bash
-# Terminal 1: start the local blockchain
+# Terminal 1: start the local blockchain (Chiado fork)
 bun run dev:anvil
 
 # Terminal 2: start the web app
-bun run dev
+bun run dev:web
 ```
 
 ### Dev Wallet
@@ -78,7 +82,7 @@ In development mode (`import.meta.env.DEV === true`), a **Dev Wallet** connector
 - **Address**: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
 - **Private Key**: `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`
 
-This account is pre-funded with 10,000 ETH on the local Anvil chain, so you can test everything without MetaMask or real funds.
+This account is pre-funded with 10,000 ETH (Anvil's default balance) on the local Anvil fork, so you can test everything without MetaMask or real funds. Select **Gnosis Chiado** in the chain switcher to connect to your local Anvil fork.
 
 Navigate to **http://localhost:3000** to see the application.
 
@@ -105,7 +109,7 @@ When you click "Connect Wallet", wagmi's `useConnect` hook lists all available c
 
 ### Chain Switching
 
-The boilerplate supports five chains:
+The boilerplate supports four chains:
 
 | Chain          | Chain ID | Environment |
 |----------------|----------|-------------|
@@ -113,9 +117,8 @@ The boilerplate supports five chains:
 | Sepolia        | 11155111 | All         |
 | Gnosis         | 100      | All         |
 | Gnosis Chiado  | 10200    | All         |
-| Localhost       | 31337    | Dev only    |
 
-Localhost (Anvil) is only added to the chain list when running in development mode. The chain switcher uses wagmi's `useSwitchChain` hook.
+In development mode, the Gnosis Chiado transport is routed to `http://127.0.0.1:8545` (your local Anvil fork). This means selecting "Gnosis Chiado" in the chain switcher connects to your local chain, giving you the full Safe SDK with 10,000 xDAI to work with.
 
 ### How ConnectWallet Works
 
@@ -190,7 +193,7 @@ The Threshold card (`apps/web/src/components/safe/Threshold.tsx`) displays the c
 
 ### Modules Component
 
-The Modules card (`apps/web/src/components/safe/Modules.tsx`) is a placeholder for displaying Safe modules that have been enabled. Modules are smart contracts that extend the Safe with custom transaction logic (more on this in Section 6).
+The Modules card displays any Safe modules that have been enabled. The dashboard also includes a full `ModulePanel` component (`apps/web/src/components/safe/ModulePanel.tsx`) with deploy, enable, disable, and allowance management for the AllowanceModule contract (more on this in Section 6).
 
 ### How SafeProvider Works
 
@@ -278,6 +281,68 @@ The `TransactionFlow` component shows a detailed step-by-step view of the most r
 - Transaction details (to, value, data)
 - Current confirmation count vs required threshold
 - Buttons to confirm or execute based on the current state
+
+### Owner & Threshold Management
+
+The Safe dashboard provides on-chain owner and threshold management directly from the UI.
+
+**Adding an owner**: Click "+ Add Owner" in the Owners card, enter the new address, and click "Add". This creates a Safe transaction that adds the owner, signs it, executes it on-chain, then refreshes the dashboard to show the updated owner list.
+
+**Removing an owner**: Click "Remove" next to any owner (except when only one owner remains). The threshold is automatically adjusted if needed to stay within the valid range.
+
+**Changing the threshold**: In the Threshold card, click any number button to change the required signature count. The change is executed as a Safe transaction.
+
+All three operations follow the same pattern in code:
+
+1. Create the management transaction via Protocol Kit (e.g., `createAddOwnerTx()`)
+2. Sign the transaction
+3. Execute it on-chain
+4. Reconnect to the Safe to refresh state from the blockchain
+
+The handler functions are in `apps/web/src/routes/safe.tsx` (DashboardView), and the Protocol Kit wrappers are in `apps/web/src/lib/safe/standalone.ts`.
+
+### Guard Management
+
+Transaction guards are pre/post execution hooks that the Safe calls for every transaction. The dashboard includes a **GuardPanel** component for managing guards.
+
+**Deploy a guard**: Enter a spending limit (in ETH) and click "Deploy Guard". This deploys a `SpendingLimitGuard` contract that will block any transaction exceeding the limit.
+
+**Enable the guard**: After deployment, click "Enable Guard" to register it with the Safe. Once enabled, the guard's `checkTransaction()` is called before every Safe transaction.
+
+**View guard info**: When a guard is active, the panel shows the guard address and the configured spending limit (read from the contract via `readContract`).
+
+**Disable the guard**: Click "Disable Guard" to remove it. This is also a Safe transaction.
+
+The GuardPanel component is at `apps/web/src/components/safe/GuardPanel.tsx`. It uses the ABI bridge (`lib/contracts/`) for deployment and contract reads.
+
+### Module Management
+
+Modules are smart contracts that can execute transactions on behalf of the Safe, bypassing the normal multi-sig flow. The **ModulePanel** component manages the full module lifecycle.
+
+**Deploy a module**: Click "Deploy AllowanceModule" to deploy the contract.
+
+**Enable/Disable**: Toggle modules on and off. Enabled modules appear in the modules list with a "Disable" button.
+
+**Set allowance**: When a module is enabled, use the Allowance Management section to grant a delegate a spending budget. This is a Safe transaction (requires multi-sig approval) that calls `setAllowance(delegate, amount, resetPeriod)` on the module.
+
+**Check allowance**: View the remaining budget for a delegate address.
+
+**Execute allowance**: The delegate can spend from their allowance by calling `executeAllowance()` directly on the module contract. This is NOT a Safe transaction — it is a direct call from the delegate's wallet, which is the whole point of modules: authorized delegates can act without multi-sig approval.
+
+The ModulePanel component is at `apps/web/src/components/safe/ModulePanel.tsx`.
+
+### ABI Bridge
+
+The `apps/web/src/lib/contracts/` directory provides a bridge between Foundry's compiled contract output and the frontend:
+
+| File           | Purpose                                                |
+|---------------|--------------------------------------------------------|
+| `abis.ts`     | Typed ABI arrays (`as const`) for all 5 contracts      |
+| `bytecodes.ts`| Deployment bytecode hex strings                        |
+| `deploy.ts`   | `deployContract` helpers with chain-agnostic setup     |
+| `index.ts`    | Barrel re-export                                       |
+
+The deployment helpers detect the chain ID from the RPC endpoint and use viem's `defineChain()` to create a compatible chain config. This means the same deploy function works against Anvil, Chiado, or any other EVM chain.
 
 ---
 
@@ -369,6 +434,8 @@ tanstack-web3/
           Owners.tsx               # Owner list display
           Threshold.tsx            # Threshold progress bar
           Modules.tsx              # Module list (placeholder)
+          GuardPanel.tsx           # Guard deploy/enable/disable
+          ModulePanel.tsx          # Module deploy/allowance management
           TransactionFlow.tsx      # Step-by-step tx view
           TxBuilder.tsx            # Transaction input form
           TxQueue.tsx              # Pending transaction list
@@ -380,18 +447,21 @@ tanstack-web3/
       lib/
         wagmi.ts                   # Wagmi config (chains, connectors, transports)
         dev-wallet.ts              # Dev-only wallet connector for Anvil
+        contracts/
+          abis.ts                  # Typed ABI arrays for all contracts
+          bytecodes.ts             # Deployment bytecode hex strings
+          deploy.ts                # Chain-agnostic deployment helpers
+          index.ts                 # Barrel re-export
         safe/
           detect.ts                # iframe vs standalone detection
           provider.tsx             # SafeProvider context
-          hooks.ts                 # useSafe, useSafeInstance, etc.
+          hooks.ts                 # useSafe context hook
           standalone.ts            # Protocol Kit integration
           transactions.ts          # buildTransaction, buildContractCall
           iframe.ts                # Safe Apps SDK integration
           multisig.ts              # Transaction Service (API Kit)
           relay.ts                 # Gelato relay for gasless txs
           api.ts                   # API Kit factory
-          tx-hooks.ts              # Transaction React hooks
-          account-abstraction.ts   # ERC-4337 placeholder
       routes/
         __root.tsx                 # Root layout
         index.tsx                  # Home page
@@ -541,7 +611,7 @@ For production multi-sig workflows across multiple sessions, you can use the Saf
 
 ### ERC-4337 Next Steps
 
-The `account-abstraction.ts` file is a placeholder for ERC-4337 (Account Abstraction) integration. Safe can serve as a smart account in the ERC-4337 flow, enabling features like:
+Safe can serve as a smart account in the ERC-4337 (Account Abstraction) flow. To add this integration, create an `account-abstraction.ts` module in `lib/safe/` that implements:
 
 - Gasless transactions via paymasters
 - Bundled operations
@@ -564,7 +634,7 @@ Turbo will build both the web app and compile the contracts in the correct order
 
 ```bash
 cd packages/contracts
-forge script script/Deploy.s.sol --rpc-url <sepolia_rpc_url> --broadcast --verify
+forge script script/Counter.s.sol --rpc-url <sepolia_rpc_url> --broadcast --verify
 ```
 
 Replace `<sepolia_rpc_url>` with your RPC endpoint (e.g., from Alchemy or Infura). Add `--private-key <key>` or use `--ledger` for signing.
@@ -630,17 +700,17 @@ Type-only imports are fine since they are erased at compile time:
 import type { SafeTransactionDataPartial } from '@safe-global/protocol-kit'
 ```
 
-### "Safe not deployed" Errors
+### "Safe not deployed" or "Invalid multiSend" Errors
 
-This usually means Anvil is not running. Start it with:
+This means either Anvil is not running, or Anvil is not forking Chiado. The Safe SDK requires Safe infrastructure contracts (SafeProxyFactory, MultiSend, etc.) to be deployed on the chain. Start Anvil with the Chiado fork:
 
 ```bash
 bun run dev:anvil
 # or directly:
-anvil --host 0.0.0.0
+anvil --fork-url https://rpc.chiadochain.net --host 0.0.0.0
 ```
 
-Make sure port 8545 is available. The Safe deployment flow connects to `http://127.0.0.1:8545` by default.
+Make sure port 8545 is available. Select **Gnosis Chiado** in the chain switcher (not Localhost) — in dev mode, this routes to your local Anvil fork.
 
 ### Dev Wallet Not Showing
 

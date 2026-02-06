@@ -51,6 +51,13 @@ contract SpendingLimitGuardTest is Test {
         );
     }
 
+    function test_SupportsInterface() public view {
+        // ERC165 interface
+        assertTrue(guard.supportsInterface(0x01ffc9a7));
+        // Should not support random interface
+        assertFalse(guard.supportsInterface(0xffffffff));
+    }
+
     function test_EmitEvent() public {
         vm.expectEmit(true, false, false, true);
         emit TransactionChecked(address(0x2), 0.5 ether, true);

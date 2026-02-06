@@ -11,6 +11,10 @@ A full-stack Web3 starter kit built with TanStack Start and Gnosis Safe SDK. Cre
 - **Smart Contracts** -- Counter, SimpleStorage, MultiSigAction, SpendingLimitGuard, AllowanceModule
 - **Dev Wallet** -- Auto-connect with Anvil's default account in development
 - **Full Test Suite** -- Vitest (frontend) + Forge (contracts)
+- **Owner Management** -- Add/remove owners and change threshold on-chain
+- **Guard Management** -- Deploy and manage spending limit transaction guards
+- **Module Management** -- Deploy AllowanceModule with delegated spending budgets
+- **ABI Bridge** -- Typed contract ABIs and deployment helpers from Foundry output
 
 ## Quick Start
 
@@ -23,8 +27,8 @@ bun run dev
 For smart contract development:
 
 ```bash
-# Start local blockchain
-anvil --host 0.0.0.0
+# Start local blockchain (forks Gnosis Chiado for Safe SDK support)
+bun run dev:anvil
 
 # Run contract tests
 cd packages/contracts && forge test -v
@@ -42,13 +46,14 @@ tanstack-web3/
 │       │   ├── safe.tsx         # Safe dashboard
 │       │   └── safe.transactions.tsx  # Transaction builder
 │       ├── components/
-│       │   ├── safe/            # Safe UI components
+│       │   ├── safe/            # Safe UI components (GuardPanel, ModulePanel, etc.)
 │       │   └── web3/            # Web3 UI components
 │       └── lib/
 │           ├── wagmi.ts         # Wallet config
+│           ├── contracts/       # ABI bridge (abis, bytecodes, deploy)
 │           └── safe/            # Safe SDK integration
 │               ├── provider.tsx # SafeProvider context
-│               ├── hooks.ts     # useSafe, useDeploySafe, etc.
+│               ├── hooks.ts     # useSafe context hook
 │               ├── standalone.ts # Protocol Kit wrapper
 │               ├── transactions.ts # Transaction building
 │               └── detect.ts    # Iframe/standalone detection

@@ -4,9 +4,9 @@
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev": "turbo dev",
-    "dev:anvil": "anvil --host 0.0.0.0",
+    "dev:anvil": "anvil --fork-url https://rpc.chiadochain.net --host 0.0.0.0",
     "dev:web": "turbo dev --filter=@tanstack-web3/web",
-    "dev:all": "bun run dev:anvil & turbo dev",
+    "dev:all": "turbo dev",
     "build": "turbo build",
     "test": "turbo test",
     "lint": "turbo lint",

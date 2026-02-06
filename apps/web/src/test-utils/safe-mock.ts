@@ -1,5 +1,6 @@
 import { type ReactNode, createElement } from 'react'
-import { SafeContext, type SafeContextValue } from '../lib/safe/provider'
+import { SafeContext, type SafeContextValue } from '../safe/core/provider'
+import type { SafeInstance } from '../safe/core/types'
 
 export function createMockSafeContext(overrides?: Partial<SafeContextValue>): SafeContextValue {
   return {
@@ -12,6 +13,9 @@ export function createMockSafeContext(overrides?: Partial<SafeContextValue>): Sa
     loading: false,
     safeInstance: null,
     error: null,
+    modules: [],
+    balance: '0',
+    guard: '',
     connectSafe: async () => {},
     deploySafe: async () => '',
     disconnectSafe: () => {},
@@ -33,6 +37,9 @@ export function createMockIframeSafeContext(overrides?: Partial<SafeContextValue
     loading: false,
     safeInstance: null,
     error: null,
+    modules: [],
+    balance: '0',
+    guard: '',
     connectSafe: async () => {},
     deploySafe: async () => '',
     disconnectSafe: () => {},
