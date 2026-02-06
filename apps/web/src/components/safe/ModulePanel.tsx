@@ -10,6 +10,10 @@ function getAllowanceModuleKey(safeAddress: string) {
   return `safe-allowance-module-${safeAddress}`
 }
 
+function addressEq(a: string, b: string) {
+  return a.toLowerCase() === b.toLowerCase()
+}
+
 interface ModulePanelProps {
   modules: string[]
   safeAddress: string
@@ -54,12 +58,11 @@ export default function ModulePanel({
   const [executeAmount, setExecuteAmount] = useState('')
 
   // Computed: only set if our tracked module is in the enabled modules list
-  const allowanceModuleAddress = deployedModuleAddress && modules.includes(deployedModuleAddress)
-    ? deployedModuleAddress
-    : null
-  const showDeployedNotEnabled =
-    deployedModuleAddress && !modules.includes(deployedModuleAddress)
-  const hasEnabledModule = modules.length > 0
+  const moduleIsEnabled = deployedModuleAddress
+    ? modules.some((m) => addressEq(m, deployedModuleAddress))
+    : false
+  const allowanceModuleAddress = moduleIsEnabled ? deployedModuleAddress : null
+  const showDeployedNotEnabled = deployedModuleAddress && !moduleIsEnabled
 
   async function handleDisableModule(moduleAddress: string) {
     setLoading(true)
@@ -220,7 +223,7 @@ export default function ModulePanel({
             >
               <span className="font-mono text-sm text-gray-300">
                 {mod.slice(0, 6)}...{mod.slice(-4)}
-                {mod === deployedModuleAddress && (
+                {deployedModuleAddress && addressEq(mod, deployedModuleAddress) && (
                   <span className="ml-2 text-xs text-cyan-400">(AllowanceModule)</span>
                 )}
               </span>
@@ -236,39 +239,34 @@ export default function ModulePanel({
         </div>
       )}
 
-      {/* Deploy / Enable section */}
-      <div className="border-t border-gray-700 pt-4">
-        {showDeployedNotEnabled ? (
-          <div className="space-y-2">
-            <p className="text-gray-400 text-sm">
-              Module deployed at{' '}
-              <span className="font-mono text-cyan-400">
-                {deployedModuleAddress.slice(0, 6)}...{deployedModuleAddress.slice(-4)}
-              </span>
-            </p>
+      {/* Deploy / Enable section — only when module is NOT yet enabled */}
+      {!moduleIsEnabled && (
+        <div className="border-t border-gray-700 pt-4">
+          {showDeployedNotEnabled ? (
+            <div className="space-y-2">
+              <p className="text-gray-400 text-sm">
+                Module deployed at{' '}
+                <span className="font-mono text-cyan-400">
+                  {deployedModuleAddress!.slice(0, 6)}...{deployedModuleAddress!.slice(-4)}
+                </span>
+              </p>
+              <button
+                onClick={handleEnableModule}
+                disabled={loading}
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white rounded-lg transition-colors"
+              >
+                {loading ? 'Enabling...' : 'Enable Module'}
+              </button>
+            </div>
+          ) : (
             <button
-              onClick={handleEnableModule}
+              onClick={handleDeployModule}
               disabled={loading}
               className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white rounded-lg transition-colors"
             >
-              {loading ? 'Enabling...' : 'Enable Module'}
+              {loading ? 'Deploying...' : 'Deploy AllowanceModule'}
             </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleDeployModule}
-            disabled={loading}
-            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white rounded-lg transition-colors"
-          >
-            {loading ? 'Deploying...' : 'Deploy AllowanceModule'}
-          </button>
-        )}
-      </div>
-
-      {/* Allowance not tracked hint */}
-      {hasEnabledModule && !allowanceModuleAddress && (
-        <div className="border-t border-gray-700 pt-4">
-          <p className="text-gray-400 text-sm">Deploy an AllowanceModule to manage allowances.</p>
+          )}
         </div>
       )}
 
