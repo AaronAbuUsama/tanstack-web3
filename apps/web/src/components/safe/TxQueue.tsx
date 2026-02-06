@@ -9,16 +9,24 @@ interface PendingTx {
 
 interface TxQueueProps {
   transactions: PendingTx[]
+  threshold?: number
   onConfirm?: (safeTxHash: string) => void
   onExecute?: (safeTxHash: string) => void
 }
 
-export default function TxQueue({ transactions, onConfirm, onExecute }: TxQueueProps) {
+export default function TxQueue({ transactions, threshold, onConfirm, onExecute }: TxQueueProps) {
   if (transactions.length === 0) {
+    let emptyMessage = 'No pending transactions'
+    if (threshold === 1) {
+      emptyMessage = 'Transactions execute immediately with a 1-of-1 threshold. Add more owners and increase the threshold to enable multi-sig approval.'
+    } else if (threshold !== undefined && threshold > 1) {
+      emptyMessage = 'Transactions awaiting additional owner signatures will appear here.'
+    }
+
     return (
       <div className="bg-gray-800 rounded-xl p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Pending Transactions</h3>
-        <p className="text-gray-400 text-sm">No pending transactions</p>
+        <p className="text-gray-400 text-sm">{emptyMessage}</p>
       </div>
     )
   }
