@@ -1,0 +1,254 @@
+.ds-shell-statusbar {
+	align-items: center;
+	background: var(--ds-color-black);
+	border-bottom: var(--ds-border-thick);
+	color: var(--ds-color-white);
+	display: flex;
+	font-family: var(--ds-font-mono);
+	font-size: var(--ds-type-13);
+	justify-content: space-between;
+	padding: var(--ds-space-10) var(--ds-space-24);
+}
+
+.ds-shell-statusbar__chain-region {
+	align-items: center;
+	display: flex;
+	gap: var(--ds-space-12);
+}
+
+.ds-shell-statusbar__chain-badge {
+	background: var(--ds-color-green);
+	border: var(--ds-border-inline);
+	color: var(--ds-color-black);
+	font-size: var(--ds-type-11);
+	font-weight: var(--ds-font-weight-bold);
+	letter-spacing: 1px;
+	padding: var(--ds-space-4) var(--ds-space-12);
+	text-transform: uppercase;
+}
+
+.ds-shell-statusbar__wallet-region {
+	align-items: center;
+	display: flex;
+	gap: var(--ds-space-12);
+}
+
+.ds-shell-statusbar__balance-pill {
+	background: var(--ds-color-yellow);
+	border: 2px solid var(--ds-color-white);
+	color: var(--ds-color-black);
+	font-weight: var(--ds-font-weight-bold);
+	padding: var(--ds-space-4) var(--ds-space-14);
+}
+
+.ds-shell-statusbar__address {
+	font-size: var(--ds-type-12);
+	opacity: 0.7;
+}
+
+.ds-shell-statusbar__disconnect {
+	background: var(--ds-color-red);
+	border: 2px solid var(--ds-color-white);
+	color: var(--ds-color-white);
+	cursor: pointer;
+	font-family: var(--ds-font-mono);
+	font-size: var(--ds-type-11);
+	font-weight: var(--ds-font-weight-bold);
+	padding: var(--ds-space-4) var(--ds-space-12);
+}
+
+.ds-shell-statusbar__disconnect:hover {
+	transform: translate(1px, 1px);
+}
+
+.ds-shell-sidebar {
+	background: var(--ds-color-white);
+	border-right: var(--ds-border-thick);
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+	width: var(--ds-layout-sidebar-width);
+}
+
+.ds-shell-sidebar__identity {
+	background: var(--ds-color-yellow);
+	border-bottom: var(--ds-border-thick);
+	display: grid;
+	gap: var(--ds-space-8);
+	padding: var(--ds-space-24) var(--ds-space-20);
+}
+
+.ds-shell-sidebar__identity-label {
+	font-size: var(--ds-type-11);
+	font-weight: var(--ds-font-weight-bold);
+	letter-spacing: 2px;
+	opacity: 0.6;
+	text-transform: uppercase;
+}
+
+.ds-shell-sidebar__address {
+	font-family: var(--ds-font-mono);
+	font-size: var(--ds-type-14);
+	font-weight: var(--ds-font-weight-bold);
+	line-height: 1.4;
+	word-break: break-all;
+}
+
+.ds-shell-sidebar__balance {
+	align-items: baseline;
+	display: flex;
+	font-size: var(--ds-type-28);
+	font-weight: var(--ds-font-weight-bold);
+	gap: var(--ds-space-6);
+}
+
+.ds-shell-sidebar__balance-unit {
+	font-size: var(--ds-type-14);
+	opacity: 0.6;
+}
+
+.ds-shell-sidebar__threshold {
+	background: var(--ds-color-black);
+	color: var(--ds-color-yellow);
+	display: inline-flex;
+	font-family: var(--ds-font-mono);
+	font-size: var(--ds-type-12);
+	font-weight: var(--ds-font-weight-bold);
+	padding: var(--ds-space-4) var(--ds-space-10);
+}
+
+.ds-shell-sidebar__nav {
+	flex: 1;
+	padding: var(--ds-space-8) 0;
+}
+
+.ds-shell-sidebar__section {
+	display: grid;
+}
+
+.ds-shell-sidebar__section-label {
+	font-size: var(--ds-type-10);
+	font-weight: var(--ds-font-weight-bold);
+	letter-spacing: 2px;
+	opacity: 0.45;
+	padding: var(--ds-space-12) var(--ds-space-20) var(--ds-space-4);
+	text-transform: uppercase;
+}
+
+.ds-shell-sidebar__item {
+	align-items: center;
+	border-left: 4px solid transparent;
+	color: inherit;
+	display: flex;
+	font-size: var(--ds-type-14);
+	font-weight: var(--ds-font-weight-medium);
+	gap: var(--ds-space-12);
+	padding: var(--ds-space-12) var(--ds-space-20);
+	text-decoration: none;
+}
+
+.ds-shell-sidebar__item:hover {
+	background: var(--ds-color-cream);
+}
+
+.ds-shell-sidebar__item.is-active {
+	background: var(--ds-color-cream);
+	border-left-color: var(--ds-color-black);
+	font-weight: var(--ds-font-weight-bold);
+}
+
+.ds-shell-sidebar__item-icon {
+	align-items: center;
+	border: var(--ds-border-inline);
+	display: inline-flex;
+	font-size: var(--ds-type-14);
+	height: 32px;
+	justify-content: center;
+	width: 32px;
+}
+
+.ds-shell-sidebar__item.is-active .ds-shell-sidebar__item-icon {
+	background: var(--ds-color-yellow);
+	box-shadow: var(--ds-shadow-sm);
+}
+
+.ds-shell-sidebar__item-badge {
+	background: var(--ds-color-pink);
+	border: var(--ds-border-inline);
+	color: var(--ds-color-white);
+	font-size: var(--ds-type-11);
+	font-weight: var(--ds-font-weight-bold);
+	margin-left: auto;
+	padding: var(--ds-space-2) var(--ds-space-8);
+}
+
+.ds-shell-sidebar__footer {
+	background: var(--ds-color-cream);
+	border-top: var(--ds-border-regular);
+	padding: var(--ds-space-16) var(--ds-space-20);
+}
+
+.ds-shell-sidebar__fund-btn {
+	background: var(--ds-color-green);
+	border: var(--ds-border-regular);
+	box-shadow: var(--ds-shadow-sm);
+	cursor: pointer;
+	font-family: var(--ds-font-primary);
+	font-size: var(--ds-type-13);
+	font-weight: var(--ds-font-weight-bold);
+	padding: var(--ds-space-10);
+	text-align: center;
+	width: 100%;
+}
+
+.ds-shell-sidebar__fund-btn:hover {
+	box-shadow: var(--ds-shadow-hover-collapsed);
+	transform: translate(2px, 2px);
+}
+
+.ds-shell-panel {
+	background: var(--ds-color-white);
+	border: var(--ds-border-regular);
+	box-shadow: var(--ds-shadow-md);
+	display: grid;
+}
+
+.ds-shell-panel__header {
+	align-items: center;
+	border-bottom: var(--ds-border-regular);
+	display: flex;
+	font-size: var(--ds-type-15);
+	font-weight: var(--ds-font-weight-bold);
+	justify-content: space-between;
+	padding: var(--ds-space-16) var(--ds-space-20);
+}
+
+.ds-shell-panel__title-wrap {
+	align-items: center;
+	display: flex;
+	gap: var(--ds-space-8);
+}
+
+.ds-shell-panel__title {
+	font-size: inherit;
+	font-weight: inherit;
+	margin: 0;
+}
+
+.ds-shell-panel__tag {
+	border: var(--ds-border-inline);
+	font-size: var(--ds-type-10);
+	font-weight: var(--ds-font-weight-bold);
+	letter-spacing: 1.5px;
+	padding: var(--ds-space-3) var(--ds-space-8);
+	text-transform: uppercase;
+}
+
+.ds-shell-panel__actions {
+	display: inline-flex;
+	gap: var(--ds-space-8);
+}
+
+.ds-shell-panel__body {
+	padding: var(--ds-space-20);
+}

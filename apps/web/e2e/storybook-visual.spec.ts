@@ -17,6 +17,12 @@ const storyGroups = [
     patterns: [/^design-system-foundations-/i],
   },
   {
+    name: 'shells',
+    label: 'Shells',
+    maxStories: 12,
+    patterns: [/^design-system-shells-/i],
+  },
+  {
     name: 'primitives',
     label: 'Primitives',
     maxStories: 12,
