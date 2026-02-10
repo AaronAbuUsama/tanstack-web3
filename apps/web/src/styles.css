@@ -1,15 +1,24 @@
 @import "tailwindcss";
+@import "./design-system/foundations/reference-tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 body {
-  @apply m-0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  margin: 0;
+  font-family: var(--ds-font-primary);
+  background: var(--ds-surface-canvas);
+  color: var(--ds-text-default);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: var(--ds-font-mono);
 }

@@ -1,0 +1,78 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+:root {
+	/* Direct reference palette mapping from layout-1-command-center.html :root */
+	--ds-color-black: #1a1a2e;
+	--ds-color-white: #fefefe;
+	--ds-color-yellow: #ffe66d;
+	--ds-color-pink: #ff6b9d;
+	--ds-color-blue: #4ecdc4;
+	--ds-color-purple: #c44dff;
+	--ds-color-orange: #ff8a5c;
+	--ds-color-green: #95e86b;
+	--ds-color-red: #ff4757;
+	--ds-color-lavender: #d4adfc;
+	--ds-color-cream: #fff8e7;
+	--ds-color-sky: #a8e6cf;
+	--ds-color-neutral-track: #e8e8e8;
+	--ds-color-neutral-dashed: #e0e0e0;
+
+	/* Aliases used in app/shell components */
+	--ds-surface-canvas: var(--ds-color-cream);
+	--ds-surface-panel: var(--ds-color-white);
+	--ds-text-default: var(--ds-color-black);
+	--ds-text-inverse: var(--ds-color-white);
+	--ds-border-color: var(--ds-color-black);
+
+	/* Border geometry from reference */
+	--ds-border-regular: 3px solid var(--ds-border-color);
+	--ds-border-thick: 4px solid var(--ds-border-color);
+	--ds-border-inline: 2px solid var(--ds-border-color);
+	--ds-border-dashed: 3px dashed var(--ds-border-color);
+	--ds-border-dashed-subtle: 2px dashed var(--ds-color-neutral-dashed);
+
+	/* Shadow geometry from reference */
+	--ds-shadow-sm: 3px 3px 0px var(--ds-border-color);
+	--ds-shadow-md: 5px 5px 0px var(--ds-border-color);
+	--ds-shadow-lg: 8px 8px 0px var(--ds-border-color);
+	--ds-shadow-hover-collapsed: 1px 1px 0px var(--ds-border-color);
+
+	/* Layout and sizing primitives derived from reference */
+	--ds-layout-sidebar-width: 280px;
+	--ds-layout-status-bar-height: 44px;
+	--ds-space-2: 2px;
+	--ds-space-3: 3px;
+	--ds-space-4: 4px;
+	--ds-space-6: 6px;
+	--ds-space-8: 8px;
+	--ds-space-10: 10px;
+	--ds-space-12: 12px;
+	--ds-space-14: 14px;
+	--ds-space-16: 16px;
+	--ds-space-20: 20px;
+	--ds-space-24: 24px;
+	--ds-space-32: 32px;
+	--ds-space-40: 40px;
+
+	/* Typography mapping from reference */
+	--ds-font-primary: "Space Grotesk", sans-serif;
+	--ds-font-mono: "Space Mono", monospace;
+	--ds-font-weight-regular: 400;
+	--ds-font-weight-medium: 500;
+	--ds-font-weight-semibold: 600;
+	--ds-font-weight-bold: 700;
+
+	--ds-type-10: 10px;
+	--ds-type-11: 11px;
+	--ds-type-12: 12px;
+	--ds-type-13: 13px;
+	--ds-type-14: 14px;
+	--ds-type-15: 15px;
+	--ds-type-18: 18px;
+	--ds-type-20: 20px;
+	--ds-type-24: 24px;
+	--ds-type-28: 28px;
+	--ds-type-32: 32px;
+	--ds-type-40: 40px;
+	--ds-type-48: 48px;
+}
