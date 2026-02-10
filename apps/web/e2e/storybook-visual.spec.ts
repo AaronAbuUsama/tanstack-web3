@@ -33,7 +33,7 @@ const storyGroups = [
     name: 'domains-safe',
     label: 'Domain Safe',
     maxStories: 12,
-    patterns: [/^design-system-domains-safe-/i],
+    patterns: [/^design-system-domains-safe-/i, /^design-system-domains\/safe-/i],
   },
   {
     name: 'compositions',
