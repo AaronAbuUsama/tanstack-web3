@@ -7,6 +7,7 @@ import { useSafe } from '../safe/core/use-safe'
 import SetupView from '../safe/governance/SetupView'
 import DashboardView from '../safe/transactions/DashboardView'
 import { resolveRuntimePolicy } from '../safe/runtime'
+import { normalizeSafeScreenSearch } from '../safe/screens/screen-state'
 
 /**
  * Map a wallet chainId to the correct RPC URL for Protocol Kit.
@@ -36,10 +37,12 @@ function isTxServiceSupportedChain(chainId: number) {
 }
 
 export const Route = createFileRoute('/safe')({
+  validateSearch: (search: Record<string, unknown>) => normalizeSafeScreenSearch(search),
   component: SafeDashboard,
 })
 
 function SafeDashboard() {
+  const { screen } = Route.useSearch()
   const { isConnected, address, chain, connector } = useAccount()
   const chainId = useChainId()
   const safe = useSafe()
@@ -117,7 +120,13 @@ function SafeDashboard() {
         )}
 
         {safe.isInSafe && (
-          <DashboardView address={address} chain={chain} safe={safe} rpcUrl={rpcUrl} />
+          <DashboardView
+            activeScreen={screen}
+            address={address}
+            chain={chain}
+            safe={safe}
+            rpcUrl={rpcUrl}
+          />
         )}
       </div>
     </div>

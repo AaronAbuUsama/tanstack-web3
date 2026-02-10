@@ -481,7 +481,27 @@ Status:
   - Notes: Existing smoke and multisig scripts were not modified and remain available. Task 0 introduces a new harness without changing runtime production code.
 
 ### Task 1 Evidence
-- Pending.
+- Fail-first:
+  - Command: `cd apps/web && bun run vitest run src/safe/screens/screen-state.test.ts`
+  - Result: FAIL
+  - Reason: No test file existed before implementation (`No test files found`).
+- Automated:
+  - Command: `cd apps/web && bun run vitest run src/safe/screens/screen-state.test.ts`
+  - Result: PASS (5 tests)
+- Browser:
+  - Command: `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "overview|setup"`
+  - Result: PASS (setup/runtime matrix flow)
+  - Screenshots:
+    - `apps/web/e2e/artifacts/prd4/t1-overview-standalone-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t1-overview-standalone-mobile.png`
+    - `apps/web/e2e/artifacts/prd4/t6-setup-runtime-account0-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t6-setup-runtime-account1-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t6-setup-runtime-mobile.png`
+- Artifact assertion:
+  - Command: `ls -la apps/web/e2e/artifacts/prd4 | rg 't1-overview-standalone-(desktop|mobile)|t6-setup-runtime-account(0|1)-desktop|t6-setup-runtime-mobile'`
+  - Result: PASS
+- Regression sweep:
+  - Notes: URL screen parsing added in route/search state; runtime logic unchanged. Dashboard rendering remains functionally intact while nav active state is now URL-driven.
 
 ### Task 2 Evidence
 - Pending.

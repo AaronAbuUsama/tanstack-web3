@@ -23,6 +23,8 @@ import SafeOverview from "../governance/SafeOverview";
 import Threshold from "../governance/Threshold";
 import GuardPanel from "../guard/GuardPanel";
 import ModulePanel from "../module/ModulePanel";
+import { navItemForScreen } from "../screens/screen-layout";
+import type { SafeScreenId } from "../screens/types";
 import FundSafe from "./FundSafe";
 import TransactionFlow from "./TransactionFlow";
 import TxBuilder from "./TxBuilder";
@@ -49,6 +51,7 @@ function formatEthMaybeWei(value?: string) {
 }
 
 interface DashboardViewProps {
+	activeScreen: SafeScreenId;
 	address: string | undefined;
 	chain: { name: string; id: number } | undefined;
 	safe: ReturnType<typeof useSafe>;
@@ -56,6 +59,7 @@ interface DashboardViewProps {
 }
 
 export default function DashboardView({
+	activeScreen,
 	address,
 	chain,
 	safe,
@@ -148,24 +152,31 @@ export default function DashboardView({
 	const safeBalanceEth = formatEthMaybeWei(safe.balance);
 	const thresholdLabel = `${safe.threshold} of ${safe.owners.length}`;
 	const guardActive = Boolean(safe.guard && safe.guard !== ZERO_ADDRESS);
+	const activeNavItem = navItemForScreen(activeScreen);
 
 	const navSections = commandCenterSidebarSections.map((section) => ({
 		...section,
 		items: section.items.map((item) => {
+			const baseActive = item.id === activeNavItem;
 			if (item.id === "transactions") {
 				return {
 					...item,
+					active: baseActive,
 					badge: pendingTxs.length > 0 ? String(pendingTxs.length) : undefined,
 				};
 			}
 			if (item.id === "modules") {
 				return {
 					...item,
+					active: baseActive,
 					badge:
 						safe.modules.length > 0 ? String(safe.modules.length) : undefined,
 				};
 			}
-			return item;
+			return {
+				...item,
+				active: baseActive,
+			};
 		}),
 	}));
 
