@@ -45,7 +45,8 @@ bun run dev:anvil
 
 # Deploy contracts to Anvil
 cd packages/contracts
-forge script script/Counter.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
+forge script script/SpendingLimitGuard.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
+forge script script/AllowanceModule.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
 ```
 
 ## Smart Contracts
@@ -91,9 +92,9 @@ function MyPage() {
 
 Place components in `apps/web/src/components/`:
 
-- `components/safe/` - Safe-specific components
-- `components/web3/` - General Web3 components
-- `components/` - Shared UI components
+- `components/layout/` - Shell/layout primitives
+- `components/ui/` - Shared UI building blocks
+- `safe/` and `web3/` - Feature/domain modules
 
 ## Testing
 

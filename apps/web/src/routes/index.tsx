@@ -79,7 +79,7 @@ function HomePage() {
           <FileCode className="w-10 h-10 text-cyan-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">Smart Contracts</h3>
           <p className="text-gray-400 mb-4">
-            Foundry-based contracts including Counter, SimpleStorage, MultiSigAction, SpendingLimitGuard, and AllowanceModule.
+            Foundry-based contracts focused on Safe extensions: SpendingLimitGuard and AllowanceModule.
           </p>
           <code className="px-3 py-1.5 bg-slate-700 rounded text-cyan-400 text-sm">
             cd packages/contracts && forge test

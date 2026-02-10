@@ -8,7 +8,7 @@ A full-stack Web3 starter kit built with TanStack Start and Gnosis Safe SDK. Cre
 - **Safe Dashboard** -- View owners, threshold, modules, and balances
 - **Transaction Pipeline** -- Build, sign, and execute transactions (local-first)
 - **Dual Mode** -- Works as Safe App (iframe) or standalone dApp
-- **Smart Contracts** -- Counter, SimpleStorage, MultiSigAction, SpendingLimitGuard, AllowanceModule
+- **Smart Contracts** -- SpendingLimitGuard, AllowanceModule
 - **Dev Wallet** -- Auto-connect with Anvil's default account in development
 - **Full Test Suite** -- Vitest (frontend) + Forge (contracts)
 - **Owner Management** -- Add/remove owners and change threshold on-chain
@@ -41,22 +41,10 @@ tanstack-web3/
 ├── apps/web/                    # TanStack Start app
 │   └── src/
 │       ├── routes/              # File-based routing
-│       │   ├── index.tsx        # Homepage
-│       │   ├── wallet.tsx       # Wallet connection
-│       │   ├── safe.tsx         # Safe dashboard
-│       │   └── safe.transactions.tsx  # Transaction builder
-│       ├── components/
-│       │   ├── safe/            # Safe UI components (GuardPanel, ModulePanel, etc.)
-│       │   └── web3/            # Web3 UI components
-│       └── lib/
-│           ├── wagmi.ts         # Wallet config
-│           ├── contracts/       # ABI bridge (abis, bytecodes, deploy)
-│           └── safe/            # Safe SDK integration
-│               ├── provider.tsx # SafeProvider context
-│               ├── hooks.ts     # useSafe context hook
-│               ├── standalone.ts # Protocol Kit wrapper
-│               ├── transactions.ts # Transaction building
-│               └── detect.ts    # Iframe/standalone detection
+│       ├── safe/                # Safe domain modules (core, governance, guard, module, tx, contracts)
+│       ├── web3/                # Wallet + chain UI and config
+│       ├── components/          # Shared layout/ui components
+│       └── test-utils/          # Testing helpers and mocks
 ├── packages/contracts/          # Foundry smart contracts
 │   ├── src/                     # Contract source
 │   ├── test/                    # Forge tests
@@ -95,7 +83,8 @@ bun run test       # Run all tests
 cd packages/contracts
 forge build        # Compile contracts
 forge test -v      # Run contract tests
-forge script script/Counter.s.sol --rpc-url http://127.0.0.1:8545 --broadcast  # Deploy
+forge script script/SpendingLimitGuard.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
+forge script script/AllowanceModule.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
 ```
 
 ## License

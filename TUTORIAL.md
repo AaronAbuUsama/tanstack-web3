@@ -337,7 +337,7 @@ The `apps/web/src/lib/contracts/` directory provides a bridge between Foundry's 
 
 | File           | Purpose                                                |
 |---------------|--------------------------------------------------------|
-| `abis.ts`     | Typed ABI arrays (`as const`) for all 5 contracts      |
+| `abis.ts`     | Typed ABI arrays (`as const`) for active contracts      |
 | `bytecodes.ts`| Deployment bytecode hex strings                        |
 | `deploy.ts`   | `deployContract` helpers with chain-agnostic setup     |
 | `index.ts`    | Barrel re-export                                       |
@@ -348,27 +348,7 @@ The deployment helpers detect the chain ID from the RPC endpoint and use viem's 
 
 ## 6. Smart Contracts
 
-The `packages/contracts/src/` directory contains five Solidity contracts that demonstrate different patterns for Safe integration.
-
-### Counter
-
-**File**: `packages/contracts/src/Counter.sol`
-
-A simple contract with `increment()` and `decrement()` functions. Emits a `CountChanged` event. Useful as a basic example for building contract call transactions from the Safe UI.
-
-### SimpleStorage
-
-**File**: `packages/contracts/src/SimpleStorage.sol`
-
-A key-value store on-chain. Call `set(key, value)` to store a string, and `get(key)` to retrieve it. Emits a `ValueSet` event with the key, value, and caller address.
-
-### MultiSigAction
-
-**File**: `packages/contracts/src/MultiSigAction.sol`
-
-Demonstrates the **`onlySafe` modifier** pattern. This contract stores an immutable `safe` address in its constructor. The `executeAction()` function can only be called by the Safe itself (i.e., through a multi-sig transaction). Any direct call from an EOA will revert with `OnlySafe()`.
-
-This pattern is useful when you want a contract that can only be operated by its governing Safe.
+The `packages/contracts/src/` directory contains production Solidity contracts for Safe integration.
 
 ### SpendingLimitGuard
 
@@ -470,9 +450,6 @@ tanstack-web3/
         safe.transactions.tsx      # /safe/transactions (child)
   packages/contracts/
     src/
-      Counter.sol
-      SimpleStorage.sol
-      MultiSigAction.sol
       SpendingLimitGuard.sol
       AllowanceModule.sol
     foundry.toml
@@ -634,7 +611,8 @@ Turbo will build both the web app and compile the contracts in the correct order
 
 ```bash
 cd packages/contracts
-forge script script/Counter.s.sol --rpc-url <sepolia_rpc_url> --broadcast --verify
+forge script script/SpendingLimitGuard.s.sol --rpc-url <sepolia_rpc_url> --broadcast --verify
+forge script script/AllowanceModule.s.sol --rpc-url <sepolia_rpc_url> --broadcast --verify
 ```
 
 Replace `<sepolia_rpc_url>` with your RPC endpoint (e.g., from Alchemy or Infura). Add `--private-key <key>` or use `--ledger` for signing.
