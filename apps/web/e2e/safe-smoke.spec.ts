@@ -25,6 +25,20 @@ async function takeArtifact(page: Page, fileName: string) {
   })
 }
 
+async function setScreenSearch(page: Page, screen: string | null) {
+  await page.evaluate((nextScreen) => {
+    const url = new URL(window.location.href)
+    if (nextScreen) {
+      url.searchParams.set('screen', nextScreen)
+    } else {
+      url.searchParams.delete('screen')
+    }
+    window.history.pushState({}, '', `${url.pathname}${url.search}`)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }, screen)
+  await page.waitForTimeout(150)
+}
+
 test('safe smoke: connect, switch dev account, setup flow, pending status correctness', async ({ page }) => {
   await page.addInitScript(() => window.localStorage.clear())
 
@@ -90,33 +104,26 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
   await createSafePanel.locator('button', { hasText: /^2$/ }).click()
   await createSafePanel.getByRole('button', { name: 'Deploy Safe' }).click()
 
-  await expect(page.getByText('Safe Address')).toBeVisible({ timeout: 120_000 })
+  await expect(
+    page.getByRole('heading', { name: 'Command Center Overview', exact: true }),
+  ).toBeVisible({ timeout: 120_000 })
+  await setScreenSearch(page, 'transactions')
   await expect(page.getByRole('heading', { name: 'Transactions', exact: true })).toBeVisible()
   await expect(page.getByText(/Local-only:/)).toBeVisible()
 
   await takeArtifact(page, '04-safe-deployed-dashboard.png')
 
-  const txBuilder = page.locator('div.bg-gray-800').filter({
-    has: page.getByRole('heading', { name: 'Transaction Builder' }),
-  }).first()
+  await page.getByLabel('Recipient Address').fill(ACCOUNT_ZERO)
+  await page.getByLabel('Value (ETH)').fill('0')
+  await page.getByRole('button', { name: 'Build Transaction' }).click()
 
-  await txBuilder.locator('input[placeholder="0x..."]').fill(ACCOUNT_ZERO)
-  await txBuilder.locator('input[placeholder="0.0"]').fill('0')
-  await txBuilder.getByRole('button', { name: 'Build Transaction' }).click()
-
-  await expect(page.getByRole('heading', { name: /Pending Transactions/ })).toBeVisible()
+  await expect(page.getByText('Pending Signatures')).toBeVisible()
   await takeArtifact(page, '05-safe-pending-created.png')
 
-  await page.getByRole('button', { name: 'Confirm' }).first().click()
+  await page.getByRole('button', { name: 'Sign' }).first().click()
 
-  const pendingPanel = page.locator('div.bg-gray-800').filter({
-    has: page.getByRole('heading', { name: /Pending Transactions/ }),
-  }).first()
-
-  await expect(pendingPanel.getByText('Pending', { exact: true }).first()).toBeVisible()
-  await expect(pendingPanel.getByText(/1\s*\/\s*2/).first()).toBeVisible()
-  await expect(pendingPanel.getByText('Ready', { exact: true })).toHaveCount(0)
-  await expect(pendingPanel.getByRole('button', { name: 'Execute' })).toHaveCount(0)
+  await expect(page.getByText(/1\/2 confirmed/)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Execute' })).toHaveCount(0)
 
   await takeArtifact(page, '06-safe-pending-not-ready-before-threshold.png')
 })

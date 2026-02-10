@@ -119,17 +119,14 @@ async function deploySingleOwnerSafe(page: Page) {
 }
 
 async function createPendingTransaction(page: Page) {
-	const txBuilder = page
-		.locator("div.bg-gray-800")
-		.filter({
-			has: page.getByRole("heading", { name: "Transaction Builder" }),
-		})
-		.first();
-	await expect(txBuilder).toBeVisible();
-	await txBuilder.locator('input[placeholder="0x..."]').fill(ACCOUNT_ONE);
-	await txBuilder.locator('input[placeholder="0.0"]').fill("0");
-	await txBuilder.getByRole("button", { name: "Build Transaction" }).click();
-	await expect(page.getByRole("heading", { name: /Pending Transactions/ })).toBeVisible();
+	await setScreenSearch(page, "transactions");
+	await expect(
+		page.getByRole("heading", { name: "Transactions", exact: true }),
+	).toBeVisible();
+	await page.getByLabel("Recipient Address").fill(ACCOUNT_ONE);
+	await page.getByLabel("Value (ETH)").fill("0");
+	await page.getByRole("button", { name: "Build Transaction" }).click();
+	await expect(page.getByText("Pending Signatures")).toBeVisible();
 }
 
 async function setScreenSearch(page: Page, screen: string | null) {
@@ -183,10 +180,6 @@ test(
 
 	await page.setViewportSize(desktopViewport);
 	await createPendingTransaction(page);
-	await setScreenSearch(page, "transactions");
-	await expect(
-		page.getByRole("heading", { name: "Transactions", exact: true }),
-	).toBeVisible();
 	await expect(page.getByText(/Local-only:/).first()).toBeVisible();
 	await expect(page.getByRole("button", { name: "Sign" }).first()).toBeVisible();
 	await takeArtifact(page, "t2-transactions-local", "desktop");
@@ -201,13 +194,18 @@ test(
 	await takeArtifact(page, "t3-owners", "mobile");
 
 	await page.setViewportSize(desktopViewport);
-	await setScreenSearch(page, null);
-	await page.getByRole("heading", { name: /Transaction Guard \(0\)/ }).scrollIntoViewIfNeeded();
+	await setScreenSearch(page, "guard");
+	await expect(
+		page.getByRole("heading", { name: "Spending Guard", exact: true }),
+	).toBeVisible();
 	await takeArtifact(page, "t4-guard-inactive", "desktop");
 	await takeArtifact(page, "t4-guard", "mobile");
 
 	await page.setViewportSize(desktopViewport);
-	await page.getByRole("heading", { name: /Modules \(0\)/ }).scrollIntoViewIfNeeded();
+	await setScreenSearch(page, "modules");
+	await expect(
+		page.getByRole("heading", { name: "Allowance Module", exact: true }),
+	).toBeVisible();
 	await takeArtifact(page, "t5-modules-empty", "desktop");
 	await takeArtifact(page, "t5-modules", "mobile");
 
@@ -222,9 +220,10 @@ test(
 		await deploySingleOwnerSafe(page);
 
 		await page.setViewportSize(desktopViewport);
-		await page
-			.getByRole("heading", { name: /Transaction Guard \(0\)/ })
-			.scrollIntoViewIfNeeded();
+		await setScreenSearch(page, "guard");
+		await expect(
+			page.getByRole("heading", { name: "Spending Guard", exact: true }),
+		).toBeVisible();
 		const deployGuardButton = page.getByRole("button", { name: "Deploy Guard" }).first();
 		await expect(deployGuardButton).toBeVisible();
 		await deployGuardButton.click();
@@ -234,11 +233,14 @@ test(
 		await enableGuardButton.click();
 
 		await expect(
-			page.getByRole("heading", { name: /Transaction Guard \(1\)/ }),
+			page.getByRole("button", { name: "Disable Guard" }),
 		).toBeVisible({ timeout: 60_000 });
 		await takeArtifact(page, "t4-guard-active", "desktop");
 
-		await page.getByRole("heading", { name: /Modules \(0\)/ }).scrollIntoViewIfNeeded();
+		await setScreenSearch(page, "modules");
+		await expect(
+			page.getByRole("heading", { name: "Allowance Module", exact: true }),
+		).toBeVisible();
 		const deployModuleButton = page
 			.getByRole("button", { name: "Deploy AllowanceModule" })
 			.first();
@@ -250,7 +252,7 @@ test(
 			.first();
 		await expect(enableModuleButton).toBeVisible({ timeout: 60_000 });
 		await enableModuleButton.click();
-		await expect(page.getByRole("heading", { name: /Modules \([1-9]\d*\)/ })).toBeVisible({
+		await expect(page.getByRole("button", { name: "Disable" }).first()).toBeVisible({
 			timeout: 60_000,
 		});
 		await takeArtifact(page, "t5-modules-active", "desktop");

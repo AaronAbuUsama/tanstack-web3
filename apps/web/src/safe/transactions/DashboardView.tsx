@@ -12,10 +12,7 @@ import {
 	commandCenterSidebarSections,
 	commandCenterStats,
 } from "../../design-system/fixtures/command-center";
-import AddressDisplay from "../../web3/AddressDisplay";
-import ChainBadge from "../../web3/ChainBadge";
 import { getDevWalletActiveSigner } from "../../web3/dev-wallet";
-import TokenBalances from "../../web3/TokenBalances";
 import {
 	SpendingLimitGuardABI,
 } from "../contracts/abis";
@@ -31,22 +28,12 @@ import {
 	signTransaction,
 } from "../core/standalone";
 import type { useSafe } from "../core/use-safe";
-import Owners from "../governance/Owners";
-import SafeOverview from "../governance/SafeOverview";
-import Threshold from "../governance/Threshold";
-import GuardPanel from "../guard/GuardPanel";
-import ModulePanel from "../module/ModulePanel";
 import { mapGuardScreen } from "../screens/mappers/guard";
 import { mapModulesScreen } from "../screens/mappers/modules";
 import { mapOwnersScreen } from "../screens/mappers/owners";
 import { mapTransactionsScreen } from "../screens/mappers/transactions";
 import { navItemForScreen } from "../screens/screen-layout";
 import type { SafeScreenId } from "../screens/types";
-import FundSafe from "./FundSafe";
-import TransactionFlow from "./TransactionFlow";
-import TxBuilder from "./TxBuilder";
-import TxHistory from "./TxHistory";
-import TxQueue from "./TxQueue";
 import { useTransactions } from "./use-transactions";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -163,7 +150,6 @@ export default function DashboardView({
 		executedTxs,
 		txError,
 		txBusy,
-		txSourceMode,
 		txModeLabel,
 		txModeHelpText,
 		handleBuild,
@@ -595,239 +581,27 @@ export default function DashboardView({
 	}
 
 	return (
-		<>
-			<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
-				<CommandCenterOverview
-					activity={activity}
-					address={address}
-					chainLabel={chain?.name ?? "gnosis chain"}
-					embedded
-					guardActive={guardActive}
-					guardDescription={
-						guardActive
-							? "Daily spending limit checks are currently enforced."
-							: "No guard contract is configured for this Safe."
-					}
-					guardTitle={guardActive ? "Guard active" : "Guard inactive"}
-					navSections={navSections}
-					pendingPreview={pendingPreview}
-					safeAddress={safe.safeAddress ?? "0x..."}
-					safeBalanceLabel={safeBalanceEth}
-					stats={stats}
-					statusBalanceLabel={`${safeBalanceEth} ETH`}
-					thresholdLabel={thresholdLabel}
-				/>
-			</div>
-
-			{/* Safe info header */}
-			<div className="bg-gray-800 rounded-xl p-4 mb-6">
-				<div className="flex items-center justify-between flex-wrap gap-4 mb-3">
-					<div className="flex items-center gap-4">
-						{chain && (
-							<ChainBadge
-								chainName={chain.name}
-								chainId={chain.id}
-								isConnected
-							/>
-						)}
-						{safe.safeAddress && <AddressDisplay address={safe.safeAddress} />}
-					</div>
-					<button
-						onClick={safe.disconnectSafe}
-						type="button"
-						className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
-					>
-						Disconnect
-					</button>
-				</div>
-				{safe.safeAddress && (
-					<div className="border-t border-gray-700 pt-3">
-						<span className="text-xs text-gray-500 block mb-1">
-							Safe Address
-						</span>
-						<code className="text-sm text-cyan-300 font-mono break-all select-all">
-							{safe.safeAddress}
-						</code>
-					</div>
-				)}
-			</div>
-
-			{safe.error && (
-				<div className="bg-red-900/30 border border-red-700 rounded-xl p-4 text-red-300 text-sm mb-6">
-					{safe.error}
-				</div>
-			)}
-
-			<SafeOverview
-				owners={safe.owners}
-				threshold={safe.threshold}
-				guard={safe.guard}
-				rpcUrl={rpcUrl}
-				moduleCount={safe.modules.length}
+		<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
+			<CommandCenterOverview
+				activity={activity}
+				address={address}
+				chainLabel={chain?.name ?? "gnosis chain"}
+				embedded
+				guardActive={guardActive}
+				guardDescription={
+					guardActive
+						? "Daily spending limit checks are currently enforced."
+						: "No guard contract is configured for this Safe."
+				}
+				guardTitle={guardActive ? "Guard active" : "Guard inactive"}
+				navSections={navSections}
+				pendingPreview={pendingPreview}
+				safeAddress={safe.safeAddress ?? "0x..."}
+				safeBalanceLabel={safeBalanceEth}
+				stats={stats}
+				statusBalanceLabel={`${safeBalanceEth} ETH`}
+				thresholdLabel={thresholdLabel}
 			/>
-
-			{operationLoading && (
-				<div className="bg-cyan-900/30 border border-cyan-700 rounded-xl p-4 mb-6">
-					<p className="text-cyan-300 text-sm">Processing Safe operation...</p>
-				</div>
-			)}
-
-			{operationError && (
-				<div className="bg-red-900/30 border border-red-700 rounded-xl p-4 text-red-300 text-sm mb-6">
-					{operationError}
-				</div>
-			)}
-
-			{/* Info grid */}
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<Owners
-					owners={safe.owners}
-					currentAddress={address}
-					onAddOwner={handleAddOwner}
-					onRemoveOwner={handleRemoveOwner}
-				/>
-				<Threshold
-					threshold={safe.threshold}
-					ownerCount={safe.owners.length}
-					onChangeThreshold={handleChangeThreshold}
-				/>
-			</div>
-
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<div>
-					<TokenBalances
-						tokens={
-							safe.balance !== "0"
-								? [
-										{
-											name: "xDAI",
-											symbol: "xDAI",
-											balance: formatUnits(BigInt(safe.balance), 18),
-										},
-									]
-								: []
-						}
-						loading={false}
-					/>
-					{import.meta.env.DEV && (
-						<FundSafe
-							safeAddress={safe.safeAddress!}
-							rpcUrl={rpcUrl}
-							signer={resolveSigner()}
-							onFunded={async () => {
-								await safe.connectSafe(
-									safe.safeAddress!,
-									rpcUrl,
-									resolveSigner(),
-								);
-							}}
-						/>
-					)}
-				</div>
-				<GuardPanel
-					guard={safe.guard}
-					safeAddress={safe.safeAddress!}
-					safeInstance={safe.safeInstance!}
-					rpcUrl={rpcUrl}
-					signer={resolveSigner()}
-					onRefresh={async () => {
-						await safe.connectSafe(safe.safeAddress!, rpcUrl, resolveSigner());
-					}}
-				/>
-			</div>
-
-			<div className="mb-6">
-				<ModulePanel
-					modules={safe.modules}
-					safeAddress={safe.safeAddress!}
-					safeInstance={safe.safeInstance!}
-					rpcUrl={rpcUrl}
-					signer={resolveSigner()}
-					onRefresh={async () => {
-						await safe.connectSafe(safe.safeAddress!, rpcUrl, resolveSigner());
-					}}
-				/>
-			</div>
-
-			{/* Transaction Builder */}
-			<div className="space-y-6 mb-6">
-				<h2 className="text-xl font-semibold">Transactions</h2>
-
-				{txError && (
-					<div className="bg-red-900/50 border border-red-700 rounded-xl p-4">
-						<p className="text-red-300 text-sm">{txError}</p>
-					</div>
-				)}
-
-				{txBusy && (
-					<div className="bg-cyan-900/30 border border-cyan-700 rounded-xl p-4">
-						<p className="text-cyan-300 text-sm">Processing transaction...</p>
-					</div>
-				)}
-
-				<div
-					className={`rounded-xl p-4 border ${
-						txSourceMode === "transaction-service"
-							? "bg-cyan-900/20 border-cyan-700"
-							: "bg-amber-900/30 border-amber-700"
-					}`}
-				>
-					<p
-						className={`text-sm ${txSourceMode === "transaction-service" ? "text-cyan-300" : "text-amber-300"}`}
-					>
-						<strong>{txModeLabel}:</strong> {txModeHelpText}
-					</p>
-				</div>
-
-				{safe.threshold > 1 && (
-					<div className="bg-amber-900/20 border border-amber-700 rounded-xl p-4">
-						<p className="text-amber-300 text-sm">
-							<strong>Multi-sig mode:</strong> This Safe requires{" "}
-							{safe.threshold} of {safe.owners.length} confirmations.
-						</p>
-					</div>
-				)}
-
-				<TxBuilder onBuild={handleBuild} />
-
-				{/* Latest pending tx detail */}
-				{pendingTxs.length > 0 &&
-					(() => {
-						const latest = pendingTxs[0];
-						return (
-							<TransactionFlow
-								transaction={{
-									safeTxHash: latest.safeTxHash,
-									to: latest.to,
-									value: latest.value,
-									data: latest.data,
-									status: {
-										safeTxHash: latest.safeTxHash,
-										confirmations: latest.confirmations,
-										confirmedBy: latest.confirmedBy,
-										threshold: latest.threshold,
-										isReady: latest.isReady,
-										isExecuted: false,
-										source: latest.source,
-									},
-								}}
-								currentAddress={address}
-								onConfirm={handleConfirm}
-								onExecute={handleExecute}
-							/>
-						);
-					})()}
-
-				<TxQueue
-					transactions={pendingTxs}
-					threshold={safe.threshold}
-					modeLabel={txModeLabel}
-					modeHelpText={txModeHelpText}
-					onConfirm={handleConfirm}
-					onExecute={handleExecute}
-				/>
-				<TxHistory transactions={executedTxs} />
-			</div>
-		</>
+		</div>
 	);
 }
