@@ -582,7 +582,30 @@ Status:
   - Notes: Added a deterministic single-owner guard activation matrix case for active guard validation and kept 2-of-3 baseline for inactive guard state. Full `e2e:safe-screen-matrix` (3 tests) and `e2e:safe-smoke` both pass.
 
 ### Task 5 Evidence
-- Pending.
+- Fail-first:
+  - Command: `cd apps/web && bun run vitest run src/safe/screens/mappers/modules.test.ts src/safe/module/ModulePanel.test.tsx`
+  - Result: FAIL
+  - Reason: Modules mapper and module panel tests did not exist (`No test files found`).
+- Automated:
+  - Command(s):
+    - `cd apps/web && bun run vitest run src/safe/screens/mappers/modules.test.ts src/safe/module/ModulePanel.test.tsx`
+    - `cd apps/web && bun run test`
+  - Result: PASS (modules-focused tests + full `apps/web` suite).
+- Browser:
+  - Command(s):
+    - `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "modules.*empty"`
+    - `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "modules.*active"`
+    - `cd apps/web && bun run e2e:safe-smoke`
+  - Result: PASS
+  - Screenshots:
+    - `apps/web/e2e/artifacts/prd4/t5-modules-empty-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t5-modules-active-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t5-modules-mobile.png`
+- Artifact assertion:
+  - Command: `ls -la apps/web/e2e/artifacts/prd4 | rg 't5-modules-(empty|active|mobile).*\.png'`
+  - Result: PASS
+- Regression sweep:
+  - Notes: Added deterministic single-owner module activation inside matrix for active module evidence, while preserving 2-of-3 baseline empty-module coverage. Full `e2e:safe-screen-matrix` (3 tests) and `e2e:safe-smoke` pass.
 
 ### Task 6 Evidence
 - Pending.

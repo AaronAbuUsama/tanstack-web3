@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { formatEther, formatUnits, parseEther } from "viem";
 import {
 	CommandCenterGuard,
+	CommandCenterModules,
 	CommandCenterOverview,
 	CommandCenterOwners,
 	CommandCenterTransactions,
@@ -19,6 +20,7 @@ import {
 	SpendingLimitGuardABI,
 } from "../contracts/abis";
 import {
+	deployAllowanceModule,
 	deploySpendingLimitGuard,
 } from "../contracts/deploy";
 import {
@@ -35,6 +37,7 @@ import Threshold from "../governance/Threshold";
 import GuardPanel from "../guard/GuardPanel";
 import ModulePanel from "../module/ModulePanel";
 import { mapGuardScreen } from "../screens/mappers/guard";
+import { mapModulesScreen } from "../screens/mappers/modules";
 import { mapOwnersScreen } from "../screens/mappers/owners";
 import { mapTransactionsScreen } from "../screens/mappers/transactions";
 import { navItemForScreen } from "../screens/screen-layout";
@@ -64,6 +67,14 @@ function formatEthMaybeWei(value?: string) {
 	}
 }
 
+function getAllowanceModuleKey(safeAddress: string) {
+	return `safe-allowance-module-${safeAddress}`;
+}
+
+function addressEq(addressA: string, addressB: string) {
+	return addressA.toLowerCase() === addressB.toLowerCase();
+}
+
 interface DashboardViewProps {
 	activeScreen: SafeScreenId;
 	address: string | undefined;
@@ -88,6 +99,11 @@ export default function DashboardView({
 		null,
 	);
 	const [currentGuardLimit, setCurrentGuardLimit] = useState<string | null>(null);
+	const [moduleLoading, setModuleLoading] = useState(false);
+	const [moduleError, setModuleError] = useState<string | null>(null);
+	const [deployedModuleAddress, setDeployedModuleAddress] = useState<
+		string | null
+	>(null);
 	const resolveSigner = () => getDevWalletActiveSigner();
 
 	useEffect(() => {
@@ -126,6 +142,21 @@ export default function DashboardView({
 			setDeployedGuardAddress(null);
 		}
 	}, [safe.guard]);
+
+	useEffect(() => {
+		if (!safe.safeAddress) {
+			setDeployedModuleAddress(null);
+			return;
+		}
+		try {
+			const persistedAddress = localStorage.getItem(
+				getAllowanceModuleKey(safe.safeAddress),
+			);
+			setDeployedModuleAddress(persistedAddress);
+		} catch {
+			setDeployedModuleAddress(null);
+		}
+	}, [safe.safeAddress]);
 
 	const {
 		pendingTxs,
@@ -264,6 +295,61 @@ export default function DashboardView({
 		}
 	};
 
+	const handleDeployModule = async () => {
+		if (!safe.safeAddress) return;
+		setModuleLoading(true);
+		setModuleError(null);
+		try {
+			const result = await deployAllowanceModule(
+				{ provider: rpcUrl, signer: resolveSigner() },
+				safe.safeAddress,
+			);
+			setDeployedModuleAddress(result.address);
+			try {
+				localStorage.setItem(getAllowanceModuleKey(safe.safeAddress), result.address);
+			} catch {
+				// ignore localStorage errors in private browsing contexts
+			}
+		} catch (err) {
+			setModuleError(err instanceof Error ? err.message : "Failed to deploy module");
+		} finally {
+			setModuleLoading(false);
+		}
+	};
+
+	const handleEnableModule = async () => {
+		if (!safe.safeInstance || !deployedModuleAddress) return;
+		setModuleLoading(true);
+		setModuleError(null);
+		try {
+			const tx = await safe.safeInstance.createEnableModuleTx(deployedModuleAddress);
+			const signed = await signTransaction(safe.safeInstance, tx);
+			await executeTransaction(safe.safeInstance, signed);
+			await refreshSafeState();
+		} catch (err) {
+			setModuleError(err instanceof Error ? err.message : "Failed to enable module");
+		} finally {
+			setModuleLoading(false);
+		}
+	};
+
+	const handleDisableModule = async () => {
+		if (!safe.safeInstance || safe.modules.length === 0) return;
+		setModuleLoading(true);
+		setModuleError(null);
+		try {
+			const targetModule = safe.modules[0];
+			const tx = await safe.safeInstance.createDisableModuleTx(targetModule);
+			const signed = await signTransaction(safe.safeInstance, tx);
+			await executeTransaction(safe.safeInstance, signed);
+			await refreshSafeState();
+		} catch (err) {
+			setModuleError(err instanceof Error ? err.message : "Failed to disable module");
+		} finally {
+			setModuleLoading(false);
+		}
+	};
+
 	const safeBalanceEth = formatEthMaybeWei(safe.balance);
 	const thresholdLabel = `${safe.threshold} of ${safe.owners.length}`;
 	const guardActive = Boolean(safe.guard && safe.guard !== ZERO_ADDRESS);
@@ -365,6 +451,16 @@ export default function DashboardView({
 		spendingLimitEth: guardSpendingLimit,
 		deployedGuardAddress,
 	});
+	const moduleIsEnabled = deployedModuleAddress
+		? safe.modules.some((moduleAddress) =>
+				addressEq(moduleAddress, deployedModuleAddress),
+			)
+		: false;
+	const moduleScreen = mapModulesScreen({
+		modules: safe.modules,
+		deployedModuleAddress:
+			deployedModuleAddress && !moduleIsEnabled ? deployedModuleAddress : null,
+	});
 
 	const ownersScreen = mapOwnersScreen({
 		owners: safe.owners,
@@ -401,6 +497,42 @@ export default function DashboardView({
 					safeBalanceLabel={safeBalanceEth}
 					spendingLimitValue={guardSpendingLimit}
 					statusBalanceLabel={`${safeBalanceEth} ETH`}
+					thresholdLabel={thresholdLabel}
+				/>
+			</div>
+		);
+	}
+
+	if (activeScreen === "modules") {
+		return (
+			<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
+				<CommandCenterModules
+					address={address}
+					chainLabel={chain?.name ?? "gnosis chain"}
+					delegates={moduleScreen.delegates}
+					embedded
+					errorMessage={moduleError}
+					isBusy={moduleLoading}
+					mode={moduleScreen.mode}
+					moduleAddress={moduleScreen.moduleAddress}
+					moduleName={moduleScreen.moduleName}
+					navSections={navSections}
+					onPrimaryAction={() => {
+						if (moduleScreen.mode === "active") {
+							void handleDisableModule();
+							return;
+						}
+						if (moduleScreen.mode === "deploy-ready") {
+							void handleEnableModule();
+							return;
+						}
+						void handleDeployModule();
+					}}
+					primaryActionLabel={moduleScreen.primaryActionLabel}
+					safeAddress={safe.safeAddress ?? "0x..."}
+					safeBalanceLabel={safeBalanceEth}
+					statusBalanceLabel={`${safeBalanceEth} ETH`}
+					statusDescription={moduleScreen.statusDescription}
 					thresholdLabel={thresholdLabel}
 				/>
 			</div>

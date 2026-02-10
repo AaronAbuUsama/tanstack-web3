@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import { Button, Input } from "../../primitives";
 import { PanelShell } from "../../shells";
 import {
@@ -22,24 +22,52 @@ export interface CommandCenterModulesProps
 		"children" | "title" | "titleIcon"
 	> {
 	delegates: ModuleDelegate[];
+	errorMessage?: string | null;
+	isBusy?: boolean;
+	mode?: "active" | "inactive" | "deploy-ready";
 	moduleAddress: string;
 	moduleName: string;
+	onPrimaryAction?: () => void | Promise<void>;
+	primaryActionLabel?: string;
+	statusDescription?: string;
 }
 
 export function CommandCenterModules({
 	address,
 	chainLabel,
 	delegates,
+	errorMessage,
 	embedded,
+	isBusy = false,
+	mode = "active",
 	moduleAddress,
 	moduleName,
 	navSections,
+	onPrimaryAction,
+	primaryActionLabel,
 	safeAddress,
 	safeBalanceLabel,
+	statusDescription,
 	statusBalanceLabel,
 	thresholdLabel,
 }: CommandCenterModulesProps) {
+	const [delegateAddress, setDelegateAddress] = useState("");
+	const [allowanceEth, setAllowanceEth] = useState("0.2");
+	const [executeTo, setExecuteTo] = useState("");
+	const [executeAmount, setExecuteAmount] = useState("0.05");
 	const allowanceResetId = useId();
+	const active = mode === "active";
+	const resolvedPrimaryActionLabel =
+		primaryActionLabel ??
+		(active ? "Disable" : mode === "deploy-ready" ? "Enable Module" : "Deploy AllowanceModule");
+	const resolvedStatusDescription =
+		statusDescription ??
+		(active
+			? `Active • ${moduleAddress} • delegates can spend without multi-sig approval up to allowance limits.`
+			: mode === "deploy-ready"
+				? `Deployed • ${moduleAddress} • enable this module to allow delegated spending.`
+				: "No module enabled • deploy AllowanceModule to configure delegated spending rules.");
+	const primaryVariant = active ? "danger" : "primary";
 
 	return (
 		<CommandCenterScreenShell
@@ -60,16 +88,33 @@ export function CommandCenterModules({
 				</span>
 				<div className="ds-command-modules__status-copy">
 					<h3>{moduleName}</h3>
-					<p>
-						Active • {moduleAddress} • delegates can spend without multi-sig
-						approval up to allowance limits.
-					</p>
+					<p>{resolvedStatusDescription}</p>
 				</div>
 				<div className="ds-command-modules__status-actions">
-					<Button variant="outline">Add Delegate</Button>
-					<Button variant="danger">Disable</Button>
+					<Button disabled={!active || isBusy} variant="outline">
+						Add Delegate
+					</Button>
+					<Button
+						disabled={isBusy || !onPrimaryAction}
+						onClick={() => {
+							if (!onPrimaryAction) return;
+							void onPrimaryAction();
+						}}
+						variant={primaryVariant}
+					>
+						{resolvedPrimaryActionLabel}
+					</Button>
 				</div>
 			</section>
+
+			{errorMessage ? (
+				<div className="ds-command-notice is-error">{errorMessage}</div>
+			) : null}
+			{isBusy ? (
+				<div className="ds-command-notice is-info">
+					Processing module operation...
+				</div>
+			) : null}
 
 			<div className="ds-command-modules__grid">
 				{delegates.map((delegate) => (
@@ -116,7 +161,11 @@ export function CommandCenterModules({
 					</article>
 				))}
 
-				<button className="ds-command-modules__add-delegate" type="button">
+				<button
+					className="ds-command-modules__add-delegate"
+					disabled={!active || isBusy}
+					type="button"
+				>
 					<span aria-hidden className="ds-command-modules__plus">
 						+
 					</span>
@@ -126,8 +175,18 @@ export function CommandCenterModules({
 
 			<PanelShell title="Set Allowance">
 				<div className="ds-command-form-grid">
-					<Input label="Delegate Address" placeholder="0x..." />
-					<Input label="Allowance (ETH)" placeholder="0.2" />
+					<Input
+						label="Delegate Address"
+						onChange={(event) => setDelegateAddress(event.target.value)}
+						placeholder="0x..."
+						value={delegateAddress}
+					/>
+					<Input
+						label="Allowance (ETH)"
+						onChange={(event) => setAllowanceEth(event.target.value)}
+						placeholder="0.2"
+						value={allowanceEth}
+					/>
 					<div className="ds-primitive-field">
 						<label className="ds-primitive-label" htmlFor={allowanceResetId}>
 							Reset Period
@@ -140,7 +199,9 @@ export function CommandCenterModules({
 						</select>
 					</div>
 					<div className="ds-command-form-grid__full ds-command-form-grid__actions">
-						<Button>Set Allowance</Button>
+						<Button disabled={!active || isBusy || !delegateAddress}>
+							Set Allowance
+						</Button>
 					</div>
 				</div>
 			</PanelShell>
@@ -148,14 +209,29 @@ export function CommandCenterModules({
 			<PanelShell tagLabel="delegate view" title="Execute as Delegate">
 				<div className="ds-command-form-grid">
 					<div className="ds-command-form-grid__full">
-						<Input label="Send To" placeholder="0x..." />
+						<Input
+							label="Send To"
+							onChange={(event) => setExecuteTo(event.target.value)}
+							placeholder="0x..."
+							value={executeTo}
+						/>
 					</div>
-					<Input label="Amount (ETH)" placeholder="0.05" />
+					<Input
+						label="Amount (ETH)"
+						onChange={(event) => setExecuteAmount(event.target.value)}
+						placeholder="0.05"
+						value={executeAmount}
+					/>
 					<div className="ds-command-form-grid__full ds-command-form-grid__actions is-spread">
 						<span className="ds-command-copy is-muted">
 							Available: 0.08 ETH remaining
 						</span>
-						<Button variant="success">Execute Spend</Button>
+						<Button
+							disabled={!active || isBusy || !executeTo || !executeAmount}
+							variant="success"
+						>
+							Execute Spend
+						</Button>
 					</div>
 				</div>
 			</PanelShell>

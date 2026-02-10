@@ -211,24 +211,11 @@ test(
 	await takeArtifact(page, "t5-modules-empty", "desktop");
 	await takeArtifact(page, "t5-modules", "mobile");
 
-	const deployModuleButton = page.getByRole("button", { name: "Deploy AllowanceModule" });
-	if (await deployModuleButton.count()) {
-		await page.setViewportSize(desktopViewport);
-		await deployModuleButton.first().click();
-		const enableModuleButton = page.getByRole("button", { name: "Enable Module" });
-		if (await enableModuleButton.count()) {
-			await enableModuleButton.first().click();
-			await expect(page.getByRole("heading", { name: /Modules \([1-9]\d*\)/ })).toBeVisible({
-				timeout: 60_000,
-			});
-			await takeArtifact(page, "t5-modules-active", "desktop");
-		}
-	}
 	},
 );
 
 test(
-	"safe screen matrix [guard active]: single-owner safe guard activation",
+	"safe screen matrix [guard active modules active]: single-owner safe guard activation",
 	async ({ page }) => {
 		await page.addInitScript(() => window.localStorage.clear());
 		await connectDevWallet(page, 0);
@@ -250,5 +237,22 @@ test(
 			page.getByRole("heading", { name: /Transaction Guard \(1\)/ }),
 		).toBeVisible({ timeout: 60_000 });
 		await takeArtifact(page, "t4-guard-active", "desktop");
+
+		await page.getByRole("heading", { name: /Modules \(0\)/ }).scrollIntoViewIfNeeded();
+		const deployModuleButton = page
+			.getByRole("button", { name: "Deploy AllowanceModule" })
+			.first();
+		await expect(deployModuleButton).toBeVisible();
+		await deployModuleButton.click();
+
+		const enableModuleButton = page
+			.getByRole("button", { name: "Enable Module" })
+			.first();
+		await expect(enableModuleButton).toBeVisible({ timeout: 60_000 });
+		await enableModuleButton.click();
+		await expect(page.getByRole("heading", { name: /Modules \([1-9]\d*\)/ })).toBeVisible({
+			timeout: 60_000,
+		});
+		await takeArtifact(page, "t5-modules-active", "desktop");
 	},
 );
