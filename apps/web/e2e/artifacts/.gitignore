@@ -1,3 +1,4 @@
-# Keep this folder but ignore all generated screenshots/videos/test output.
+# Keep this folder but ignore all generated screenshots/videos/test output
+# (including PRD2 and PRD3 artifact captures).
 *
 !.gitignore

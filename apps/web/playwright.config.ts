@@ -1,8 +1,13 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const isCI = Boolean(process.env.CI)
-const webPort = Number(process.env.E2E_WEB_PORT ?? 4173)
+const e2eTarget = process.env.E2E_TARGET ?? 'app'
+const isStorybookTarget = e2eTarget === 'storybook'
+const webPort = Number(process.env.E2E_WEB_PORT ?? (isStorybookTarget ? 6006 : 4173))
 const webUrl = `http://localhost:${webPort}`
+const webCommand = isStorybookTarget
+  ? `bun run storybook -- --port ${webPort} --ci --no-open`
+  : `bun run dev -- --port ${webPort} --strictPort`
 
 export default defineConfig({
   testDir: './e2e',
@@ -33,7 +38,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: `bun run dev -- --port ${webPort} --strictPort`,
+      command: webCommand,
       url: webUrl,
       reuseExistingServer: !isCI,
       stdout: 'pipe',
