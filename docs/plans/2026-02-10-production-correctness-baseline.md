@@ -12,6 +12,25 @@
 
 **Relevant skills:** @writing-plans, @subagent-driven-development
 
+## Validation Contract (Mandatory For Every Task)
+
+No task is complete without validation evidence in all three categories below.
+
+1. **Automated validation**
+- Run the task-focused tests first.
+- Run impacted package checks (at minimum `apps/web` test suite).
+
+2. **Real browser validation (non-unit)**
+- Run local app and exercise the changed behavior in a browser.
+- Use `@agent-browser` (or Playwright MCP equivalent) for deterministic click-path validation.
+- Capture at least one screenshot per changed user flow.
+
+3. **Regression sweep**
+- Confirm unrelated core flows still work: wallet connect, Safe setup visibility, tx builder rendering.
+- Record pass/fail notes in a validation log section within this plan before final merge.
+
+Hard rule: unit tests alone are insufficient for sign-off.
+
 ## Runtime Policy Structure (Locked)
 
 **Code location:**
@@ -240,10 +259,20 @@ Run:
 
 Expected: PASS.
 
-**Step 4: Commit**
+**Step 4: Run real browser validation**
+
+Run local stack and validate with browser automation:
+- Start blockchain + web app.
+- Open `/safe`.
+- Connect with Dev Wallet.
+- Deploy/create Safe and verify dashboard transition.
+- Build + confirm transaction and verify confirmation UI is truthful (no premature `Ready`).
+
+Record screenshots and notes in `docs/plans/2026-02-10-production-correctness-baseline.md` under `Validation Evidence`.
+
+**Step 5: Commit**
 
 ```bash
 git add docs/development.md docs/safe-app.md TUTORIAL.md
 git commit -m "docs: align runtime policy documentation and remove stale references"
 ```
-

@@ -12,6 +12,25 @@
 
 **Relevant skills:** @writing-plans, @agent-browser
 
+## Validation Contract (Mandatory For Every Task)
+
+Every UI task must include proof from both automated and visual validation.
+
+1. **Automated validation**
+- Storybook smoke/build checks for changed stories.
+- Relevant unit/component tests.
+
+2. **Visual browser validation (non-unit)**
+- Open Storybook in browser and inspect each changed story at desktop + mobile viewport.
+- Compare against mockup reference files.
+- Capture screenshots for each changed component/pattern/composition.
+
+3. **Regression validation**
+- Confirm the integrated route still works after component swap.
+- Verify interactive states (`hover`, `focus`, `disabled`, `loading`) manually.
+
+Hard rule: passing tests are not enough; visual acceptance evidence is required.
+
 ### Task 1: Install and Bootstrap Storybook
 
 **Files:**
@@ -246,6 +265,8 @@ Expected: PASS.
 **Step 2: Document residual gaps**
 
 Write open items in a short section at bottom of this plan file.
+
+Also include `Validation Evidence` with screenshot paths and pass/fail notes for each milestone gate (A-E).
 
 **Step 3: Commit final polish (if needed)**
 

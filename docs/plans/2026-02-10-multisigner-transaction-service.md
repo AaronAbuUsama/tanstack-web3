@@ -12,6 +12,25 @@
 
 **Relevant skills:** @writing-plans, @subagent-driven-development
 
+## Validation Contract (Mandatory For Every Task)
+
+No task is complete without both automated and real browser validation.
+
+1. **Automated checks**
+- Focused tests for each changed module.
+- Full `apps/web` test run before task sign-off.
+
+2. **Real multi-session browser checks (non-unit)**
+- Validate with two browser sessions/users for signer A and signer B.
+- Confirm cross-session visibility of pending tx, confirmation updates, and execute gating.
+- Use `@agent-browser`/Playwright and capture screenshots from both sessions.
+
+3. **Fallback mode checks**
+- Validate local-only path behavior on unsupported tx-service chains.
+- Confirm UI labels clearly indicate fallback mode.
+
+Hard rule: no task closed without evidence for the user-visible flow it changes.
+
 ### Task 1: Add API Kit Adapter Layer
 
 **Files:**
@@ -215,10 +234,14 @@ Expected: PASS.
 - Owner B sees same pending tx in separate session and confirms.
 - Execute after threshold is met.
 
+Capture screenshots from both sessions and attach notes to this plan under `Validation Evidence`.
+
 **Step 3: Manual sanity flow (local fallback)**
 
 - Verify explicit local-only label appears.
 - Build/confirm/execute still works single-session.
+
+Capture fallback screenshots and note expected/actual behavior.
 
 **Step 4: Commit any final fixes**
 
@@ -226,4 +249,3 @@ Expected: PASS.
 git add <touched files>
 git commit -m "chore: stabilize multi-signer transaction service flow"
 ```
-
