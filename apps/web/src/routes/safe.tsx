@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { useAccount, useChainId } from 'wagmi'
 import ConnectWallet from '../web3/ConnectWallet'
-import { DEV_WALLET_PRIVATE_KEY } from '../web3/dev-wallet'
+import { getDevWalletActiveSigner } from '../web3/dev-wallet'
 import { useSafe } from '../safe/core/use-safe'
 import SetupView from '../safe/governance/SetupView'
 import DashboardView from '../safe/transactions/DashboardView'
@@ -63,10 +63,13 @@ function SafeDashboard() {
 
     // Chain changed — try reconnecting Safe on new chain
     const newRpc = getRpcUrl(chainId)
-    safe.connectSafe(safe.safeAddress, newRpc, DEV_WALLET_PRIVATE_KEY).catch(() => {
+    const signer = runtimePolicy.signerProvider === 'dev-mnemonic-account'
+      ? getDevWalletActiveSigner()
+      : undefined
+    safe.connectSafe(safe.safeAddress, newRpc, signer).catch(() => {
       safe.disconnectSafe()
     })
-  }, [chainId, safe.isInSafe, safe.safeAddress])
+  }, [chainId, runtimePolicy.signerProvider, safe.isInSafe, safe.safeAddress])
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">

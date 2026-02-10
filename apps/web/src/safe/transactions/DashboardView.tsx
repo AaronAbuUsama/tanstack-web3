@@ -10,7 +10,7 @@ import ModulePanel from '../module/ModulePanel'
 import AddressDisplay from '../../web3/AddressDisplay'
 import ChainBadge from '../../web3/ChainBadge'
 import TokenBalances from '../../web3/TokenBalances'
-import { DEV_WALLET_PRIVATE_KEY } from '../../web3/dev-wallet'
+import { getDevWalletActiveSigner } from '../../web3/dev-wallet'
 import TxBuilder from './TxBuilder'
 import TxQueue from './TxQueue'
 import TxHistory from './TxHistory'
@@ -28,6 +28,7 @@ interface DashboardViewProps {
 export default function DashboardView({ address, chain, safe, rpcUrl }: DashboardViewProps) {
   const [operationLoading, setOperationLoading] = useState(false)
   const [operationError, setOperationError] = useState<string | null>(null)
+  const resolveSigner = () => getDevWalletActiveSigner()
 
   const { transactions, pendingTxs, executedTxs, txError, txBusy, handleBuild, handleConfirm, handleExecute } = useTransactions({
     safeAddress: safe.safeAddress,
@@ -44,7 +45,7 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
       const tx = await createAddOwnerTx(safe.safeInstance, ownerAddress)
       const signed = await signTransaction(safe.safeInstance, tx)
       await executeTransaction(safe.safeInstance, signed)
-      await safe.connectSafe(safe.safeAddress, rpcUrl, DEV_WALLET_PRIVATE_KEY)
+      await safe.connectSafe(safe.safeAddress, rpcUrl, resolveSigner())
     } catch (err) {
       setOperationError(err instanceof Error ? err.message : 'Failed to add owner')
     } finally {
@@ -61,7 +62,7 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
       const tx = await createRemoveOwnerTx(safe.safeInstance, ownerAddress, newThreshold)
       const signed = await signTransaction(safe.safeInstance, tx)
       await executeTransaction(safe.safeInstance, signed)
-      await safe.connectSafe(safe.safeAddress, rpcUrl, DEV_WALLET_PRIVATE_KEY)
+      await safe.connectSafe(safe.safeAddress, rpcUrl, resolveSigner())
     } catch (err) {
       setOperationError(err instanceof Error ? err.message : 'Failed to remove owner')
     } finally {
@@ -77,7 +78,7 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
       const tx = await createChangeThresholdTx(safe.safeInstance, newThreshold)
       const signed = await signTransaction(safe.safeInstance, tx)
       await executeTransaction(safe.safeInstance, signed)
-      await safe.connectSafe(safe.safeAddress, rpcUrl, DEV_WALLET_PRIVATE_KEY)
+      await safe.connectSafe(safe.safeAddress, rpcUrl, resolveSigner())
     } catch (err) {
       setOperationError(err instanceof Error ? err.message : 'Failed to change threshold')
     } finally {
@@ -167,8 +168,8 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
             <FundSafe
               safeAddress={safe.safeAddress!}
               rpcUrl={rpcUrl}
-              signer={DEV_WALLET_PRIVATE_KEY}
-              onFunded={async () => { await safe.connectSafe(safe.safeAddress!, rpcUrl, DEV_WALLET_PRIVATE_KEY) }}
+              signer={resolveSigner()}
+              onFunded={async () => { await safe.connectSafe(safe.safeAddress!, rpcUrl, resolveSigner()) }}
             />
           )}
         </div>
@@ -177,8 +178,8 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
           safeAddress={safe.safeAddress!}
           safeInstance={safe.safeInstance!}
           rpcUrl={rpcUrl}
-          signer={DEV_WALLET_PRIVATE_KEY}
-          onRefresh={async () => { await safe.connectSafe(safe.safeAddress!, rpcUrl, DEV_WALLET_PRIVATE_KEY) }}
+          signer={resolveSigner()}
+          onRefresh={async () => { await safe.connectSafe(safe.safeAddress!, rpcUrl, resolveSigner()) }}
         />
       </div>
 
@@ -188,8 +189,8 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
           safeAddress={safe.safeAddress!}
           safeInstance={safe.safeInstance!}
           rpcUrl={rpcUrl}
-          signer={DEV_WALLET_PRIVATE_KEY}
-          onRefresh={async () => { await safe.connectSafe(safe.safeAddress!, rpcUrl, DEV_WALLET_PRIVATE_KEY) }}
+          signer={resolveSigner()}
+          onRefresh={async () => { await safe.connectSafe(safe.safeAddress!, rpcUrl, resolveSigner()) }}
         />
       </div>
 

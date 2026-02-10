@@ -25,7 +25,7 @@ describe('resolveRuntimePolicy', () => {
       connectorId: 'dev-wallet',
     })
 
-    expect(policy.signerProvider).toBe('dev-private-key')
+    expect(policy.signerProvider).toBe('dev-mnemonic-account')
     expect(policy.txSubmissionPath).toBe('protocol-kit-direct')
     expect(policy.canSign).toBe(true)
     expect(policy.canSubmit).toBe(true)

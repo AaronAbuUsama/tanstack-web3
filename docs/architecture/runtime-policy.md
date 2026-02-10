@@ -11,7 +11,7 @@ This document defines the runtime decision model for Safe flows. It is the sourc
 
 - `SignerProvider`
 : Who provides signing capability.
-  - `dev-private-key`
+  - `dev-mnemonic-account`
   - `injected-eip1193`
   - `none`
 
@@ -39,13 +39,15 @@ This document defines the runtime decision model for Safe flows. It is the sourc
 |---|---|---|---|---|---|---|---|
 | `safe-app-iframe` | any | any | any | `none` | `safe-apps-sdk` | no | yes |
 | `standalone` | false | any | any | `none` | `none` | no | no |
-| `standalone` | true | `dev-wallet` | false | `dev-private-key` | `protocol-kit-direct` | yes | yes |
+| `standalone` | true | `dev-wallet` | false | `dev-mnemonic-account` | `protocol-kit-direct` | yes | yes |
 | `standalone` | true | non-dev | false | `injected-eip1193` | `protocol-kit-direct` | yes | yes |
 | `standalone` | true | any non-none signer | true | signer from connector | `transaction-service` | yes | yes |
 
 ## Rules
 
 - Runtime policy is derived in memory and should not be persisted.
+- In dev-wallet standalone mode, signer resolution uses `dev-mnemonic-account` (mnemonic + active account index).
+- Active dev account index is runtime-only state and resets on page reload.
 - In iframe context, Safe host/Safe Apps SDK path is authoritative.
 - If no signer provider is available in standalone context, app must remain read-only.
 - Any change to policy logic must update this document and `resolve-runtime-policy.test.ts` in the same commit.

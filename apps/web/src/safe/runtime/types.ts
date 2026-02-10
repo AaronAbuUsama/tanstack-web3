@@ -1,6 +1,6 @@
 export type AppContext = 'standalone' | 'safe-app-iframe'
 
-export type SignerProvider = 'dev-private-key' | 'injected-eip1193' | 'none'
+export type SignerProvider = 'dev-mnemonic-account' | 'injected-eip1193' | 'none'
 
 export type TxSubmissionPath =
   | 'safe-apps-sdk'

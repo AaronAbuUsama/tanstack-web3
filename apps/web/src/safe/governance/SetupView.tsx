@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DEV_WALLET_PRIVATE_KEY } from '../../web3/dev-wallet'
+import { getDevWalletActiveSigner } from '../../web3/dev-wallet'
 import type { useSafe } from '../core/use-safe'
 import type { RuntimePolicy } from '../runtime'
 
@@ -11,8 +11,8 @@ interface SetupViewProps {
 }
 
 function resolveSetupSigner(runtimePolicy: RuntimePolicy) {
-  if (runtimePolicy.signerProvider === 'dev-private-key') {
-    return DEV_WALLET_PRIVATE_KEY
+  if (runtimePolicy.signerProvider === 'dev-mnemonic-account') {
+    return getDevWalletActiveSigner()
   }
   return undefined
 }

@@ -1,12 +1,43 @@
+import { useState } from 'react'
 import { useAccount, useConnect, useDisconnect, useBalance, useSwitchChain } from 'wagmi'
 import { formatUnits } from 'viem'
+import {
+  getDevWalletActiveAccountIndex,
+  setDevWalletActiveAccountIndex,
+} from './dev-wallet'
+
+const DEV_ACCOUNT_OPTIONS = Array.from({ length: 10 }, (_, index) => index)
 
 export default function ConnectWallet() {
-  const { address, isConnected, chain } = useAccount()
-  const { connect, connectors } = useConnect()
-  const { disconnect } = useDisconnect()
+  const { address, isConnected, chain, connector } = useAccount()
+  const { connect, connectAsync, connectors } = useConnect()
+  const { disconnect, disconnectAsync } = useDisconnect()
   const { data: balance } = useBalance({ address })
   const { chains, switchChain } = useSwitchChain()
+  const [devAccountIndex, setDevAccountIndex] = useState(() => getDevWalletActiveAccountIndex())
+  const [switchingDevAccount, setSwitchingDevAccount] = useState(false)
+
+  const isDevWalletConnected = import.meta.env.DEV && connector?.id === 'dev-wallet'
+
+  const handleDevAccountSwitch = async (nextIndex: number) => {
+    if (!isDevWalletConnected || nextIndex === devAccountIndex || switchingDevAccount) return
+
+    const devConnector = connectors.find((item) => item.id === 'dev-wallet')
+    if (!devConnector) return
+
+    setSwitchingDevAccount(true)
+    try {
+      setDevWalletActiveAccountIndex(nextIndex)
+      setDevAccountIndex(nextIndex)
+      await disconnectAsync()
+      await connectAsync({
+        connector: devConnector,
+        chainId: chain?.id,
+      })
+    } finally {
+      setSwitchingDevAccount(false)
+    }
+  }
 
   if (!isConnected) {
     return (
@@ -30,6 +61,27 @@ export default function ConnectWallet() {
 
   return (
     <div className="flex items-center gap-3">
+      {isDevWalletConnected && (
+        <label className="flex items-center gap-2 text-sm text-gray-300">
+          <span className="text-gray-400">Dev Account</span>
+          <select
+            value={devAccountIndex}
+            onChange={(e) => {
+              const nextIndex = Number(e.target.value)
+              if (!Number.isInteger(nextIndex)) return
+              void handleDevAccountSwitch(nextIndex)
+            }}
+            disabled={switchingDevAccount}
+            className="bg-gray-700 text-white text-sm rounded-lg px-2 py-1.5 border border-gray-600 focus:border-cyan-500 focus:outline-none disabled:opacity-60"
+          >
+            {DEV_ACCOUNT_OPTIONS.map((accountIndex) => (
+              <option key={accountIndex} value={accountIndex}>
+                #{accountIndex}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <select
         value={chain?.id}
         onChange={(e) => switchChain({ chainId: Number(e.target.value) })}

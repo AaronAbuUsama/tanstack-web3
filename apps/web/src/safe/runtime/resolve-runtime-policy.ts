@@ -25,7 +25,7 @@ export function resolveRuntimePolicy(input: RuntimePolicyInput): RuntimePolicy {
 
   let signerProvider: SignerProvider = 'none'
   if (isConnected) {
-    signerProvider = connectorId === 'dev-wallet' ? 'dev-private-key' : 'injected-eip1193'
+    signerProvider = connectorId === 'dev-wallet' ? 'dev-mnemonic-account' : 'injected-eip1193'
   }
 
   if (signerProvider === 'none') {
