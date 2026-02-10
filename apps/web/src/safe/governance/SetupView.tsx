@@ -1,7 +1,6 @@
 import { useState } from 'react'
+import { DEV_WALLET_PRIVATE_KEY } from '../../web3/dev-wallet'
 import type { useSafe } from '../core/use-safe'
-
-const DEV_SIGNER = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
 
 interface SetupViewProps {
   address: string | undefined
@@ -24,7 +23,7 @@ export default function SetupView({ address, safe, rpcUrl }: SetupViewProps) {
         owners,
         threshold,
         provider: rpcUrl,
-        signer: DEV_SIGNER,
+        signer: DEV_WALLET_PRIVATE_KEY,
       })
     } finally {
       setDeploying(false)
@@ -35,7 +34,7 @@ export default function SetupView({ address, safe, rpcUrl }: SetupViewProps) {
     if (!connectAddress) return
     setConnecting(true)
     try {
-      await safe.connectSafe(connectAddress, rpcUrl)
+      await safe.connectSafe(connectAddress, rpcUrl, DEV_WALLET_PRIVATE_KEY)
     } finally {
       setConnecting(false)
     }

@@ -5,9 +5,9 @@ import {
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
-const HARDHAT_PRIVATE_KEY =
+export const DEV_WALLET_PRIVATE_KEY =
   '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80' as const
-const account = privateKeyToAccount(HARDHAT_PRIVATE_KEY)
+const account = privateKeyToAccount(DEV_WALLET_PRIVATE_KEY)
 
 export function devWallet() {
   return createConnector(((config: Parameters<Parameters<typeof createConnector>[0]>[0]) => {

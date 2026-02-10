@@ -2,13 +2,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { useAccount, useChainId } from 'wagmi'
 import ConnectWallet from '../web3/ConnectWallet'
+import { DEV_WALLET_PRIVATE_KEY } from '../web3/dev-wallet'
 import { useSafe } from '../safe/core/use-safe'
 import SetupView from '../safe/governance/SetupView'
 import DashboardView from '../safe/transactions/DashboardView'
-
-/** Dev wallet private key — same key used by the dev-wallet connector (Anvil account #0). */
-const DEV_SIGNER =
-  '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
 
 /**
  * Map a wallet chainId to the correct RPC URL for Protocol Kit.
@@ -60,7 +57,7 @@ function SafeDashboard() {
 
     // Chain changed — try reconnecting Safe on new chain
     const newRpc = getRpcUrl(chainId)
-    safe.connectSafe(safe.safeAddress, newRpc, DEV_SIGNER).catch(() => {
+    safe.connectSafe(safe.safeAddress, newRpc, DEV_WALLET_PRIVATE_KEY).catch(() => {
       safe.disconnectSafe()
     })
   }, [chainId, safe.isInSafe, safe.safeAddress])
