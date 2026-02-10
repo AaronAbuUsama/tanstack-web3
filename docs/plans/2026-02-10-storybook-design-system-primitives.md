@@ -21,15 +21,64 @@ Every UI task must include proof from both automated and visual validation.
 - Relevant unit/component tests.
 
 2. **Visual browser validation (non-unit)**
-- Open Storybook in browser and inspect each changed story at desktop + mobile viewport.
-- Compare against mockup reference files.
-- Capture screenshots for each changed component/pattern/composition.
+- Run scripted visual validation first (`cd apps/web && bun run e2e:storybook-visual`).
+- Validate changed stories at desktop + mobile viewport.
+- Compare against mockup reference files where applicable.
+- Capture screenshots for each changed component/pattern/composition under `apps/web/e2e/artifacts/prd3/`.
 
 3. **Regression validation**
 - Confirm the integrated route still works after component swap.
 - Verify interactive states (`hover`, `focus`, `disabled`, `loading`) manually.
 
 Hard rule: passing tests are not enough; visual acceptance evidence is required.
+
+## Artifact Policy (Locked)
+
+- Store PRD3 screenshots under `apps/web/e2e/artifacts/prd3/`.
+- Keep generated runtime artifacts out of git using `apps/web/e2e/artifacts/.gitignore`.
+- For every validation run, record command + pass/fail + screenshot list in `Validation Evidence` at the bottom of this plan.
+- If a validation command fails, do not proceed; fix and rerun until green (or explicitly document a blocker).
+
+### Task 0: Add Scripted Storybook Visual Validation Harness
+
+**Files:**
+- Modify: `apps/web/package.json`
+- Modify: `apps/web/playwright.config.ts`
+- Create: `apps/web/e2e/storybook-visual.spec.ts`
+- Modify: `apps/web/e2e/README.md`
+- Modify: `apps/web/e2e/artifacts/.gitignore`
+
+**Step 1: Add deterministic visual test command**
+
+Add `e2e:storybook-visual` that:
+- starts Storybook on a fixed local port.
+- runs Playwright visual assertions for selected stories.
+- writes screenshots to `apps/web/e2e/artifacts/prd3/`.
+
+**Step 2: Implement viewport matrix assertions**
+
+Script must validate at minimum:
+- desktop viewport
+- mobile viewport
+
+for changed story groups (foundations, primitives, patterns, domain components, compositions).
+
+**Step 3: Run focused visual script**
+
+Run: `cd apps/web && bun run e2e:storybook-visual`
+Expected: FAIL first, then PASS after implementation.
+
+**Step 4: Verify artifact output**
+
+Run: `ls -la apps/web/e2e/artifacts/prd3`
+Expected: screenshot files present for desktop and mobile story checks.
+
+**Step 5: Commit**
+
+```bash
+git add apps/web/package.json apps/web/playwright.config.ts apps/web/e2e/storybook-visual.spec.ts apps/web/e2e/README.md apps/web/e2e/artifacts/.gitignore
+git commit -m "test(e2e): add scripted storybook visual validation harness"
+```
 
 ### Task 1: Install and Bootstrap Storybook
 
@@ -55,7 +104,12 @@ Ensure Vite + Tailwind integration works for stories.
 Run: `cd apps/web && bun run storybook --ci --smoke-test`
 Expected: exits successfully.
 
-**Step 4: Commit**
+**Step 4: Run scripted visual gate**
+
+Run: `cd apps/web && bun run e2e:storybook-visual`
+Expected: PASS with screenshot artifacts for bootstrap stories.
+
+**Step 5: Commit**
 
 ```bash
 git add apps/web/package.json apps/web/.storybook
@@ -93,6 +147,7 @@ Create story showing swatches, spacing ladder, typography scale.
 Run:
 - `cd apps/web && bun run storybook --ci --smoke-test`
 - `cd apps/web && bun run test`
+- `cd apps/web && bun run e2e:storybook-visual -- --grep "Tokens"`
 Expected: PASS.
 
 **Step 5: Commit**
@@ -137,6 +192,7 @@ For each primitive include default/hover/focus/disabled/error/loading where rele
 Run:
 - `cd apps/web && bun run vitest run src/design-system/primitives/primitives.test.tsx`
 - `cd apps/web && bun run storybook --ci --smoke-test`
+- `cd apps/web && bun run e2e:storybook-visual -- --grep "Primitive"`
 Expected: PASS.
 
 **Step 6: Commit**
@@ -172,6 +228,7 @@ Include viewport variants per pattern.
 Run:
 - `cd apps/web && bun run storybook --ci --smoke-test`
 - `bun run check`
+- `cd apps/web && bun run e2e:storybook-visual -- --grep "Pattern"`
 Expected: PASS.
 
 **Step 5: Commit**
@@ -205,6 +262,7 @@ Include:
 Run:
 - `cd apps/web && bun run storybook --ci --smoke-test`
 - `cd apps/web && bun run test`
+- `cd apps/web && bun run e2e:storybook-visual -- --grep "Domain"`
 Expected: PASS.
 
 **Step 4: Commit**
@@ -236,10 +294,11 @@ Include pass/fail checklist for spacing, typography, states, mobile.
 
 Swap UI rendering only; keep behavior unchanged.
 
-**Step 4: Validate manually with @agent-browser**
+**Step 4: Validate scripted + manual spot-check**
 
-- compare with `mockups/layout-1-command-center.html`.
-- take desktop + mobile screenshots.
+- Run: `cd apps/web && bun run e2e:storybook-visual -- --grep "Composition|CommandCenterOverview"`
+- Compare with `mockups/layout-1-command-center.html`.
+- If visual mismatch remains ambiguous, perform `@agent-browser` spot-check and capture supplemental screenshots.
 
 **Step 5: Commit**
 
@@ -259,6 +318,7 @@ Run:
 - `bun run check`
 - `bun run test`
 - `cd apps/web && bun run build-storybook`
+- `cd apps/web && bun run e2e:storybook-visual`
 
 Expected: PASS.
 
@@ -268,9 +328,48 @@ Write open items in a short section at bottom of this plan file.
 
 Also include `Validation Evidence` with screenshot paths and pass/fail notes for each milestone gate (A-E).
 
+If `bun run check` fails due pre-existing repository debt, also run:
+
+- `cd apps/web && bunx biome check <changed-files>`
+
+and record delta status in `Validation Evidence`.
+
 **Step 3: Commit final polish (if needed)**
 
 ```bash
 git add <touched files>
 git commit -m "chore(ui): finalize storybook design-system foundation milestone"
 ```
+
+## Validation Evidence
+
+Date: YYYY-MM-DD
+
+### Automated validation
+
+- `cd apps/web && bun run vitest run <focused-tests>`
+  - PASS/FAIL:
+- `cd apps/web && bun run storybook --ci --smoke-test`
+  - PASS/FAIL:
+- `cd apps/web && bun run build-storybook`
+  - PASS/FAIL:
+- `bun run test`
+  - PASS/FAIL:
+- `bun run check`
+  - PASS/FAIL:
+  - Notes:
+- `cd apps/web && bunx biome check <changed-files>` (when needed)
+  - PASS/FAIL:
+
+### Visual browser validation
+
+- `cd apps/web && bun run e2e:storybook-visual`
+  - PASS/FAIL:
+  - Artifacts:
+    - `apps/web/e2e/artifacts/prd3/<file>.png`
+
+### Regression sweep
+
+- Desktop/mobile story consistency: PASS/FAIL
+- Interactive states (`hover`, `focus`, `disabled`, `loading`): PASS/FAIL
+- Integrated `/safe` route behavior after composition swap: PASS/FAIL
