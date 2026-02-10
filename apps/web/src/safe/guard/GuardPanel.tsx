@@ -94,10 +94,10 @@ export default function GuardPanel({ guard, safeAddress, safeInstance, rpcUrl, s
       </h3>
 
       <InfoSection tagline="Enforces rules on every transaction before it executes.">
-        A guard is a smart contract that inspects every transaction the Safe tries to execute.
+        A guard is a smart contract that inspects owner-signed Safe transactions before execution.
         If the guard's check fails, the entire transaction is blocked. The SpendingLimitGuard
-        blocks any single transaction transferring more than the configured ETH limit. This
-        applies to both owner-signed transactions AND module-initiated transactions.
+        blocks any single owner-signed transaction transferring more than the configured ETH limit.
+        Module allowance spending is controlled by module-specific rules.
       </InfoSection>
 
       {guard ? (

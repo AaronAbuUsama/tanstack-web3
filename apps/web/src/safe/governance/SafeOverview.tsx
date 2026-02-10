@@ -98,7 +98,7 @@ export default function SafeOverview({ owners, threshold, guard, rpcUrl, moduleC
 
       {guard && moduleCount > 0 && (
         <p className="text-xs text-gray-500 mt-3 text-center">
-          The guard checks both owner-signed and module-initiated transactions.
+          The guard checks owner-signed transactions. Modules enforce their own spending rules.
         </p>
       )}
     </div>

@@ -200,8 +200,8 @@ export default function ModulePanel({
         A module is a smart contract that can execute transactions on behalf of the Safe without
         requiring owner signatures. The AllowanceModule grants specific delegate addresses a spending
         budget. Delegates can transfer ETH up to their allowance limit directly, without going through
-        the multi-sig approval process. If a guard is active, module transactions are still subject to
-        the guard's checks.
+        the multi-sig approval process. Module allowance rules (amount, spent, reset period) are
+        independent from owner-transaction guard checks.
       </InfoSection>
 
       {/* Error display */}
@@ -334,7 +334,7 @@ export default function ModulePanel({
           {/* Execute Allowance */}
           <div className="space-y-3">
             <p className="text-gray-300 text-sm font-medium">Execute Allowance</p>
-            <p className="text-gray-500 text-xs">As a delegate, send ETH using your allowance. Still subject to the guard's spending limit.</p>
+            <p className="text-gray-500 text-xs">As a delegate, send ETH using your allowance. This path uses module allowance limits, not owner-signature guard limits.</p>
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="text"
