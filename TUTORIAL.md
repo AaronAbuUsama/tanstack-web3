@@ -13,7 +13,7 @@ A comprehensive guide to building multi-signature dApps with Gnosis Safe, TanSta
 1. [Getting Started](#1-getting-started)
 2. [Connecting a Wallet](#2-connecting-a-wallet)
 3. [Creating a Safe](#3-creating-a-safe)
-4. [Safe Dashboard](#4-safe-dashboard)
+4. [Safe Command Center](#4-safe-command-center)
 5. [Transactions](#5-transactions)
    - [Owner & Threshold Management](#owner--threshold-management)
    - [Guard Management](#guard-management)
@@ -172,174 +172,133 @@ Here is the sequence of events when you deploy:
 4. Protocol Kit's `Safe.init()` is called with a `predictedSafe` configuration containing your owners and threshold
 5. The SDK deploys a Safe proxy contract on-chain via the connected signer
 6. After deployment, `connectSafe()` is called automatically to load the new Safe into the provider context
-7. The dashboard view replaces the setup view
+7. The command-center overview replaces the setup view
 
 The deployed Safe is a minimal proxy contract that delegates all logic to a shared Safe singleton. This pattern keeps deployment costs low.
 
 ---
 
-## 4. Safe Dashboard
+## 4. Safe Command Center
 
 ### After Creating or Connecting a Safe
 
-Once a Safe is loaded, the dashboard shows a top bar with chain badge (network name and ID), the Safe address, and a disconnect button.
+Once a Safe is loaded, `/safe` renders the command-center shell with a persistent top status bar and sidebar navigation.
 
-Below that, a grid of information cards displays the Safe's configuration.
+The active screen is URL-driven:
 
-### Owners Component
+- `/safe` or `/safe?screen=overview`
+- `/safe?screen=transactions`
+- `/safe?screen=owners`
+- `/safe?screen=guard`
+- `/safe?screen=modules`
 
-The Owners card (`apps/web/src/safe/governance/Owners.tsx`) lists every owner address. If your currently connected wallet address matches an owner, it shows a "(you)" indicator next to that address.
+The setup/runtime flow also has a dedicated URL state:
 
-### Threshold Component
+- `/safe?screen=setup-runtime`
 
-The Threshold card (`apps/web/src/safe/governance/Threshold.tsx`) displays the current M-of-N configuration with a visual progress bar. For example, "2 of 3 owners required" with a bar showing 2/3 filled.
-
-### Modules Component
-
-The Modules card displays any Safe modules that have been enabled. The dashboard also includes a full `ModulePanel` component (`apps/web/src/safe/module/ModulePanel.tsx`) with deploy, enable, disable, and allowance management for the AllowanceModule contract (more on this in Section 6).
+This URL contract is important for deterministic E2E validation and deep-linking specific screen states.
 
 ### How SafeProvider Works
 
-The `SafeProvider` (`apps/web/src/safe/core/provider.tsx`) is a React context provider that manages all Safe state. On mount, it runs `detectSafeMode()`:
+The `SafeProvider` (`apps/web/src/safe/core/provider.tsx`) is still the source of runtime Safe state. On mount, it runs `detectSafeMode()`:
 
-- If the app is running inside an iframe (e.g., embedded in the Safe web app at app.safe.global), it sets mode to `"iframe"` and loads Safe info via the Safe Apps SDK
-- If running as a standalone page, it sets mode to `"standalone"` and waits for the user to deploy or connect
+- If the app is running inside an iframe (e.g., embedded in the Safe web app at app.safe.global), it sets mode to `"iframe"` and loads Safe info via the Safe Apps SDK.
+- If running as a standalone page, it sets mode to `"standalone"` and waits for the user to deploy or connect.
 
 The provider exposes three key functions:
 
-| Function         | Purpose                                              |
-|-----------------|------------------------------------------------------|
-| `connectSafe()` | Load an existing Safe by address via Protocol Kit     |
-| `deploySafe()`  | Deploy a new Safe and auto-connect to it              |
-| `disconnectSafe()` | Clear Safe state and return to the setup view       |
+| Function | Purpose |
+| --- | --- |
+| `connectSafe()` | Load an existing Safe by address via Protocol Kit |
+| `deploySafe()` | Deploy a new Safe and auto-connect to it |
+| `disconnectSafe()` | Clear Safe state and return to setup |
 
-### ChainBadge and AddressDisplay
+### Screen Composition Architecture
 
-These are reusable web3 UI components:
+Runtime business logic lives in `apps/web/src/safe/**`, while command-center UI lives in `apps/web/src/design-system/compositions/command-center/**`.
 
-- `ChainBadge` shows the connected network with a colored dot
-- `AddressDisplay` shows a truncated Ethereum address with copy-to-clipboard
+Adapters in `apps/web/src/safe/screens/mappers/**` convert live runtime state into composition props.
+This keeps transaction/signer behavior independent from presentation.
 
 ---
 
 ## 5. Transactions
 
-### Transactions Area On /safe
+### Transactions Screen On /safe
 
-The transactions builder, pending queue, and execution history are rendered in the `/safe` dashboard view.
+The transaction workflow is rendered on `/safe?screen=transactions` through `CommandCenterTransactions`.
 
-If no Safe is connected, you will see a prompt to go back to the Safe dashboard first.
+If no Safe is connected, setup/runtime content is shown instead of command-center transaction controls.
 
 ### Building Transactions
 
-The **TxBuilder** component presents three fields:
+The transactions form includes:
 
-- **To** -- the recipient address (0x...)
-- **Value** -- the ETH amount to send (e.g., "0.1")
-- **Data** -- raw calldata hex (defaults to "0x" for plain ETH transfers)
+- **Recipient Address**
+- **Value (ETH)**
+- **Operation**
+- **Data (hex, optional)**
 
-When you click "Build Transaction", the following happens:
+When you click **Build Transaction**, the flow is:
 
-1. `buildTransaction()` from `transactions.ts` converts your input into a `MetaTransactionData` object. The ETH value string is converted to wei using viem's `parseEther()`
-2. `createTransaction()` from `standalone.ts` wraps it into a Safe transaction via Protocol Kit
-3. The transaction is added to the local queue
+1. `buildTransaction()` (`apps/web/src/safe/transactions/transactions.ts`) converts input to Safe transaction data.
+2. `createTransaction()` (`apps/web/src/safe/core/standalone.ts`) creates a Safe transaction with Protocol Kit.
+3. The transaction is proposed into the active pending source (service or local fallback).
 
 ### Dual-Mode Flow (Transaction Service vs Local-only)
 
-The boilerplate now uses a **dual-mode** transaction path in `apps/web/src/safe/transactions/use-transactions.ts`:
+`apps/web/src/safe/transactions/use-transactions.ts` resolves mode at runtime:
 
-- **Transaction Service mode** (`txSourceMode = transaction-service`):
-  - Used on supported hosted chains (Mainnet, Gnosis, Sepolia, Chiado) when the RPC endpoint is not local.
-  - Proposals/confirmations are shared via Safe Transaction Service (API Kit).
-- **Local-only mode** (`txSourceMode = local`):
-  - Used automatically for localhost/Anvil RPC and unsupported chains.
-  - Pending queue metadata is kept in local browser storage.
-  - Confirmation state is synchronized from chain approvals where available.
+- **Transaction Service mode** (`txSourceMode = transaction-service`)
+  - Supported hosted chains and non-local RPCs
+  - Proposals/confirmations synchronized via Safe Transaction Service
+- **Local-only mode** (`txSourceMode = local`)
+  - Localhost/Anvil and unsupported chains
+  - Pending metadata stored locally for deterministic local testing
 
-In both modes, transaction creation and execution use Protocol Kit.
+Both modes still create/sign/execute through Protocol Kit.
 
-### 1-of-1 Safe: Auto Sign and Execute
+### Multi-Sig Confirmation States
 
-For a Safe with a threshold of 1 (single owner), the flow is automatic:
+Pending rows in `CommandCenterTransactions` follow a state machine:
 
-1. Build the transaction
-2. `signTransaction()` adds the owner's signature immediately
-3. `executeTransaction()` submits the signed transaction on-chain
-4. The transaction appears in the history with its transaction hash
+- `pending` -> action label `Sign`
+- `ready` -> action label `Execute`
+- `executed` -> status badge
 
-This all happens in one click.
-
-### Multi-Sig Flow
-
-For a Safe with threshold > 1 (e.g., 2-of-3):
-
-1. **Propose**: Owner A builds the transaction.
-2. **Confirm**: Owner B confirms it.
-3. **Execute**: Once confirmations meet the threshold, any owner can execute on-chain.
-
-In Transaction Service mode, these transitions are shared across sessions through Safe Transaction Service.
-In Local-only mode, queue metadata is local to the environment and intended for deterministic local development.
-
-The **TxQueue** component shows pending transactions with a confirmation progress bar (e.g., "1/2 confirmations").
-
-The **TxHistory** component shows executed transactions with their on-chain transaction hash.
-
-### TransactionFlow Component
-
-The `TransactionFlow` component shows a detailed step-by-step view of the most recent pending transaction, including:
-
-- Transaction details (to, value, data)
-- Current confirmation count vs required threshold
-- Buttons to confirm or execute based on the current state
+For threshold > 1, owners sign until confirmations reach threshold, then execute on-chain.
 
 ### Owner & Threshold Management
 
-The Safe dashboard provides on-chain owner and threshold management directly from the UI.
+Owners are managed on `/safe?screen=owners` via `CommandCenterOwners` with runtime actions wired from `DashboardView`.
 
-**Adding an owner**: Click "+ Add Owner" in the Owners card, enter the new address, and click "Add". This creates a Safe transaction that adds the owner, signs it, executes it on-chain, then refreshes the dashboard to show the updated owner list.
+- Add owner
+- Remove owner
+- Change threshold
 
-**Removing an owner**: Click "Remove" next to any owner (except when only one owner remains). The threshold is automatically adjusted if needed to stay within the valid range.
-
-**Changing the threshold**: In the Threshold card, click any number button to change the required signature count. The change is executed as a Safe transaction.
-
-All three operations follow the same pattern in code:
-
-1. Create the management transaction via Protocol Kit (e.g., `createAddOwnerTx()`)
-2. Sign the transaction
-3. Execute it on-chain
-4. Reconnect to the Safe to refresh state from the blockchain
-
-The handler functions are in `apps/web/src/safe/transactions/DashboardView.tsx`, and the Protocol Kit wrappers are in `apps/web/src/safe/core/standalone.ts`.
+Each action is created/sign/executed as a Safe transaction and then Safe state is refreshed from chain.
 
 ### Guard Management
 
-Transaction guards are pre/post execution hooks that the Safe calls for every transaction. The dashboard includes a **GuardPanel** component for managing guards.
+Guard controls live on `/safe?screen=guard` via `CommandCenterGuard`:
 
-**Deploy a guard**: Enter a spending limit (in ETH) and click "Deploy Guard". This deploys a `SpendingLimitGuard` contract that will block any transaction exceeding the limit.
+- Deploy `SpendingLimitGuard`
+- Enable guard
+- Disable guard
+- View active guard status/limit context
 
-**Enable the guard**: After deployment, click "Enable Guard" to register it with the Safe. Once enabled, the guard's `checkTransaction()` is called before every Safe transaction.
-
-**View guard info**: When a guard is active, the panel shows the guard address and the configured spending limit (read from the contract via `readContract`).
-
-**Disable the guard**: Click "Disable Guard" to remove it. This is also a Safe transaction.
-
-The GuardPanel component is at `apps/web/src/safe/guard/GuardPanel.tsx`. It uses the ABI bridge (`apps/web/src/safe/contracts/`) for deployment and contract reads.
+Runtime mapping is handled by `apps/web/src/safe/screens/mappers/guard.ts`.
 
 ### Module Management
 
-Modules are smart contracts that can execute transactions on behalf of the Safe, bypassing the normal multi-sig flow. The **ModulePanel** component manages the full module lifecycle.
+Module controls live on `/safe?screen=modules` via `CommandCenterModules`:
 
-**Deploy a module**: Click "Deploy AllowanceModule" to deploy the contract.
+- Deploy AllowanceModule
+- Enable/disable module
+- Configure delegate allowance
+- Execute delegate spend path
 
-**Enable/Disable**: Toggle modules on and off. Enabled modules appear in the modules list with a "Disable" button.
-
-**Set allowance**: When a module is enabled, use the Allowance Management section to grant a delegate a spending budget. This is a Safe transaction (requires multi-sig approval) that calls `setAllowance(delegate, amount, resetPeriod)` on the module.
-
-**Check allowance**: View the remaining budget for a delegate address.
-
-**Execute allowance**: The delegate can spend from their allowance by calling `executeAllowance()` directly on the module contract. This is NOT a Safe transaction — it is a direct call from the delegate's wallet, which is the whole point of modules: authorized delegates can act without multi-sig approval.
-
-The ModulePanel component is at `apps/web/src/safe/module/ModulePanel.tsx`.
+Runtime mapping is handled by `apps/web/src/safe/screens/mappers/modules.ts`.
 
 ### ABI Bridge
 
@@ -412,70 +371,39 @@ This runs all Foundry tests with verbose output showing individual test results 
 
 ### File Tree Overview
 
-```
+```text
 tanstack-web3/
   apps/web/
     src/
-      components/
-        ConnectWallet.tsx          # Wallet connection UI
-        Header.tsx                 # App header
-        Web3Provider.tsx           # Wagmi + QueryClient wrapper
-        safe/
-          Owners.tsx               # Owner list display
-          Threshold.tsx            # Threshold progress bar
-          Modules.tsx              # Module list (placeholder)
-          GuardPanel.tsx           # Guard deploy/enable/disable
-          ModulePanel.tsx          # Module deploy/allowance management
-          TransactionFlow.tsx      # Step-by-step tx view
-          TxBuilder.tsx            # Transaction input form
-          TxQueue.tsx              # Pending transaction list
-          TxHistory.tsx            # Executed transaction list
-        web3/
-          config.ts               # Wagmi config (chains, connectors, transports)
-          dev-wallet.ts           # Dev-only mnemonic wallet connector for Anvil
-          AddressDisplay.tsx       # Truncated address + copy
-          ChainBadge.tsx           # Network indicator
-          TokenBalances.tsx        # Token balance display
+      design-system/
+        compositions/
+          command-center/          # Production shell + screen compositions
+        domains/
+          safe/                    # Domain rows/widgets used by compositions
+        fixtures/                  # Storybook/reference fixtures only
       safe/
-        contracts/
-          abis.ts                  # Typed ABI arrays for all contracts
-          bytecodes.ts             # Deployment bytecode hex strings
-          deploy.ts                # Chain-agnostic deployment helpers
-          index.ts                 # Barrel re-export
-        core/
-          detect.ts                # iframe vs standalone detection
-          provider.tsx             # SafeProvider context
-          standalone.ts            # Protocol Kit integration
-          iframe.ts                # Safe Apps SDK integration
-          use-safe.ts              # useSafe context hook
-          types.ts                 # Safe SDK type bridge
-        runtime/
-          resolve-runtime-policy.ts # AppContext/SignerProvider/TxSubmissionPath resolver
-          use-runtime-policy.ts    # Runtime policy hook
+        contracts/                 # ABI + bytecode bridge for frontend deploy/read
+        core/                      # Safe provider + protocol/api/iframe adapters
+        runtime/                   # Runtime policy resolver and hook
+        screens/
+          screen-state.ts          # URL search-state parser/serializer
+          screen-layout.tsx        # Shared shell wiring
+          mappers/                 # Runtime -> composition prop adapters
         governance/
           SetupView.tsx            # Safe create/connect view
-          SafeOverview.tsx         # Safe summary and explanatory copy
-        guard/
-          GuardPanel.tsx           # Guard deploy/enable/disable
-        module/
-          ModulePanel.tsx          # Module deploy/allowance management
         transactions/
+          DashboardView.tsx        # Screen router + runtime action wiring
           transactions.ts          # buildTransaction helper
           use-transactions.ts      # dual-mode tx flow (service/local fallback)
-          TxBuilder.tsx            # Transaction input form
-          TxQueue.tsx              # Pending transaction list
-          TxHistory.tsx            # Executed transaction list
-          TransactionFlow.tsx      # Step-by-step tx status
+      web3/
+        config.ts                  # Wagmi config (chains/connectors/transports)
+        dev-wallet.ts              # Dev-only mnemonic wallet connector
       routes/
-        __root.tsx                 # Root layout
-        index.tsx                  # Home page
-        wallet.tsx                 # /wallet route
-        safe.tsx                   # /safe route
+        safe.tsx                   # /safe route with URL screen state
   packages/contracts/
     src/
       SpendingLimitGuard.sol
       AllowanceModule.sol
-    foundry.toml
 ```
 
 ### SafeProvider Detection Flow
@@ -687,7 +615,16 @@ If you see errors about `Buffer is not defined`, make sure `vite-plugin-node-pol
 
 ### Safe Route Structure
 
-The Safe dashboard currently lives in `apps/web/src/routes/safe.tsx` and renders setup + transaction flows together on `/safe`.
+`apps/web/src/routes/safe.tsx` uses URL-driven screen state for command-center navigation.
+
+Use `screen` search params to deep-link screens:
+
+- `/safe?screen=overview`
+- `/safe?screen=transactions`
+- `/safe?screen=owners`
+- `/safe?screen=guard`
+- `/safe?screen=modules`
+- `/safe?screen=setup-runtime`
 
 ### Protocol Kit Import Errors
 
@@ -730,7 +667,7 @@ This is intentional to prevent exposing deterministic test-wallet signing paths 
 
 ### Transaction Fails Immediately After Signing
 
-If you are using a multi-sig Safe (threshold > 1), you need multiple owners to sign before execution. Check the TxQueue for the confirmation count. Only when confirmations >= threshold can the transaction be executed.
+If you are using a multi-sig Safe (threshold > 1), you need multiple owners to sign before execution. Check the **Pending Signatures** panel on `/safe?screen=transactions`. The action switches to **Execute** only when confirmations reach the threshold.
 
 ### Large Bundle Size Warning
 

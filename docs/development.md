@@ -41,6 +41,23 @@ This is the source of truth for `AppContext`, `SignerProvider`, and `TxSubmissio
 
 In local-only mode, pending queue metadata is stored in browser state for that local environment.
 
+### Safe Screen Routing
+
+The `/safe` route is URL-driven. Set `screen` in search params to force a specific command-center screen:
+
+- `overview` (default when Safe is connected)
+- `transactions`
+- `owners`
+- `guard`
+- `modules`
+- `setup-runtime` (setup-only states and runtime diagnostics)
+
+Examples:
+
+- `/safe?screen=transactions`
+- `/safe?screen=owners`
+- `/safe?screen=setup-runtime`
+
 ## Dev Wallet
 
 In development mode (`import.meta.env.DEV`), a Dev Wallet connector is available that derives accounts from the default Anvil mnemonic and exposes an account index selector in the wallet bar.
@@ -129,9 +146,13 @@ cd apps/web && bun run e2e:safe-smoke
 
 # Run deterministic two-signer PRD2 validation
 cd apps/web && bun run e2e:safe-multisig
+
+# Run PRD4 screen matrix validation
+cd apps/web && bun run e2e:safe-screen-matrix
 ```
 
 Smoke artifacts are written to:
 
 - `apps/web/e2e/artifacts/`
 - `apps/web/e2e/artifacts/prd2/`
+- `apps/web/e2e/artifacts/prd4/`

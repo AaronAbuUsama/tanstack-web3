@@ -388,6 +388,7 @@ git commit -m "feat(safe): migrate setup and runtime controls to command-center 
 **Files:**
 - Modify: `apps/web/src/safe/transactions/DashboardView.tsx`
 - Modify: `apps/web/src/safe/transactions/TransactionFlow.tsx` (if needed)
+- Modify: `apps/web/e2e/safe-multisig.spec.ts`
 - Modify: `docs/development.md`
 - Modify: `TUTORIAL.md`
 
@@ -395,8 +396,8 @@ git commit -m "feat(safe): migrate setup and runtime controls to command-center 
 1. Remove legacy duplicate rendering blocks and dead adapters.
 
 2. **Fail-first check**
-- Run: `rg -n "Legacy|Old dashboard|TODO migrate screen" apps/web/src/safe/transactions/DashboardView.tsx`
-- Expected: FAIL (legacy markers still present before cleanup).
+- Run: `cd apps/web && bun run e2e:safe-multisig`
+- Expected: FAIL on stale legacy selectors (`Transaction Builder`, legacy pending panel selectors) before spec migration.
 
 3. Final docs + cleanup implementation.
 
@@ -416,7 +417,7 @@ git commit -m "feat(safe): migrate setup and runtime controls to command-center 
 
 6. Commit:
 ```bash
-git add apps/web/src/safe/transactions/DashboardView.tsx apps/web/src/safe/transactions/TransactionFlow.tsx docs/development.md TUTORIAL.md
+git add apps/web/src/safe/transactions/DashboardView.tsx apps/web/e2e/safe-multisig.spec.ts docs/development.md TUTORIAL.md
 git commit -m "refactor(safe): finalize screen-by-screen command-center migration"
 ```
 
@@ -634,4 +635,39 @@ Status:
   - Notes: Added `setup-runtime` screen mapping and route wiring (`/safe?screen=setup-runtime` for setup-state rendering) while preserving default setup flow for existing smoke path. Full matrix and smoke regressions pass.
 
 ### Task 7 Evidence
-- Pending.
+- Fail-first:
+  - Command: `cd apps/web && bun run e2e:safe-multisig`
+  - Result: FAIL
+  - Reason: Spec still targeted removed legacy dashboard selectors (`Transaction Builder`, old pending panel), causing timeout before transaction creation.
+- Automated:
+  - Command(s):
+    - `cd apps/web && bun run test`
+    - `bun run test`
+  - Result: PASS (`apps/web` suite + full monorepo test pipeline with contracts and web package).
+- Browser:
+  - Command(s):
+    - `cd apps/web && bun run e2e:safe-smoke`
+    - `cd apps/web && bun run e2e:safe-multisig`
+    - `cd apps/web && bun run e2e:safe-screen-matrix`
+    - `cd apps/web && bun run storybook --ci --smoke-test`
+    - `cd apps/web && bun run e2e:storybook-visual -- --grep "Compositions CommandCenter Screens"`
+  - Result: PASS
+  - Screenshots:
+    - `apps/web/e2e/artifacts/prd2/01-owner-a-proposed-tx.png`
+    - `apps/web/e2e/artifacts/prd2/02-owner-b-sees-pending.png`
+    - `apps/web/e2e/artifacts/prd2/03-owner-b-confirmed.png`
+    - `apps/web/e2e/artifacts/prd2/04-owner-a-sees-updated-confirmations.png`
+    - `apps/web/e2e/artifacts/prd2/05-owner-a-executed-transaction.png`
+    - `apps/web/e2e/artifacts/prd4/t1-overview-standalone-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t2-transactions-local-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t3-owners-2of3-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t4-guard-active-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t5-modules-active-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t6-setup-runtime-account1-desktop.png`
+- Artifact assertion:
+  - Command(s):
+    - `ls -la apps/web/e2e/artifacts/prd4 | rg 't[1-6]-'`
+    - `ls -la apps/web/e2e/artifacts/prd2`
+  - Result: PASS
+- Regression sweep:
+  - Notes: Verified wallet connect/disconnect, dev account switching, setup/create/connect, local-mode transaction propose/sign/execute, cross-session multisig synchronization, and guard/module visibility/action states through smoke + multisig + matrix + storybook visual checks.

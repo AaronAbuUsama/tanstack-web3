@@ -11,6 +11,12 @@ function getWalletBar(page: Page): Locator {
   return page.getByRole('button', { name: 'Disconnect' }).locator('xpath=..')
 }
 
+function getCreateSafePanel(page: Page): Locator {
+  return page.locator('div.bg-gray-800').filter({
+    has: page.getByRole('heading', { name: 'Create New Safe' }),
+  }).first()
+}
+
 async function takeArtifact(page: Page, fileName: string) {
   mkdirSync(artifactsDir, { recursive: true })
   await page.screenshot({
@@ -19,11 +25,44 @@ async function takeArtifact(page: Page, fileName: string) {
   })
 }
 
+async function setScreenSearch(page: Page, screen: string | null) {
+  await page.evaluate((nextScreen) => {
+    const url = new URL(window.location.href)
+    if (nextScreen) {
+      url.searchParams.set('screen', nextScreen)
+    } else {
+      url.searchParams.delete('screen')
+    }
+    window.history.pushState({}, '', `${url.pathname}${url.search}`)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }, screen)
+  await page.waitForTimeout(150)
+}
+
 async function connectDevWallet(page: Page, accountIndex: number) {
   await page.goto('/safe')
   await expect(page.getByRole('heading', { name: 'Safe Dashboard' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Dev Wallet' }).first().click()
+  const disconnectButton = page.getByRole('button', { name: 'Disconnect' })
+  const devWalletButton = page.getByRole('button', { name: 'Dev Wallet' }).first()
+  await expect.poll(
+    async () => (await disconnectButton.count()) > 0 || (await devWalletButton.count()) > 0,
+    { timeout: 60_000 },
+  ).toBe(true)
+
+  if ((await disconnectButton.count()) === 0) {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      try {
+        await devWalletButton.click({ timeout: 10_000 })
+        break
+      } catch (error) {
+        if (attempt === 4) throw error
+        await page.waitForTimeout(250)
+      }
+    }
+  }
+
+  await expect(disconnectButton).toBeVisible()
 
   const walletBar = getWalletBar(page)
   const chainSelect = walletBar.locator('select').nth(1)
@@ -43,10 +82,27 @@ async function connectDevWallet(page: Page, accountIndex: number) {
   }
 }
 
+async function readSafeAddress(page: Page): Promise<string> {
+  let safeAddress = ''
+  await expect
+    .poll(
+      async () => {
+        safeAddress = await page.evaluate((knownAccounts) => {
+          const matches = document.body.innerText.match(/0x[a-fA-F0-9]{40}/g) ?? []
+          const known = new Set(knownAccounts.map((address) => address.toLowerCase()))
+          return matches.find((candidate) => !known.has(candidate.toLowerCase())) ?? ''
+        }, [ACCOUNT_ZERO, ACCOUNT_ONE])
+        return safeAddress
+      },
+      { timeout: 60_000 },
+    )
+    .toMatch(/^0x[a-fA-F0-9]{40}$/)
+
+  return safeAddress
+}
+
 async function deployTwoOwnerSafe(page: Page): Promise<string> {
-  const createSafePanel = page.locator('div.bg-gray-800').filter({
-    has: page.getByRole('heading', { name: 'Create New Safe' }),
-  }).first()
+  const createSafePanel = getCreateSafePanel(page)
 
   const ownerInputs = createSafePanel.locator('input[placeholder="0x..."]')
   await ownerInputs.first().fill(ACCOUNT_ZERO)
@@ -57,10 +113,11 @@ async function deployTwoOwnerSafe(page: Page): Promise<string> {
   await createSafePanel.getByRole('button', { name: '2' }).click()
   await createSafePanel.getByRole('button', { name: 'Deploy Safe' }).click()
 
-  await expect(page.getByText('Safe Address')).toBeVisible({ timeout: 120_000 })
-  const safeAddress = await page.locator('code').first().textContent()
-  if (!safeAddress) throw new Error('Safe address not found after deployment')
-  return safeAddress.trim()
+  await expect(
+    page.getByRole('heading', { name: 'Command Center Overview', exact: true }),
+  ).toBeVisible({ timeout: 120_000 })
+
+  return readSafeAddress(page)
 }
 
 async function connectExistingSafe(page: Page, safeAddress: string) {
@@ -70,7 +127,9 @@ async function connectExistingSafe(page: Page, safeAddress: string) {
   }).first()
   await connectPanel.locator('input[placeholder="0x..."]').fill(safeAddress)
   await connectPanel.getByRole('button', { name: 'Connect' }).click()
-  await expect(page.getByText('Safe Address')).toBeVisible({ timeout: 60_000 })
+  await expect(
+    page.getByRole('heading', { name: 'Command Center Overview', exact: true }),
+  ).toBeVisible({ timeout: 60_000 })
 }
 
 async function createCleanContext(baseContext?: BrowserContext) {
@@ -93,14 +152,14 @@ test('safe multisig: two signers can coordinate and execute in deterministic loc
   await connectDevWallet(pageA, 0)
   const safeAddress = await deployTwoOwnerSafe(pageA)
 
-  const txBuilder = pageA.locator('div.bg-gray-800').filter({
-    has: pageA.getByRole('heading', { name: 'Transaction Builder' }),
-  }).first()
-  await txBuilder.locator('input[placeholder="0x..."]').fill(ACCOUNT_ONE)
-  await txBuilder.locator('input[placeholder="0.0"]').fill('0')
-  await txBuilder.getByRole('button', { name: 'Build Transaction' }).click()
+  await setScreenSearch(pageA, 'transactions')
+  await expect(pageA.getByRole('heading', { name: 'Transactions', exact: true })).toBeVisible()
+  await pageA.getByLabel('Recipient Address').fill(ACCOUNT_ONE)
+  await pageA.getByLabel('Value (ETH)').fill('0')
+  await pageA.getByRole('button', { name: 'Build Transaction' }).click()
 
-  await expect(pageA.getByRole('heading', { name: /Pending Transactions/ })).toBeVisible()
+  await expect(pageA.getByText('Pending Signatures')).toBeVisible()
+  await expect(pageA.getByRole('button', { name: 'Sign' }).first()).toBeVisible()
   await takeArtifact(pageA, '01-owner-a-proposed-tx.png')
 
   const storageState = await contextA.storageState()
@@ -109,33 +168,32 @@ test('safe multisig: two signers can coordinate and execute in deterministic loc
 
   await connectDevWallet(pageB, 1)
   await connectExistingSafe(pageB, safeAddress)
+  await setScreenSearch(pageB, 'transactions')
+  await expect(pageB.getByRole('heading', { name: 'Transactions', exact: true })).toBeVisible()
 
-  const pendingPanelB = pageB.locator('div.bg-gray-800').filter({
-    has: pageB.getByRole('heading', { name: /Pending Transactions/ }),
-  }).first()
-  await expect(pendingPanelB.getByText('Pending', { exact: true }).first()).toBeVisible()
+  const pendingPanelB = pageB.getByRole('button', { name: 'Sign' }).first()
+  await expect(pendingPanelB).toBeVisible()
   await takeArtifact(pageB, '02-owner-b-sees-pending.png')
 
-  await pendingPanelB.getByRole('button', { name: 'Confirm' }).first().click()
-  await expect(pendingPanelB.getByText(/1\s*\/\s*2/).first()).toBeVisible()
+  await pendingPanelB.click()
+  await expect(pageB.getByText(/1\/2 confirmed/)).toBeVisible()
   await takeArtifact(pageB, '03-owner-b-confirmed.png')
 
   await pageA.reload()
   await connectDevWallet(pageA, 0)
   await connectExistingSafe(pageA, safeAddress)
+  await setScreenSearch(pageA, 'transactions')
+  await expect(pageA.getByRole('heading', { name: 'Transactions', exact: true })).toBeVisible()
 
-  const pendingPanelA = pageA.locator('div.bg-gray-800').filter({
-    has: pageA.getByRole('heading', { name: /Pending Transactions/ }),
-  }).first()
-  await expect(pendingPanelA.getByText(/1\s*\/\s*2/).first()).toBeVisible({ timeout: 30_000 })
+  await expect(pageA.getByText(/1\/2 confirmed/)).toBeVisible({ timeout: 30_000 })
   await takeArtifact(pageA, '04-owner-a-sees-updated-confirmations.png')
 
-  await pendingPanelA.getByRole('button', { name: 'Confirm' }).first().click()
-  await expect(pendingPanelA.getByText('Ready', { exact: true }).first()).toBeVisible()
-  await pendingPanelA.getByRole('button', { name: 'Execute' }).first().click()
+  await pageA.getByRole('button', { name: 'Sign' }).first().click()
+  const executeButton = pageA.getByRole('button', { name: 'Execute' }).first()
+  await expect(executeButton).toBeVisible({ timeout: 60_000 })
+  await executeButton.click()
 
-  await expect(pageA.getByRole('heading', { name: /Transaction History/ })).toBeVisible()
-  await expect(pageA.getByText('Executed', { exact: true }).first()).toBeVisible()
+  await expect(pageA.getByText('Transaction executed')).toBeVisible({ timeout: 60_000 })
   await takeArtifact(pageA, '05-owner-a-executed-transaction.png')
 
   await contextB.close()
