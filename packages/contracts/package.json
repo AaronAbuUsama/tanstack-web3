@@ -5,6 +5,8 @@
     "dev": "anvil --fork-url https://rpc.chiadochain.net --host 0.0.0.0",
     "build": "forge build",
     "test": "forge test",
-    "deploy:local": "forge script script/Counter.s.sol --rpc-url http://127.0.0.1:8545 --broadcast"
+    "deploy:guard:local": "forge script script/SpendingLimitGuard.s.sol --rpc-url http://127.0.0.1:8545 --broadcast",
+    "deploy:module:local": "forge script script/AllowanceModule.s.sol --rpc-url http://127.0.0.1:8545 --broadcast",
+    "deploy:local": "bun run deploy:guard:local"
   }
 }
