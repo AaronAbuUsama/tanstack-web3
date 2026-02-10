@@ -13,18 +13,30 @@ const storyGroups = [
   {
     name: 'foundations',
     label: 'Foundations Tokens',
+    maxStories: 6,
     patterns: [/^design-system-foundations-/i],
   },
-  { name: 'primitives', label: 'Primitives', patterns: [/^design-system-primitives-/i] },
-  { name: 'patterns', label: 'Patterns', patterns: [/^design-system-patterns-/i] },
-  { name: 'domains-safe', label: 'Domain Safe', patterns: [/^design-system-domains-safe-/i] },
+  {
+    name: 'primitives',
+    label: 'Primitives',
+    maxStories: 12,
+    patterns: [/^design-system-primitives-/i],
+  },
+  { name: 'patterns', label: 'Patterns', maxStories: 12, patterns: [/^design-system-patterns-/i] },
+  {
+    name: 'domains-safe',
+    label: 'Domain Safe',
+    maxStories: 12,
+    patterns: [/^design-system-domains-safe-/i],
+  },
   {
     name: 'compositions',
     label: 'Composition CommandCenterOverview',
+    maxStories: 6,
     patterns: [/^design-system-compositions-command-center-/i],
   },
   // Bootstrap fallback before PRD3 groups exist.
-  { name: 'bootstrap', label: 'Bootstrap', patterns: [/^stories-/i, /^example-/i] },
+  { name: 'bootstrap', label: 'Bootstrap', maxStories: 3, patterns: [/^stories-/i, /^example-/i] },
 ] as const
 
 interface StoryIndexEntry {
@@ -81,7 +93,7 @@ for (const group of storyGroups) {
     test.skip(matching.length === 0, `No stories found for ${group.label}`)
 
     let capturedCount = 0
-    for (const storyId of matching.slice(0, 3)) {
+    for (const storyId of matching.slice(0, group.maxStories)) {
       await captureStory(page, storyId, group.name)
       capturedCount += 1
     }
