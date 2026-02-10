@@ -72,6 +72,22 @@
 	gap: var(--ds-space-8);
 }
 
+.ds-command-notice {
+	background: var(--ds-color-white);
+	border: var(--ds-border-regular);
+	box-shadow: var(--ds-shadow-sm);
+	font-size: var(--ds-type-13);
+	padding: var(--ds-space-12) var(--ds-space-14);
+}
+
+.ds-command-notice.is-error {
+	background: #ffe2e8;
+}
+
+.ds-command-notice.is-info {
+	background: #deedf2;
+}
+
 .ds-command-tab {
 	border: var(--ds-border-inline);
 	font-size: var(--ds-type-12);

@@ -504,7 +504,30 @@ Status:
   - Notes: URL screen parsing added in route/search state; runtime logic unchanged. Dashboard rendering remains functionally intact while nav active state is now URL-driven.
 
 ### Task 2 Evidence
-- Pending.
+- Fail-first:
+  - Command: `cd apps/web && bun run vitest run src/safe/screens/mappers/transactions.test.ts`
+  - Result: FAIL
+  - Reason: No mapper tests existed before implementation (`No test files found`).
+- Automated:
+  - Command(s):
+    - `cd apps/web && bun run vitest run src/safe/screens/mappers/transactions.test.ts src/safe/transactions/TxQueue.test.tsx`
+    - `cd apps/web && bun run test`
+  - Result: PASS (`transactions.test.ts` + `TxQueue.test.tsx` + full `apps/web` suite).
+- Browser:
+  - Command(s):
+    - `cd apps/web && bun run e2e:safe-smoke`
+    - `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "transactions.*tx-service"`
+    - `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "transactions.*local"`
+  - Result: PASS
+  - Screenshots:
+    - `apps/web/e2e/artifacts/prd4/t2-transactions-tx-service-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t2-transactions-local-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t2-transactions-mobile.png`
+- Artifact assertion:
+  - Command: `ls -la apps/web/e2e/artifacts/prd4 | rg 't2-transactions-(tx-service|local|mobile).*\.png'`
+  - Result: PASS
+- Regression sweep:
+  - Notes: `safe-smoke` validated wallet connect/disconnect, setup flow, pending confirmation behavior, and local mode status text. Matrix checks validated tx-service and local-mode transaction artifacts. Full `e2e:safe-screen-matrix` also passed after Task 2 wiring.
 
 ### Task 3 Evidence
 - Pending.

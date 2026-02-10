@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { formatUnits } from "viem";
-import { CommandCenterOverview } from "../../design-system/compositions/command-center";
+import {
+	CommandCenterOverview,
+	CommandCenterTransactions,
+} from "../../design-system/compositions/command-center";
 import {
 	commandCenterActivity,
 	commandCenterSidebarSections,
@@ -23,6 +26,7 @@ import SafeOverview from "../governance/SafeOverview";
 import Threshold from "../governance/Threshold";
 import GuardPanel from "../guard/GuardPanel";
 import ModulePanel from "../module/ModulePanel";
+import { mapTransactionsScreen } from "../screens/mappers/transactions";
 import { navItemForScreen } from "../screens/screen-layout";
 import type { SafeScreenId } from "../screens/types";
 import FundSafe from "./FundSafe";
@@ -243,6 +247,43 @@ export default function DashboardView({
 				valueLabel: `${formatEthMaybeWei(latestPending.value)} ETH`,
 			}
 		: undefined;
+
+	const transactionsScreen = mapTransactionsScreen({
+		pendingTxs,
+		executedTxs,
+		onConfirm: handleConfirm,
+		onExecute: handleExecute,
+	});
+
+	if (activeScreen === "transactions") {
+		return (
+			<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
+				<CommandCenterTransactions
+					address={address}
+					chainLabel={chain?.name ?? "gnosis chain"}
+					embedded
+					historyEntries={transactionsScreen.historyEntries}
+					modeHelpText={txModeHelpText}
+					modeLabel={txModeLabel}
+					navSections={navSections}
+					onBuildTransaction={async (tx) => {
+						await handleBuild({
+							to: tx.to,
+							value: tx.value,
+							data: tx.data,
+						});
+					}}
+					pendingTransactions={transactionsScreen.pendingTransactions}
+					safeAddress={safe.safeAddress ?? "0x..."}
+					safeBalanceLabel={safeBalanceEth}
+					statusBalanceLabel={`${safeBalanceEth} ETH`}
+					thresholdLabel={thresholdLabel}
+					txBusy={txBusy}
+					txError={txError}
+				/>
+			</div>
+		);
+	}
 
 	return (
 		<>

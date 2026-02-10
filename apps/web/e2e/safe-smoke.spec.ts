@@ -31,7 +31,18 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
   await page.goto('/safe')
   await expect(page.getByRole('heading', { name: 'Safe Dashboard' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Dev Wallet' }).first().click()
+  const disconnectButton = page.getByRole('button', { name: 'Disconnect' })
+  if ((await disconnectButton.count()) === 0) {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      try {
+        await page.getByRole('button', { name: 'Dev Wallet' }).first().click({ timeout: 10_000 })
+        break
+      } catch (error) {
+        if (attempt === 4) throw error
+        await page.waitForTimeout(250)
+      }
+    }
+  }
 
   const walletBar = getWalletBar(page)
   const addressText = walletBar.locator('span.font-mono').first()

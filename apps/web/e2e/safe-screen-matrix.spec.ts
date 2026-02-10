@@ -31,7 +31,23 @@ async function connectDevWallet(page: Page, accountIndex: number) {
 	await expect(page.getByRole("heading", { name: "Safe Dashboard" })).toBeVisible();
 	const disconnectButton = page.getByRole("button", { name: "Disconnect" });
 	if ((await disconnectButton.count()) === 0) {
-		await page.getByRole("button", { name: "Dev Wallet" }).first().click();
+		let connected = false;
+		for (let attempt = 0; attempt < 5; attempt += 1) {
+			try {
+				await page
+					.getByRole("button", { name: "Dev Wallet" })
+					.first()
+					.click({ timeout: 10_000 });
+				connected = true;
+				break;
+			} catch (error) {
+				if (attempt === 4) throw error;
+				await page.waitForTimeout(250);
+			}
+		}
+		if (!connected) {
+			throw new Error("Unable to connect with Dev Wallet");
+		}
 	}
 
 	const walletBar = getWalletBar(page);
@@ -92,7 +108,23 @@ async function createPendingTransaction(page: Page) {
 	await expect(page.getByRole("heading", { name: /Pending Transactions/ })).toBeVisible();
 }
 
-test("safe screen matrix: setup and pre-safe account/chain states", async ({ page }) => {
+async function setScreenSearch(page: Page, screen: string | null) {
+	await page.evaluate((nextScreen) => {
+		const url = new URL(window.location.href);
+		if (nextScreen) {
+			url.searchParams.set("screen", nextScreen);
+		} else {
+			url.searchParams.delete("screen");
+		}
+		window.history.pushState({}, "", `${url.pathname}${url.search}`);
+		window.dispatchEvent(new PopStateEvent("popstate"));
+	}, screen);
+	await page.waitForTimeout(150);
+}
+
+test(
+	"safe screen matrix [setup-runtime account0 account1 transactions tx-service owners 1of1]: setup and pre-safe account/chain states",
+	async ({ page }) => {
 	await page.addInitScript(() => window.localStorage.clear());
 	const { chainSelect, devAccountSelect, walletBar } = await connectDevWallet(page, 0);
 	const addressText = walletBar.locator("span.font-mono").first();
@@ -112,9 +144,12 @@ test("safe screen matrix: setup and pre-safe account/chain states", async ({ pag
 
 	await expect(page.getByText("Threshold (1 of 1)")).toBeVisible();
 	await takeArtifact(page, "t3-owners-1of1", "desktop");
-});
+	},
+);
 
-test("safe screen matrix: deployed safe baseline states", async ({ page }) => {
+test(
+	"safe screen matrix [overview transactions local owners 2of3 guard inactive modules empty]: deployed safe baseline states",
+	async ({ page }) => {
 	await page.addInitScript(() => window.localStorage.clear());
 	await connectDevWallet(page, 0);
 	await deployThreeOwnerSafe(page);
@@ -124,12 +159,17 @@ test("safe screen matrix: deployed safe baseline states", async ({ page }) => {
 
 	await page.setViewportSize(desktopViewport);
 	await createPendingTransaction(page);
+	await setScreenSearch(page, "transactions");
+	await expect(
+		page.getByRole("heading", { name: "Transactions", exact: true }),
+	).toBeVisible();
 	await expect(page.getByText(/Local-only:/).first()).toBeVisible();
-	await page.getByRole("heading", { name: "Transactions", exact: true }).scrollIntoViewIfNeeded();
+	await expect(page.getByRole("button", { name: "Sign" }).first()).toBeVisible();
 	await takeArtifact(page, "t2-transactions-local", "desktop");
 	await takeArtifact(page, "t2-transactions", "mobile");
 
 	await page.setViewportSize(desktopViewport);
+	await setScreenSearch(page, null);
 	await page.getByRole("heading", { name: /Owners \(\d+\)/ }).first().scrollIntoViewIfNeeded();
 	await takeArtifact(page, "t3-owners-2of3", "desktop");
 	await takeArtifact(page, "t3-owners", "mobile");
@@ -171,4 +211,5 @@ test("safe screen matrix: deployed safe baseline states", async ({ page }) => {
 			await takeArtifact(page, "t5-modules-active", "desktop");
 		}
 	}
-});
+	},
+);

@@ -39,6 +39,7 @@ export function PendingTxRow({
 		signed: index < confirmations,
 	}));
 	const actionLabel = actionLabelForState(state);
+	const actionDisabled = state === "pending" && !onAction;
 
 	return (
 		<div className="ds-safe-pending-row">
@@ -61,7 +62,7 @@ export function PendingTxRow({
 					<Badge variant={badgeVariantForState(state)}>executed</Badge>
 				) : (
 					<Button
-						disabled={state === "pending"}
+						disabled={actionDisabled}
 						onClick={onAction}
 						variant={state === "ready" ? "success" : "outline"}
 					>
