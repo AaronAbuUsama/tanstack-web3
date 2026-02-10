@@ -1,0 +1,112 @@
+.ds-primitive-btn {
+	align-items: center;
+	border: var(--ds-border-regular);
+	cursor: pointer;
+	display: inline-flex;
+	font-family: var(--ds-font-primary);
+	font-size: var(--ds-type-13);
+	font-weight: var(--ds-font-weight-bold);
+	gap: var(--ds-space-6);
+	padding: var(--ds-space-10) var(--ds-space-20);
+	transition: all 0.1s;
+}
+
+.ds-primitive-btn:hover:not(:disabled) {
+	box-shadow: none;
+	transform: translate(2px, 2px);
+}
+
+.ds-primitive-btn:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+	transform: none;
+}
+
+.ds-primitive-btn--primary {
+	background: var(--ds-color-yellow);
+	box-shadow: var(--ds-shadow-sm);
+}
+
+.ds-primitive-btn--danger {
+	background: var(--ds-color-red);
+	box-shadow: var(--ds-shadow-sm);
+	color: var(--ds-color-white);
+}
+
+.ds-primitive-btn--success {
+	background: var(--ds-color-green);
+	box-shadow: var(--ds-shadow-sm);
+}
+
+.ds-primitive-btn--outline {
+	background: var(--ds-color-white);
+	box-shadow: var(--ds-shadow-sm);
+}
+
+.ds-primitive-btn--ghost {
+	background: none;
+	border: none;
+	opacity: 0.6;
+	padding: var(--ds-space-8) var(--ds-space-12);
+}
+
+.ds-primitive-btn--ghost:hover:not(:disabled) {
+	opacity: 1;
+	transform: none;
+}
+
+.ds-primitive-badge {
+	border: var(--ds-border-inline);
+	display: inline-flex;
+	font-family: var(--ds-font-primary);
+	font-size: var(--ds-type-10);
+	font-weight: var(--ds-font-weight-bold);
+	letter-spacing: 1px;
+	padding: var(--ds-space-3) var(--ds-space-8);
+	text-transform: uppercase;
+}
+
+.ds-primitive-badge--header {
+	background: var(--ds-color-yellow);
+	color: var(--ds-color-black);
+}
+
+.ds-primitive-badge--nav {
+	background: var(--ds-color-pink);
+	color: var(--ds-color-white);
+	font-size: var(--ds-type-11);
+	padding: var(--ds-space-2) var(--ds-space-8);
+}
+
+.ds-primitive-badge--inverse {
+	background: var(--ds-color-black);
+	color: var(--ds-color-yellow);
+	font-family: var(--ds-font-mono);
+	font-size: var(--ds-type-12);
+}
+
+.ds-primitive-field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ds-space-6);
+}
+
+.ds-primitive-label {
+	font-size: var(--ds-type-11);
+	font-weight: var(--ds-font-weight-bold);
+	letter-spacing: 1.5px;
+	text-transform: uppercase;
+}
+
+.ds-primitive-input {
+	background: var(--ds-color-white);
+	border: var(--ds-border-regular);
+	font-family: var(--ds-font-mono);
+	font-size: var(--ds-type-13);
+	outline: none;
+	padding: var(--ds-space-10) var(--ds-space-14);
+}
+
+.ds-primitive-input:focus {
+	box-shadow: var(--ds-shadow-sm);
+}
