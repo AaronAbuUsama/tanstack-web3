@@ -1,10 +1,19 @@
 import { useState } from 'react'
-import { getDevWalletActiveSigner } from '../../web3/dev-wallet'
+import { CommandCenterSetupRuntime } from '../../design-system/compositions/command-center'
+import { commandCenterSidebarSections } from '../../design-system/fixtures/command-center'
+import {
+  getDevWalletActiveAccountIndex,
+  getDevWalletActiveSigner,
+} from '../../web3/dev-wallet'
 import type { useSafe } from '../core/use-safe'
 import type { RuntimePolicy } from '../runtime'
+import { mapSetupRuntimeScreen } from '../screens/mappers/setup-runtime'
+import type { SafeScreenId } from '../screens/types'
 
 interface SetupViewProps {
+  activeScreen?: SafeScreenId
   address: string | undefined
+  chainLabel?: string
   safe: ReturnType<typeof useSafe>
   rpcUrl: string
   runtimePolicy: RuntimePolicy
@@ -17,7 +26,14 @@ function resolveSetupSigner(runtimePolicy: RuntimePolicy) {
   return undefined
 }
 
-export default function SetupView({ address, safe, rpcUrl, runtimePolicy }: SetupViewProps) {
+export default function SetupView({
+  activeScreen = 'overview',
+  address,
+  chainLabel,
+  safe,
+  rpcUrl,
+  runtimePolicy,
+}: SetupViewProps) {
   const [owners, setOwners] = useState<string[]>([address ?? ''])
   const [threshold, setThreshold] = useState(1)
   const [deploying, setDeploying] = useState(false)
@@ -73,6 +89,38 @@ export default function SetupView({ address, safe, rpcUrl, runtimePolicy }: Setu
 
   const updateOwner = (index: number, value: string) => {
     setOwners((prev) => prev.map((o, i) => (i === index ? value : o)))
+  }
+
+  if (activeScreen === 'setup-runtime') {
+    const setupRuntimeScreen = mapSetupRuntimeScreen({
+      activeChainLabel: chainLabel ?? 'Chiado (Anvil Fork)',
+      activeDevIndex: getDevWalletActiveAccountIndex(),
+      policy: runtimePolicy,
+    })
+
+    const navSections = commandCenterSidebarSections.map((section) => ({
+      ...section,
+      items: section.items.map((item) => ({
+        ...item,
+        active: item.id === 'overview',
+      })),
+    }))
+
+    return (
+      <div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
+        <CommandCenterSetupRuntime
+          {...setupRuntimeScreen}
+          address={address}
+          chainLabel={chainLabel ?? 'gnosis chain'}
+          embedded
+          navSections={navSections}
+          safeAddress={connectAddress || '0x...'}
+          safeBalanceLabel="0.0"
+          statusBalanceLabel="0 ETH"
+          thresholdLabel={`${threshold} of ${owners.length}`}
+        />
+      </div>
+    )
   }
 
   return (

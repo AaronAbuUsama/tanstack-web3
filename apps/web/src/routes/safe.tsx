@@ -112,7 +112,9 @@ function SafeDashboard() {
 
         {!safe.isInSafe && isConnected && (
           <SetupView
+            activeScreen={screen}
             address={address}
+            chainLabel={chain?.name}
             safe={safe}
             rpcUrl={rpcUrl}
             runtimePolicy={runtimePolicy}

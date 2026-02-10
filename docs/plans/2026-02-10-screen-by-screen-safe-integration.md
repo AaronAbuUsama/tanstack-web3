@@ -608,7 +608,30 @@ Status:
   - Notes: Added deterministic single-owner module activation inside matrix for active module evidence, while preserving 2-of-3 baseline empty-module coverage. Full `e2e:safe-screen-matrix` (3 tests) and `e2e:safe-smoke` pass.
 
 ### Task 6 Evidence
-- Pending.
+- Fail-first:
+  - Command: `cd apps/web && bun run vitest run src/safe/screens/mappers/setup-runtime.test.ts`
+  - Result: FAIL
+  - Reason: Setup/runtime mapper tests did not exist (`No test files found`).
+- Automated:
+  - Command(s):
+    - `cd apps/web && bun run vitest run src/safe/screens/mappers/setup-runtime.test.ts src/safe/governance/SetupView.test.tsx`
+    - `cd apps/web && bun run test`
+  - Result: PASS (setup/runtime-focused tests + full `apps/web` suite).
+- Browser:
+  - Command(s):
+    - `cd apps/web && bun run e2e:safe-smoke`
+    - `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "setup-runtime.*account0"`
+    - `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "setup-runtime.*account1"`
+  - Result: PASS
+  - Screenshots:
+    - `apps/web/e2e/artifacts/prd4/t6-setup-runtime-account0-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t6-setup-runtime-account1-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t6-setup-runtime-mobile.png`
+- Artifact assertion:
+  - Command: `ls -la apps/web/e2e/artifacts/prd4 | rg 't6-setup-runtime-(account0|account1|mobile).*\.png'`
+  - Result: PASS
+- Regression sweep:
+  - Notes: Added `setup-runtime` screen mapping and route wiring (`/safe?screen=setup-runtime` for setup-state rendering) while preserving default setup flow for existing smoke path. Full matrix and smoke regressions pass.
 
 ### Task 7 Evidence
 - Pending.

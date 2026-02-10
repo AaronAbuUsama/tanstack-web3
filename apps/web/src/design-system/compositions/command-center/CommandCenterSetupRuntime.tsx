@@ -10,7 +10,11 @@ import "./command-center.css";
 export interface RuntimePolicySummary {
 	appContext: "standalone" | "safe-app-iframe";
 	signerProvider: "dev-mnemonic-account" | "injected-eip1193" | "none";
-	txSubmissionPath: "protocol-kit-direct" | "safe-apps-sdk" | "none";
+	txSubmissionPath:
+		| "protocol-kit-direct"
+		| "safe-apps-sdk"
+		| "transaction-service"
+		| "none";
 }
 
 export interface DevAccountOption {
