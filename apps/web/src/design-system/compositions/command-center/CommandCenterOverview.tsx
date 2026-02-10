@@ -8,9 +8,10 @@ import type {
 	ActivityListItem,
 	StatStripItem,
 } from "../../fixtures/command-center";
-import { ActivityList, SidebarNav, StatStrip } from "../../patterns";
+import { ActivityList, StatStrip } from "../../patterns";
 import type { SidebarNavSection } from "../../shells";
-import { PanelShell, StatusBarShell } from "../../shells";
+import { PanelShell } from "../../shells";
+import { CommandCenterScreenShell } from "./CommandCenterScreenShell";
 import "./command-center.css";
 
 export interface PendingPreview {
@@ -56,58 +57,46 @@ export function CommandCenterOverview({
 	thresholdLabel,
 }: CommandCenterOverviewProps) {
 	return (
-		<section className={`ds-command-center ${embedded ? "is-embedded" : ""}`}>
-			<StatusBarShell
-				address={address}
-				balanceLabel={statusBalanceLabel}
-				chainLabel={chainLabel}
-				connected
-			/>
-			<div className="ds-command-center__layout">
-				<SidebarNav
-					navSections={navSections}
-					safeAddress={safeAddress}
-					safeBalanceLabel={safeBalanceLabel}
-					thresholdLabel={thresholdLabel}
-				/>
-				<main className="ds-command-center__main">
-					<h2 className="ds-command-center__title">
-						<span aria-hidden className="ds-command-center__title-icon">
-							📊
-						</span>
-						Command Center Overview
-					</h2>
+		<CommandCenterScreenShell
+			address={address}
+			chainLabel={chainLabel}
+			embedded={embedded}
+			navSections={navSections}
+			safeAddress={safeAddress}
+			safeBalanceLabel={safeBalanceLabel}
+			statusBalanceLabel={statusBalanceLabel}
+			thresholdLabel={thresholdLabel}
+			title="Command Center Overview"
+			titleIcon="📊"
+		>
+			<StatStrip items={stats} />
 
-					<StatStrip items={stats} />
+			<div className="ds-command-center__panels">
+				<div className="ds-command-center__panel-stack">
+					<GuardStatusBanner
+						active={guardActive}
+						description={guardDescription}
+						title={guardTitle}
+					/>
+					<OwnerThresholdChip valueLabel={thresholdLabel} />
+				</div>
 
-					<div className="ds-command-center__panels">
-						<div className="ds-command-center__panel-stack">
-							<GuardStatusBanner
-								active={guardActive}
-								description={guardDescription}
-								title={guardTitle}
+				<div className="ds-command-center__panel-stack">
+					<ActivityList entries={activity} />
+					{pendingPreview ? (
+						<PanelShell tagLabel="pending" title="Pending Preview">
+							<PendingTxRow
+								confirmations={pendingPreview.confirmations}
+								idLabel={pendingPreview.idLabel}
+								state={pendingPreview.state}
+								threshold={pendingPreview.threshold}
+								toLabel={pendingPreview.toLabel}
+								valueLabel={pendingPreview.valueLabel}
 							/>
-							<OwnerThresholdChip valueLabel={thresholdLabel} />
-						</div>
-
-						<div className="ds-command-center__panel-stack">
-							<ActivityList entries={activity} />
-							{pendingPreview ? (
-								<PanelShell tagLabel="pending" title="Pending Preview">
-									<PendingTxRow
-										confirmations={pendingPreview.confirmations}
-										idLabel={pendingPreview.idLabel}
-										state={pendingPreview.state}
-										threshold={pendingPreview.threshold}
-										toLabel={pendingPreview.toLabel}
-										valueLabel={pendingPreview.valueLabel}
-									/>
-								</PanelShell>
-							) : null}
-						</div>
-					</div>
-				</main>
+						</PanelShell>
+					) : null}
+				</div>
 			</div>
-		</section>
+		</CommandCenterScreenShell>
 	);
 }

@@ -1,0 +1,164 @@
+import { useId } from "react";
+import { Button, Input } from "../../primitives";
+import { PanelShell } from "../../shells";
+import {
+	CommandCenterScreenShell,
+	type CommandCenterScreenShellProps,
+} from "./CommandCenterScreenShell";
+import "./command-center.css";
+
+export interface ModuleDelegate {
+	address: string;
+	id: string;
+	resetLabel: string;
+	resetPeriod: string;
+	usedLabel: string;
+	utilizationPercent: number;
+}
+
+export interface CommandCenterModulesProps
+	extends Omit<
+		CommandCenterScreenShellProps,
+		"children" | "title" | "titleIcon"
+	> {
+	delegates: ModuleDelegate[];
+	moduleAddress: string;
+	moduleName: string;
+}
+
+export function CommandCenterModules({
+	address,
+	chainLabel,
+	delegates,
+	embedded,
+	moduleAddress,
+	moduleName,
+	navSections,
+	safeAddress,
+	safeBalanceLabel,
+	statusBalanceLabel,
+	thresholdLabel,
+}: CommandCenterModulesProps) {
+	const allowanceResetId = useId();
+
+	return (
+		<CommandCenterScreenShell
+			address={address}
+			chainLabel={chainLabel}
+			embedded={embedded}
+			navSections={navSections}
+			safeAddress={safeAddress}
+			safeBalanceLabel={safeBalanceLabel}
+			statusBalanceLabel={statusBalanceLabel}
+			thresholdLabel={thresholdLabel}
+			title="Allowance Module"
+			titleIcon="⚙"
+		>
+			<section className="ds-command-modules__status-banner">
+				<span aria-hidden className="ds-command-modules__status-icon">
+					🔐
+				</span>
+				<div className="ds-command-modules__status-copy">
+					<h3>{moduleName}</h3>
+					<p>
+						Active • {moduleAddress} • delegates can spend without multi-sig
+						approval up to allowance limits.
+					</p>
+				</div>
+				<div className="ds-command-modules__status-actions">
+					<Button variant="outline">Add Delegate</Button>
+					<Button variant="danger">Disable</Button>
+				</div>
+			</section>
+
+			<div className="ds-command-modules__grid">
+				{delegates.map((delegate) => (
+					<article
+						className="ds-command-modules__delegate-card"
+						key={delegate.id}
+					>
+						<div className="ds-command-modules__delegate-head">
+							<span aria-hidden className="ds-command-modules__delegate-avatar">
+								♛
+							</span>
+							<button
+								aria-label={`Open actions for ${delegate.address}`}
+								className="ds-command-modules__menu-btn"
+								type="button"
+							>
+								...
+							</button>
+						</div>
+						<code className="ds-command-modules__delegate-address">
+							{delegate.address}
+						</code>
+						<div className="ds-command-modules__allowance">
+							<span className="ds-command-modules__allowance-label">
+								Allowance Used
+							</span>
+							<div className="ds-command-guard__progress-track">
+								<div
+									className="ds-command-modules__allowance-fill"
+									style={{ width: `${delegate.utilizationPercent}%` }}
+								/>
+							</div>
+							<div className="ds-command-modules__allowance-meta">
+								<span>{delegate.usedLabel}</span>
+								<span>{delegate.utilizationPercent}%</span>
+							</div>
+						</div>
+						<div className="ds-command-modules__delegate-reset">
+							<span>{delegate.resetLabel}</span>
+							<span className="ds-command-modules__reset-badge">
+								{delegate.resetPeriod}
+							</span>
+						</div>
+					</article>
+				))}
+
+				<button className="ds-command-modules__add-delegate" type="button">
+					<span aria-hidden className="ds-command-modules__plus">
+						+
+					</span>
+					Add Delegate
+				</button>
+			</div>
+
+			<PanelShell title="Set Allowance">
+				<div className="ds-command-form-grid">
+					<Input label="Delegate Address" placeholder="0x..." />
+					<Input label="Allowance (ETH)" placeholder="0.2" />
+					<div className="ds-primitive-field">
+						<label className="ds-primitive-label" htmlFor={allowanceResetId}>
+							Reset Period
+						</label>
+						<select className="ds-command-select" id={allowanceResetId}>
+							<option>Daily (24h)</option>
+							<option>Weekly (7d)</option>
+							<option>Monthly (30d)</option>
+							<option>No reset</option>
+						</select>
+					</div>
+					<div className="ds-command-form-grid__full ds-command-form-grid__actions">
+						<Button>Set Allowance</Button>
+					</div>
+				</div>
+			</PanelShell>
+
+			<PanelShell tagLabel="delegate view" title="Execute as Delegate">
+				<div className="ds-command-form-grid">
+					<div className="ds-command-form-grid__full">
+						<Input label="Send To" placeholder="0x..." />
+					</div>
+					<Input label="Amount (ETH)" placeholder="0.05" />
+					<div className="ds-command-form-grid__full ds-command-form-grid__actions is-spread">
+						<span className="ds-command-copy is-muted">
+							Available: 0.08 ETH remaining
+						</span>
+						<Button variant="success">Execute Spend</Button>
+					</div>
+				</div>
+			</PanelShell>
+		</CommandCenterScreenShell>
+	);
+}

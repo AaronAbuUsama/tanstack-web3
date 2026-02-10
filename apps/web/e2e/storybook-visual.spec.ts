@@ -37,8 +37,8 @@ const storyGroups = [
   },
   {
     name: 'compositions',
-    label: 'Composition CommandCenterOverview',
-    maxStories: 6,
+    label: 'Compositions CommandCenter Screens',
+    maxStories: 20,
     patterns: [/^design-system-compositions-command-center-/i],
   },
   // Bootstrap fallback before PRD3 groups exist.
