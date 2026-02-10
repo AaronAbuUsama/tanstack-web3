@@ -28,6 +28,11 @@ Your app needs a `manifest.json` in the public directory:
 5. Enter your local URL: `http://localhost:3000`
 6. Your app loads inside the Safe iframe
 
+For deterministic standalone Safe validation (connect, signer switch, setup, pending status), run:
+
+- `cd apps/web && bun run e2e:safe-smoke`
+- See: `apps/web/e2e/README.md`
+
 ## How Detection Works
 
 The `detectSafeMode()` function in `apps/web/src/safe/core/detect.ts` checks if `window.parent !== window`. If the app is in an iframe, it assumes Safe App mode and initializes the Safe Apps SDK.

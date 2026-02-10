@@ -79,12 +79,13 @@ bun run dev:web
 
 ### Dev Wallet
 
-In development mode (`import.meta.env.DEV === true`), a **Dev Wallet** connector is automatically included. This connector uses Anvil's first default account:
+In development mode (`import.meta.env.DEV === true`), a **Dev Wallet** connector is automatically included. It derives accounts from the default Anvil mnemonic and starts on account index `#0`.
 
 - **Address**: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
-- **Private Key**: `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`
+- **Account #1**: `0x70997970C51812dc3A010C7d01b50e0d17dc79C8`
 
-This account is pre-funded with 10,000 ETH (Anvil's default balance) on the local Anvil fork, so you can test everything without MetaMask or real funds. Select **Gnosis Chiado** in the chain switcher to connect to your local Anvil fork.
+Use the **Dev Account** selector in the wallet bar to switch between indices (`#0`, `#1`, ...). Accounts are pre-funded on the local Anvil fork, so you can test without MetaMask or real funds. Select **Anvil (Chiado Fork)** in the chain switcher to connect to your local Anvil fork.
+If you need a custom mnemonic in development, set `VITE_DEV_WALLET_MNEMONIC` before running the web app.
 
 Navigate to **http://localhost:3000** to see the application.
 
@@ -105,7 +106,7 @@ Navigate to `/wallet` to see the wallet connection page. This page demonstrates:
 The wagmi config (`apps/web/src/web3/config.ts`) registers two connectors:
 
 1. **Injected** -- connects to browser wallets like MetaMask, Rabby, or Coinbase Wallet
-2. **Dev Wallet** -- only available in dev mode; auto-connects Anvil's default account
+2. **Dev Wallet** -- only available in dev mode; uses mnemonic-derived local accounts with index switching
 
 When you click "Connect Wallet", wagmi's `useConnect` hook lists all available connectors. In production builds, only the injected connector is shown.
 
@@ -120,11 +121,11 @@ The boilerplate supports four chains:
 | Gnosis         | 100      | All         |
 | Gnosis Chiado  | 10200    | All         |
 
-In development mode, the Gnosis Chiado transport is routed to `http://127.0.0.1:8545` (your local Anvil fork). This means selecting "Gnosis Chiado" in the chain switcher connects to your local chain, giving you the full Safe SDK with 10,000 xDAI to work with.
+In development mode, the Gnosis Chiado transport is routed to `http://127.0.0.1:8545` (your local Anvil fork). This means selecting "Anvil (Chiado Fork)" in the chain switcher connects to your local chain with funded local accounts.
 
 ### How ConnectWallet Works
 
-The `ConnectWallet` component (`apps/web/src/components/ConnectWallet.tsx`) uses these wagmi hooks:
+The `ConnectWallet` component (`apps/web/src/web3/ConnectWallet.tsx`) uses these wagmi hooks:
 
 - `useAccount()` -- returns `address`, `isConnected`, and `chain`
 - `useConnect()` -- provides `connect()` function and list of `connectors`
@@ -187,19 +188,19 @@ Below that, a grid of information cards displays the Safe's configuration.
 
 ### Owners Component
 
-The Owners card (`apps/web/src/components/safe/Owners.tsx`) lists every owner address. If your currently connected wallet address matches an owner, it shows a "(you)" indicator next to that address.
+The Owners card (`apps/web/src/safe/governance/Owners.tsx`) lists every owner address. If your currently connected wallet address matches an owner, it shows a "(you)" indicator next to that address.
 
 ### Threshold Component
 
-The Threshold card (`apps/web/src/components/safe/Threshold.tsx`) displays the current M-of-N configuration with a visual progress bar. For example, "2 of 3 owners required" with a bar showing 2/3 filled.
+The Threshold card (`apps/web/src/safe/governance/Threshold.tsx`) displays the current M-of-N configuration with a visual progress bar. For example, "2 of 3 owners required" with a bar showing 2/3 filled.
 
 ### Modules Component
 
-The Modules card displays any Safe modules that have been enabled. The dashboard also includes a full `ModulePanel` component (`apps/web/src/components/safe/ModulePanel.tsx`) with deploy, enable, disable, and allowance management for the AllowanceModule contract (more on this in Section 6).
+The Modules card displays any Safe modules that have been enabled. The dashboard also includes a full `ModulePanel` component (`apps/web/src/safe/module/ModulePanel.tsx`) with deploy, enable, disable, and allowance management for the AllowanceModule contract (more on this in Section 6).
 
 ### How SafeProvider Works
 
-The `SafeProvider` (`apps/web/src/lib/safe/provider.tsx`) is a React context provider that manages all Safe state. On mount, it runs `detectSafeMode()`:
+The `SafeProvider` (`apps/web/src/safe/core/provider.tsx`) is a React context provider that manages all Safe state. On mount, it runs `detectSafeMode()`:
 
 - If the app is running inside an iframe (e.g., embedded in the Safe web app at app.safe.global), it sets mode to `"iframe"` and loads Safe info via the Safe Apps SDK
 - If running as a standalone page, it sets mode to `"standalone"` and waits for the user to deploy or connect
@@ -223,9 +224,9 @@ These are reusable web3 UI components:
 
 ## 5. Transactions
 
-### Navigate to /safe/transactions
+### Transactions Area On /safe
 
-The transactions page is a child route of `/safe`. It shows the transaction builder, the pending transaction queue, and the execution history.
+The transactions builder, pending queue, and execution history are rendered in the `/safe` dashboard view.
 
 If no Safe is connected, you will see a prompt to go back to the Safe dashboard first.
 
@@ -301,7 +302,7 @@ All three operations follow the same pattern in code:
 3. Execute it on-chain
 4. Reconnect to the Safe to refresh state from the blockchain
 
-The handler functions are in `apps/web/src/routes/safe.tsx` (DashboardView), and the Protocol Kit wrappers are in `apps/web/src/lib/safe/standalone.ts`.
+The handler functions are in `apps/web/src/safe/transactions/DashboardView.tsx`, and the Protocol Kit wrappers are in `apps/web/src/safe/core/standalone.ts`.
 
 ### Guard Management
 
@@ -315,7 +316,7 @@ Transaction guards are pre/post execution hooks that the Safe calls for every tr
 
 **Disable the guard**: Click "Disable Guard" to remove it. This is also a Safe transaction.
 
-The GuardPanel component is at `apps/web/src/components/safe/GuardPanel.tsx`. It uses the ABI bridge (`lib/contracts/`) for deployment and contract reads.
+The GuardPanel component is at `apps/web/src/safe/guard/GuardPanel.tsx`. It uses the ABI bridge (`apps/web/src/safe/contracts/`) for deployment and contract reads.
 
 ### Module Management
 
@@ -331,7 +332,7 @@ Modules are smart contracts that can execute transactions on behalf of the Safe,
 
 **Execute allowance**: The delegate can spend from their allowance by calling `executeAllowance()` directly on the module contract. This is NOT a Safe transaction — it is a direct call from the delegate's wallet, which is the whole point of modules: authorized delegates can act without multi-sig approval.
 
-The ModulePanel component is at `apps/web/src/components/safe/ModulePanel.tsx`.
+The ModulePanel component is at `apps/web/src/safe/module/ModulePanel.tsx`.
 
 ### ABI Bridge
 
@@ -423,33 +424,46 @@ tanstack-web3/
           TxQueue.tsx              # Pending transaction list
           TxHistory.tsx            # Executed transaction list
         web3/
+          config.ts               # Wagmi config (chains, connectors, transports)
+          dev-wallet.ts           # Dev-only mnemonic wallet connector for Anvil
           AddressDisplay.tsx       # Truncated address + copy
           ChainBadge.tsx           # Network indicator
           TokenBalances.tsx        # Token balance display
-      lib/
-        wagmi.ts                   # Wagmi config (chains, connectors, transports)
-        dev-wallet.ts              # Dev-only wallet connector for Anvil
+      safe/
         contracts/
           abis.ts                  # Typed ABI arrays for all contracts
           bytecodes.ts             # Deployment bytecode hex strings
           deploy.ts                # Chain-agnostic deployment helpers
           index.ts                 # Barrel re-export
-        safe/
+        core/
           detect.ts                # iframe vs standalone detection
           provider.tsx             # SafeProvider context
-          hooks.ts                 # useSafe context hook
           standalone.ts            # Protocol Kit integration
-          transactions.ts          # buildTransaction, buildContractCall
           iframe.ts                # Safe Apps SDK integration
-          multisig.ts              # Transaction Service (API Kit)
-          relay.ts                 # Gelato relay for gasless txs
-          api.ts                   # API Kit factory
+          use-safe.ts              # useSafe context hook
+          types.ts                 # Safe SDK type bridge
+        runtime/
+          resolve-runtime-policy.ts # AppContext/SignerProvider/TxSubmissionPath resolver
+          use-runtime-policy.ts    # Runtime policy hook
+        governance/
+          SetupView.tsx            # Safe create/connect view
+          SafeOverview.tsx         # Safe summary and explanatory copy
+        guard/
+          GuardPanel.tsx           # Guard deploy/enable/disable
+        module/
+          ModulePanel.tsx          # Module deploy/allowance management
+        transactions/
+          transactions.ts          # buildTransaction helper
+          use-transactions.ts      # local-first transaction flow state
+          TxBuilder.tsx            # Transaction input form
+          TxQueue.tsx              # Pending transaction list
+          TxHistory.tsx            # Executed transaction list
+          TransactionFlow.tsx      # Step-by-step tx status
       routes/
         __root.tsx                 # Root layout
         index.tsx                  # Home page
         wallet.tsx                 # /wallet route
-        safe.tsx                   # /safe route (parent)
-        safe.transactions.tsx      # /safe/transactions (child)
+        safe.tsx                   # /safe route
   packages/contracts/
     src/
       SpendingLimitGuard.sol
@@ -543,7 +557,7 @@ function GovernancePage() {
 
 3. TanStack Router automatically regenerates `routeTree.gen.ts` on save
 
-Note on dot-separator routing: `safe.transactions.tsx` creates a child route `/safe/transactions` under the `/safe` parent. The parent route (`safe.tsx`) must include `<Outlet />` for child routes to render. If you want a flat sibling route instead, use an underscore: `safe_transactions.tsx`.
+This project currently keeps Safe management and transaction UX together in `apps/web/src/routes/safe.tsx`.
 
 ### Adding Smart Contracts
 
@@ -554,16 +568,15 @@ Note on dot-separator routing: `safe.transactions.tsx` creates a child route `/s
 
 ### Connecting Contracts to the Safe UI
 
-Use `buildContractCall()` from `transactions.ts` to encode a contract function call as a Safe transaction:
+Use `buildTransaction()` from `apps/web/src/safe/transactions/transactions.ts` to encode a Safe meta-transaction:
 
 ```typescript
-import { buildContractCall } from '../lib/safe/transactions'
+import { buildTransaction } from '../safe/transactions/transactions'
 
-const txData = buildContractCall({
+const txData = buildTransaction({
   to: '0xYourContractAddress' as `0x${string}`,
-  abi: YourContractABI,
-  functionName: 'increment',
-  args: [],
+  value: '0',
+  data: '0x',
 })
 
 // Then create and execute via the Safe:
@@ -590,7 +603,7 @@ For production multi-sig workflows across multiple sessions, you can use the Saf
 
 ### ERC-4337 Next Steps
 
-Safe can serve as a smart account in the ERC-4337 (Account Abstraction) flow. To add this integration, create an `account-abstraction.ts` module in `lib/safe/` that implements:
+Safe can serve as a smart account in the ERC-4337 (Account Abstraction) flow. To add this integration, create an `account-abstraction.ts` module in `apps/web/src/safe/core/` that implements:
 
 - Gasless transactions via paymasters
 - Bundled operations
@@ -658,9 +671,9 @@ const displayBalance = balance?.value !== undefined
 
 If you see errors about `Buffer is not defined`, make sure `vite-plugin-node-polyfills` is installed and configured in your Vite config. This is required because `@safe-global/protocol-kit` uses Node.js `Buffer` internally.
 
-### TanStack Router Dot-Separator Routing
+### Safe Route Structure
 
-A file named `safe.transactions.tsx` creates a **child route** of `safe.tsx`. The parent route must render `<Outlet />` for the child to appear. If you want a flat sibling route instead, rename the file to `safe_transactions.tsx` (underscore instead of dot).
+The Safe dashboard currently lives in `apps/web/src/routes/safe.tsx` and renders setup + transaction flows together on `/safe`.
 
 ### Protocol Kit Import Errors
 
@@ -699,7 +712,7 @@ The Dev Wallet connector is only included when `import.meta.env.DEV` is `true`. 
 - It shows up with `bun run dev` (development mode)
 - It does **not** show up with `bun run build && bun run start` (production mode)
 
-This is intentional to prevent exposing the dev private key in production.
+This is intentional to prevent exposing deterministic test-wallet signing paths in production bundles.
 
 ### Transaction Fails Immediately After Signing
 

@@ -6,10 +6,19 @@ import {
 } from 'viem'
 import { mnemonicToAccount } from 'viem/accounts'
 
-export const DEV_WALLET_MNEMONIC =
+export const DEV_WALLET_DEFAULT_MNEMONIC =
   'test test test test test test test test test test test junk' as const
+export const DEV_WALLET_MNEMONIC = DEV_WALLET_DEFAULT_MNEMONIC
 
 let activeAccountIndex = 0
+
+function getDevWalletMnemonic() {
+  if (import.meta.env.DEV) {
+    const override = import.meta.env.VITE_DEV_WALLET_MNEMONIC?.trim()
+    if (override) return override
+  }
+  return DEV_WALLET_DEFAULT_MNEMONIC
+}
 
 function assertValidAccountIndex(accountIndex: number) {
   if (!Number.isInteger(accountIndex) || accountIndex < 0) {
@@ -19,7 +28,7 @@ function assertValidAccountIndex(accountIndex: number) {
 
 export function getDevWalletAccountForIndex(accountIndex: number) {
   assertValidAccountIndex(accountIndex)
-  return mnemonicToAccount(DEV_WALLET_MNEMONIC, {
+  return mnemonicToAccount(getDevWalletMnemonic(), {
     accountIndex: 0,
     addressIndex: accountIndex,
   })

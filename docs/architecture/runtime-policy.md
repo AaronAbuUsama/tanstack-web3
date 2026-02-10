@@ -48,6 +48,7 @@ This document defines the runtime decision model for Safe flows. It is the sourc
 - Runtime policy is derived in memory and should not be persisted.
 - In dev-wallet standalone mode, signer resolution uses `dev-mnemonic-account` (mnemonic + active account index).
 - Active dev account index is runtime-only state and resets on page reload.
+- In dev mode, mnemonic may be overridden via `VITE_DEV_WALLET_MNEMONIC`; production ignores this path.
 - In iframe context, Safe host/Safe Apps SDK path is authoritative.
 - If no signer provider is available in standalone context, app must remain read-only.
 - Any change to policy logic must update this document and `resolve-runtime-policy.test.ts` in the same commit.

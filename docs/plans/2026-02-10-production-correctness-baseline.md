@@ -349,3 +349,44 @@ Record screenshots and notes in `docs/plans/2026-02-10-production-correctness-ba
 git add docs/development.md docs/safe-app.md TUTORIAL.md
 git commit -m "docs: align runtime policy documentation and remove stale references"
 ```
+
+## Validation Evidence
+
+Date: 2026-02-10
+
+### Automated validation
+
+- `cd apps/web && bun run vitest run src/web3/dev-wallet.test.ts src/safe/runtime/resolve-runtime-policy.test.ts src/safe/governance/SetupView.test.tsx`
+  - PASS (3 files, 13 tests)
+- `cd apps/web && bun run test`
+  - PASS (12 files, 45 tests)
+- `bun run test` (repo root)
+  - PASS (`@tanstack-web3/contracts` + `@tanstack-web3/web`)
+- `bun run check` (repo root)
+  - FAIL due pre-existing Biome debt in unrelated files (for example `apps/web/src/components/layout/Header.tsx`, `apps/web/vite.config.ts`, `apps/web/src/safe/contracts/bytecodes.ts`). No new PRD1 files introduced check regressions.
+
+### Real browser validation (scripted Playwright)
+
+- `cd apps/web && bun run e2e:safe-smoke`
+  - PASS
+  - Verified:
+    - `/safe` loads
+    - Dev Wallet connect works
+    - Dev Account switch `#0 -> #1` updates connected address
+    - Setup flow deploys Safe after switch
+    - Pending tx remains `Pending` at `1/2` and does not show `Ready`/`Execute` prematurely
+
+Artifacts:
+
+- `apps/web/e2e/artifacts/01-safe-connected-dev-account-0.png`
+- `apps/web/e2e/artifacts/02-safe-switched-dev-account-1.png`
+- `apps/web/e2e/artifacts/03-safe-setup-view.png`
+- `apps/web/e2e/artifacts/04-safe-deployed-dashboard.png`
+- `apps/web/e2e/artifacts/05-safe-pending-created.png`
+- `apps/web/e2e/artifacts/06-safe-pending-not-ready-before-threshold.png`
+
+### Regression sweep
+
+- Wallet connect/disconnect path: PASS
+- Safe setup visibility and deploy/connect panels: PASS
+- Tx builder render and submission path: PASS

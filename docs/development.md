@@ -36,12 +36,13 @@ This is the source of truth for `AppContext`, `SignerProvider`, and `TxSubmissio
 
 ## Dev Wallet
 
-In development mode (`import.meta.env.DEV`), a Dev Wallet connector is available that uses Hardhat's account #0:
+In development mode (`import.meta.env.DEV`), a Dev Wallet connector is available that derives accounts from the default Anvil mnemonic and exposes an account index selector in the wallet bar.
 
 - **Address**: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
-- **Private Key**: `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`
+- **Alt account (#1)**: `0x70997970C51812dc3A010C7d01b50e0d17dc79C8`
 
-This wallet auto-connects without MetaMask, perfect for local development.
+This wallet auto-connects without MetaMask, and account switching (`#0`, `#1`, ...) is useful for local multi-owner Safe testing.
+To override the mnemonic in development only, set `VITE_DEV_WALLET_MNEMONIC` before starting the app.
 
 ## Running with Anvil
 
@@ -115,4 +116,11 @@ cd apps/web && bun run test
 
 # Run contract tests
 cd packages/contracts && forge test
+
+# Run deterministic Safe smoke browser validation
+cd apps/web && bun run e2e:safe-smoke
 ```
+
+Smoke artifacts are written to:
+
+- `apps/web/e2e/artifacts/`
