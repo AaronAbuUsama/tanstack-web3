@@ -448,7 +448,37 @@ Status:
 - This PRD defines the execution and validation contract for incremental `/safe` migration with fail-first proof and required artifact assertions.
 
 ### Task 0 Evidence
-- Pending.
+- Fail-first:
+  - Command: `cd apps/web && bun run e2e:safe-screen-matrix`
+  - Result: FAIL
+  - Reason: `Script not found "e2e:safe-screen-matrix"` before harness implementation.
+- Automated:
+  - Command: N/A (Task 0 is e2e harness setup only).
+  - Result: N/A
+- Browser:
+  - Command: `cd apps/web && bun run e2e:safe-screen-matrix`
+  - Result: PASS (2 tests)
+  - Screenshots:
+    - `apps/web/e2e/artifacts/prd4/t1-overview-standalone-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t1-overview-standalone-mobile.png`
+    - `apps/web/e2e/artifacts/prd4/t2-transactions-tx-service-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t2-transactions-local-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t2-transactions-mobile.png`
+    - `apps/web/e2e/artifacts/prd4/t3-owners-1of1-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t3-owners-2of3-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t3-owners-mobile.png`
+    - `apps/web/e2e/artifacts/prd4/t4-guard-inactive-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t4-guard-mobile.png`
+    - `apps/web/e2e/artifacts/prd4/t5-modules-empty-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t5-modules-mobile.png`
+    - `apps/web/e2e/artifacts/prd4/t6-setup-runtime-account0-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t6-setup-runtime-account1-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t6-setup-runtime-mobile.png`
+- Artifact assertion:
+  - Command: `ls -la apps/web/e2e/artifacts/prd4 | rg '^-'`
+  - Result: PASS
+- Regression sweep:
+  - Notes: Existing smoke and multisig scripts were not modified and remain available. Task 0 introduces a new harness without changing runtime production code.
 
 ### Task 1 Evidence
 - Pending.

@@ -18,6 +18,7 @@ From `apps/web`:
 bun run e2e:storybook-visual
 bun run e2e:safe-multisig
 bun run e2e:safe-smoke
+bun run e2e:safe-screen-matrix
 ```
 
 The Playwright config starts:
@@ -38,6 +39,7 @@ Screenshots are written to:
 - `apps/web/e2e/artifacts/`
 - `apps/web/e2e/artifacts/prd2/` for multisigner PRD2 captures
 - `apps/web/e2e/artifacts/prd3/` for Storybook PRD3 captures
+- `apps/web/e2e/artifacts/prd4/` for screen-by-screen PRD4 matrix captures
 
 Playwright test output is written to:
 
