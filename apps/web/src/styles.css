@@ -1,25 +1,15 @@
 @import "tailwindcss";
-@import "./design-system/foundations/tokens.css";
-@import "./design-system/foundations/typography.css";
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
 
 body {
-  margin: 0;
-  background: var(--ds-color-bg-canvas);
-  color: var(--ds-color-fg-default);
-  font-family: var(--ds-font-sans);
-  font-size: var(--ds-type-body-size);
-  font-weight: var(--ds-type-body-weight);
-  line-height: var(--ds-type-body-line);
+  @apply m-0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: var(--ds-font-mono);
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
 }
