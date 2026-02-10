@@ -101,6 +101,23 @@ async function deployThreeOwnerSafe(page: Page) {
 	await expect(page.getByText("2 of 3")).toBeVisible({ timeout: 60_000 });
 }
 
+async function deploySingleOwnerSafe(page: Page) {
+	const createSafePanel = page
+		.locator("div.bg-gray-800")
+		.filter({
+			has: page.getByRole("heading", { name: "Create New Safe" }),
+		})
+		.first();
+	await expect(createSafePanel).toBeVisible();
+
+	const ownerInput = createSafePanel.locator('input[placeholder="0x..."]').first();
+	await ownerInput.fill(ACCOUNT_ZERO);
+	await createSafePanel.getByRole("button", { name: "Deploy Safe" }).click();
+
+	await expect(page.getByText("Safe Address")).toBeVisible({ timeout: 120_000 });
+	await expect(page.getByText("1 of 1")).toBeVisible({ timeout: 60_000 });
+}
+
 async function createPendingTransaction(page: Page) {
 	const txBuilder = page
 		.locator("div.bg-gray-800")
@@ -194,20 +211,6 @@ test(
 	await takeArtifact(page, "t5-modules-empty", "desktop");
 	await takeArtifact(page, "t5-modules", "mobile");
 
-	const deployGuardButton = page.getByRole("button", { name: "Deploy Guard" });
-	if (await deployGuardButton.count()) {
-		await page.setViewportSize(desktopViewport);
-		await deployGuardButton.first().click();
-		const enableGuardButton = page.getByRole("button", { name: "Enable Guard" });
-		if (await enableGuardButton.count()) {
-			await enableGuardButton.first().click();
-			await expect(page.getByRole("heading", { name: /Transaction Guard \(1\)/ })).toBeVisible({
-				timeout: 60_000,
-			});
-			await takeArtifact(page, "t4-guard-active", "desktop");
-		}
-	}
-
 	const deployModuleButton = page.getByRole("button", { name: "Deploy AllowanceModule" });
 	if (await deployModuleButton.count()) {
 		await page.setViewportSize(desktopViewport);
@@ -221,5 +224,31 @@ test(
 			await takeArtifact(page, "t5-modules-active", "desktop");
 		}
 	}
+	},
+);
+
+test(
+	"safe screen matrix [guard active]: single-owner safe guard activation",
+	async ({ page }) => {
+		await page.addInitScript(() => window.localStorage.clear());
+		await connectDevWallet(page, 0);
+		await deploySingleOwnerSafe(page);
+
+		await page.setViewportSize(desktopViewport);
+		await page
+			.getByRole("heading", { name: /Transaction Guard \(0\)/ })
+			.scrollIntoViewIfNeeded();
+		const deployGuardButton = page.getByRole("button", { name: "Deploy Guard" }).first();
+		await expect(deployGuardButton).toBeVisible();
+		await deployGuardButton.click();
+
+		const enableGuardButton = page.getByRole("button", { name: "Enable Guard" }).first();
+		await expect(enableGuardButton).toBeVisible({ timeout: 60_000 });
+		await enableGuardButton.click();
+
+		await expect(
+			page.getByRole("heading", { name: /Transaction Guard \(1\)/ }),
+		).toBeVisible({ timeout: 60_000 });
+		await takeArtifact(page, "t4-guard-active", "desktop");
 	},
 );

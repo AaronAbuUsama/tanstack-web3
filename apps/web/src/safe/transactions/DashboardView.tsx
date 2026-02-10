@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { formatUnits } from "viem";
+import { useEffect, useState } from "react";
+import { formatEther, formatUnits, parseEther } from "viem";
 import {
+	CommandCenterGuard,
 	CommandCenterOverview,
 	CommandCenterOwners,
 	CommandCenterTransactions,
@@ -15,6 +16,12 @@ import ChainBadge from "../../web3/ChainBadge";
 import { getDevWalletActiveSigner } from "../../web3/dev-wallet";
 import TokenBalances from "../../web3/TokenBalances";
 import {
+	SpendingLimitGuardABI,
+} from "../contracts/abis";
+import {
+	deploySpendingLimitGuard,
+} from "../contracts/deploy";
+import {
 	createAddOwnerTx,
 	createChangeThresholdTx,
 	createRemoveOwnerTx,
@@ -27,6 +34,7 @@ import SafeOverview from "../governance/SafeOverview";
 import Threshold from "../governance/Threshold";
 import GuardPanel from "../guard/GuardPanel";
 import ModulePanel from "../module/ModulePanel";
+import { mapGuardScreen } from "../screens/mappers/guard";
 import { mapOwnersScreen } from "../screens/mappers/owners";
 import { mapTransactionsScreen } from "../screens/mappers/transactions";
 import { navItemForScreen } from "../screens/screen-layout";
@@ -73,7 +81,51 @@ export default function DashboardView({
 }: DashboardViewProps) {
 	const [operationLoading, setOperationLoading] = useState(false);
 	const [operationError, setOperationError] = useState<string | null>(null);
+	const [guardLoading, setGuardLoading] = useState(false);
+	const [guardError, setGuardError] = useState<string | null>(null);
+	const [guardSpendingLimit, setGuardSpendingLimit] = useState("1");
+	const [deployedGuardAddress, setDeployedGuardAddress] = useState<string | null>(
+		null,
+	);
+	const [currentGuardLimit, setCurrentGuardLimit] = useState<string | null>(null);
 	const resolveSigner = () => getDevWalletActiveSigner();
+
+	useEffect(() => {
+		if (!safe.guard || safe.guard === ZERO_ADDRESS) {
+			setCurrentGuardLimit(null);
+			return;
+		}
+
+		let cancelled = false;
+		void (async () => {
+			try {
+				const { createPublicClient, http } = await import("viem");
+				const client = createPublicClient({ transport: http(rpcUrl) });
+				const limit = await client.readContract({
+					address: safe.guard as `0x${string}`,
+					abi: SpendingLimitGuardABI,
+					functionName: "spendingLimit",
+				});
+				if (!cancelled) {
+					setCurrentGuardLimit(formatEther(limit as bigint));
+				}
+			} catch {
+				if (!cancelled) {
+					setCurrentGuardLimit(null);
+				}
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [safe.guard, rpcUrl]);
+
+	useEffect(() => {
+		if (safe.guard && safe.guard !== ZERO_ADDRESS) {
+			setDeployedGuardAddress(null);
+		}
+	}, [safe.guard]);
 
 	const {
 		pendingTxs,
@@ -152,6 +204,63 @@ export default function DashboardView({
 			);
 		} finally {
 			setOperationLoading(false);
+		}
+	};
+
+	const refreshSafeState = async () => {
+		if (!safe.safeAddress) return;
+		await safe.connectSafe(safe.safeAddress, rpcUrl, resolveSigner());
+	};
+
+	const handleDisableGuard = async () => {
+		if (!safe.safeInstance) return;
+		setGuardLoading(true);
+		setGuardError(null);
+		try {
+			const tx = await safe.safeInstance.createDisableGuardTx();
+			const signed = await signTransaction(safe.safeInstance, tx);
+			await executeTransaction(safe.safeInstance, signed);
+			await refreshSafeState();
+		} catch (err) {
+			setGuardError(err instanceof Error ? err.message : "Failed to disable guard");
+		} finally {
+			setGuardLoading(false);
+		}
+	};
+
+	const handleDeployGuard = async () => {
+		if (!safe.safeAddress) return;
+		setGuardLoading(true);
+		setGuardError(null);
+		try {
+			const result = await deploySpendingLimitGuard(
+				{ provider: rpcUrl, signer: resolveSigner() },
+				safe.safeAddress,
+				parseEther(guardSpendingLimit),
+			);
+			setDeployedGuardAddress(result.address);
+		} catch (err) {
+			setGuardError(err instanceof Error ? err.message : "Failed to deploy guard");
+		} finally {
+			setGuardLoading(false);
+		}
+	};
+
+	const handleEnableGuard = async () => {
+		if (!safe.safeInstance || !deployedGuardAddress) return;
+		setGuardLoading(true);
+		setGuardError(null);
+		try {
+			const tx = await safe.safeInstance.createEnableGuardTx(
+				deployedGuardAddress,
+			);
+			const signed = await signTransaction(safe.safeInstance, tx);
+			await executeTransaction(safe.safeInstance, signed);
+			await refreshSafeState();
+		} catch (err) {
+			setGuardError(err instanceof Error ? err.message : "Failed to enable guard");
+		} finally {
+			setGuardLoading(false);
 		}
 	};
 
@@ -250,6 +359,13 @@ export default function DashboardView({
 			}
 		: undefined;
 
+	const guardScreen = mapGuardScreen({
+		guardAddress: safe.guard,
+		currentLimitEth: currentGuardLimit,
+		spendingLimitEth: guardSpendingLimit,
+		deployedGuardAddress,
+	});
+
 	const ownersScreen = mapOwnersScreen({
 		owners: safe.owners,
 		currentAddress: address,
@@ -261,6 +377,35 @@ export default function DashboardView({
 		onConfirm: handleConfirm,
 		onExecute: handleExecute,
 	});
+
+	if (activeScreen === "guard") {
+		return (
+			<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
+				<CommandCenterGuard
+					active={guardScreen.active}
+					address={address}
+					chainLabel={chain?.name ?? "gnosis chain"}
+					deployedGuardAddress={deployedGuardAddress}
+					embedded
+					errorMessage={guardError}
+					guardAddress={guardScreen.guardAddress}
+					guardName={guardScreen.guardName}
+					isBusy={guardLoading}
+					limitSummary={guardScreen.limitSummary}
+					navSections={navSections}
+					onDeployGuard={handleDeployGuard}
+					onDisableGuard={handleDisableGuard}
+					onEnableGuard={handleEnableGuard}
+					onSpendingLimitChange={setGuardSpendingLimit}
+					safeAddress={safe.safeAddress ?? "0x..."}
+					safeBalanceLabel={safeBalanceEth}
+					spendingLimitValue={guardSpendingLimit}
+					statusBalanceLabel={`${safeBalanceEth} ETH`}
+					thresholdLabel={thresholdLabel}
+				/>
+			</div>
+		);
+	}
 
 	if (activeScreen === "owners") {
 		return (

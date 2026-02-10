@@ -556,7 +556,30 @@ Status:
   - Notes: Owners 2-of-3 capture now validates `/safe?screen=owners` rendering via URL-state switch. `safe-smoke` still passes end-to-end wallet/setup/pending confirmation flow, and full `e2e:safe-screen-matrix` passes after owners wiring.
 
 ### Task 4 Evidence
-- Pending.
+- Fail-first:
+  - Command: `cd apps/web && bun run vitest run src/safe/screens/mappers/guard.test.ts src/safe/guard/GuardPanel.test.tsx`
+  - Result: FAIL
+  - Reason: Guard mapper and guard panel tests did not exist (`No test files found`).
+- Automated:
+  - Command(s):
+    - `cd apps/web && bun run vitest run src/safe/screens/mappers/guard.test.ts src/safe/guard/GuardPanel.test.tsx`
+    - `cd apps/web && bun run test`
+  - Result: PASS (guard-focused tests + full `apps/web` suite).
+- Browser:
+  - Command(s):
+    - `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "guard.*inactive"`
+    - `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "guard.*active"`
+    - `cd apps/web && bun run e2e:safe-smoke`
+  - Result: PASS
+  - Screenshots:
+    - `apps/web/e2e/artifacts/prd4/t4-guard-active-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t4-guard-inactive-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t4-guard-mobile.png`
+- Artifact assertion:
+  - Command: `ls -la apps/web/e2e/artifacts/prd4 | rg 't4-guard-(active|inactive|mobile).*\.png'`
+  - Result: PASS
+- Regression sweep:
+  - Notes: Added a deterministic single-owner guard activation matrix case for active guard validation and kept 2-of-3 baseline for inactive guard state. Full `e2e:safe-screen-matrix` (3 tests) and `e2e:safe-smoke` both pass.
 
 ### Task 5 Evidence
 - Pending.

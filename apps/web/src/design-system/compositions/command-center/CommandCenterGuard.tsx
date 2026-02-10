@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { GuardStatusBanner } from "../../domains/safe";
 import { Button, Input } from "../../primitives";
 import { PanelShell } from "../../shells";
@@ -18,24 +19,68 @@ export interface CommandCenterGuardProps
 		CommandCenterScreenShellProps,
 		"children" | "title" | "titleIcon"
 	> {
+	active?: boolean;
+	deployedGuardAddress?: string | null;
+	errorMessage?: string | null;
 	guardAddress: string;
 	guardName: string;
+	isBusy?: boolean;
 	limitSummary: GuardLimitSummary;
+	onDeployGuard?: () => void | Promise<void>;
+	onDisableGuard?: () => void | Promise<void>;
+	onEnableGuard?: () => void | Promise<void>;
+	onSpendingLimitChange?: (nextValue: string) => void;
+	spendingLimitValue?: string;
 }
 
 export function CommandCenterGuard({
+	active = true,
 	address,
 	chainLabel,
+	deployedGuardAddress,
 	embedded,
+	errorMessage,
 	guardAddress,
 	guardName,
+	isBusy = false,
 	limitSummary,
 	navSections,
+	onDeployGuard,
+	onDisableGuard,
+	onEnableGuard,
+	onSpendingLimitChange,
 	safeAddress,
 	safeBalanceLabel,
+	spendingLimitValue,
 	statusBalanceLabel,
 	thresholdLabel,
 }: CommandCenterGuardProps) {
+	const [limitInput, setLimitInput] = useState(spendingLimitValue ?? "");
+	const deployReady = !active && Boolean(deployedGuardAddress);
+	const primaryActionLabel = active
+		? "Disable Guard"
+		: deployReady
+			? "Enable Guard"
+			: "Deploy Guard";
+
+	useEffect(() => {
+		setLimitInput(spendingLimitValue ?? "");
+	}, [spendingLimitValue]);
+
+	const handlePrimaryAction = () => {
+		if (active && onDisableGuard) {
+			void onDisableGuard();
+			return;
+		}
+		if (deployReady && onEnableGuard) {
+			void onEnableGuard();
+			return;
+		}
+		if (!deployReady && onDeployGuard) {
+			void onDeployGuard();
+		}
+	};
+
 	return (
 		<CommandCenterScreenShell
 			address={address}
@@ -50,10 +95,23 @@ export function CommandCenterGuard({
 			titleIcon="⚠"
 		>
 			<GuardStatusBanner
-				active
-				description={`Active • ${guardAddress} • blocks transactions exceeding the configured limit`}
+				active={active}
+				description={
+					active
+						? `Active • ${guardAddress} • blocks transactions exceeding the configured limit`
+						: deployReady
+							? `Deployed • ${deployedGuardAddress} • enable this guard to enforce limits`
+							: "No guard enabled • deploy a spending limit guard to enforce limits"
+				}
 				title={guardName}
 			/>
+
+			{errorMessage ? (
+				<div className="ds-command-notice is-error">{errorMessage}</div>
+			) : null}
+			{isBusy ? (
+				<div className="ds-command-notice is-info">Processing guard operation...</div>
+			) : null}
 
 			<section className="ds-command-guard__limit-display">
 				<div className="ds-command-guard__limit-value">
@@ -97,13 +155,33 @@ export function CommandCenterGuard({
 				<PanelShell title="Change Limit">
 					<div className="ds-command-form-stack">
 						<Input
-							defaultValue={limitSummary.maxLabel}
 							label="New Limit (ETH)"
+							onChange={(event) => {
+								setLimitInput(event.target.value);
+								onSpendingLimitChange?.(event.target.value);
+							}}
+							value={limitInput}
 						/>
-						<Button>Update Limit</Button>
+						<Button
+							disabled={
+								isBusy ||
+								(active ? !onDisableGuard : deployReady ? !onEnableGuard : !onDeployGuard)
+							}
+							onClick={handlePrimaryAction}
+							variant={active ? "danger" : "primary"}
+						>
+							{primaryActionLabel}
+						</Button>
+						{deployReady ? (
+							<p className="ds-command-copy is-muted">
+								Enable deployed guard at {deployedGuardAddress} to activate
+								spending checks.
+							</p>
+						) : null}
 						<p className="ds-command-copy is-muted">
-							Changing limit parameters requires deploying a new guard contract
-							and enabling it on the Safe.
+							{active
+								? "Disable guard to remove execution limit checks."
+								: "Deploying a guard creates a contract that enforces per-transaction limits when enabled."}
 						</p>
 					</div>
 				</PanelShell>
