@@ -1,0 +1,108 @@
+.ds-pattern-layout {
+	display: grid;
+	gap: var(--ds-space-24);
+}
+
+.ds-pattern-stat-strip {
+	display: grid;
+	gap: var(--ds-space-20);
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ds-pattern-stat-strip__item {
+	background: var(--ds-color-white);
+	border: var(--ds-border-regular);
+	box-shadow: var(--ds-shadow-md);
+	display: grid;
+	gap: var(--ds-space-8);
+	padding: var(--ds-space-20);
+}
+
+.ds-pattern-stat-strip__label {
+	font-size: var(--ds-type-11);
+	font-weight: var(--ds-font-weight-bold);
+	letter-spacing: 1.5px;
+	opacity: 0.5;
+	text-transform: uppercase;
+}
+
+.ds-pattern-stat-strip__value {
+	font-family: var(--ds-font-mono);
+	font-size: var(--ds-type-32);
+	font-weight: var(--ds-font-weight-bold);
+	line-height: 1;
+}
+
+.ds-pattern-stat-strip__sub {
+	font-size: var(--ds-type-12);
+	opacity: 0.6;
+}
+
+.ds-pattern-activity {
+	display: grid;
+	gap: var(--ds-space-12);
+}
+
+.ds-pattern-activity__row {
+	align-items: flex-start;
+	border-bottom: var(--ds-border-dashed-subtle);
+	display: flex;
+	gap: var(--ds-space-12);
+	padding: var(--ds-space-14) 0;
+}
+
+.ds-pattern-activity__row:last-child {
+	border-bottom: none;
+}
+
+.ds-pattern-activity__icon {
+	align-items: center;
+	border: var(--ds-border-inline);
+	display: inline-flex;
+	flex-shrink: 0;
+	font-size: 16px;
+	height: 36px;
+	justify-content: center;
+	width: 36px;
+}
+
+.ds-pattern-activity__icon.is-outgoing {
+	background: var(--ds-color-pink);
+}
+
+.ds-pattern-activity__icon.is-incoming {
+	background: var(--ds-color-green);
+}
+
+.ds-pattern-activity__icon.is-config {
+	background: var(--ds-color-blue);
+}
+
+.ds-pattern-activity__details {
+	display: grid;
+	flex: 1;
+	gap: var(--ds-space-2);
+}
+
+.ds-pattern-activity__title {
+	font-size: var(--ds-type-14);
+	font-weight: var(--ds-font-weight-semibold);
+}
+
+.ds-pattern-activity__meta {
+	font-family: var(--ds-font-mono);
+	font-size: var(--ds-type-12);
+	opacity: 0.5;
+}
+
+.ds-pattern-activity__amount {
+	font-family: var(--ds-font-mono);
+	font-size: var(--ds-type-14);
+	font-weight: var(--ds-font-weight-bold);
+}
+
+@media (max-width: 900px) {
+	.ds-pattern-stat-strip {
+		grid-template-columns: 1fr;
+	}
+}
