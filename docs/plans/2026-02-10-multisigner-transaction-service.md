@@ -24,13 +24,20 @@ No task is complete without both automated and real browser validation.
 - Run scripted multi-session validation first (`cd apps/web && bun run e2e:safe-multisig`).
 - Validate with two browser contexts/users for signer A and signer B (derived from dev mnemonic indices).
 - Confirm cross-session visibility of pending tx, confirmation updates, and execute gating.
-- Capture screenshots from both sessions.
+- Capture screenshots from both sessions and store under `apps/web/e2e/artifacts/prd2/`.
 
 3. **Fallback mode checks**
 - Validate local-only path behavior on unsupported tx-service chains.
 - Confirm UI labels clearly indicate fallback mode.
 
 Hard rule: no task closed without evidence for the user-visible flow it changes.
+
+## Artifact Policy (Locked)
+
+- Store PRD2 screenshots under `apps/web/e2e/artifacts/prd2/`.
+- Keep generated runtime artifacts out of git using `apps/web/e2e/artifacts/.gitignore`.
+- For every scripted run, record command + pass/fail + screenshot list in `Validation Evidence` at the bottom of this plan.
+- If a validation command fails, do not proceed; fix and rerun until green (or explicitly document a blocker).
 
 ## Preconditions
 
@@ -41,8 +48,10 @@ Hard rule: no task closed without evidence for the user-visible flow it changes.
 
 **Files:**
 - Modify: `apps/web/package.json`
+- Modify: `apps/web/playwright.config.ts`
 - Create: `apps/web/e2e/safe-multisig.spec.ts`
 - Modify: `apps/web/e2e/README.md`
+- Modify: `apps/web/e2e/artifacts/.gitignore`
 
 **Step 1: Implement two-context Playwright flow**
 
@@ -57,16 +66,27 @@ Assert:
 - confirmation count increments after signer B confirms.
 - execute is disabled before threshold and enabled after threshold.
 - executed state appears in both contexts after execution.
+- screenshot evidence is created for:
+  - owner A proposed tx
+  - owner B sees pending tx
+  - owner B confirms tx
+  - owner A sees updated confirmations
+  - execution success state
 
 **Step 3: Run focused e2e script**
 
 Run: `cd apps/web && bun run e2e:safe-multisig`
 Expected: FAIL first, then PASS after implementation.
 
-**Step 4: Commit**
+**Step 4: Verify artifact output**
+
+Run: `ls -la apps/web/e2e/artifacts/prd2`
+Expected: screenshot files present for the assertions above.
+
+**Step 5: Commit**
 
 ```bash
-git add apps/web/package.json apps/web/e2e/safe-multisig.spec.ts apps/web/e2e/README.md
+git add apps/web/package.json apps/web/playwright.config.ts apps/web/e2e/safe-multisig.spec.ts apps/web/e2e/README.md apps/web/e2e/artifacts/.gitignore
 git commit -m "test(e2e): add scripted multisigner transaction-service validation"
 ```
 
@@ -273,18 +293,18 @@ Run: `cd apps/web && bun run e2e:safe-multisig`
 
 Expected:
 - PASS
-- screenshots/artifacts captured for both signer contexts.
+- screenshots/artifacts captured under `apps/web/e2e/artifacts/prd2/`.
 
 Attach notes to this plan under `Validation Evidence`.
 
 **Step 3: Scripted sanity flow (local fallback)**
 
-Run: `cd apps/web && bun run e2e:safe-smoke -- --grep \"local fallback\"`
+Run: `cd apps/web && bun run e2e:safe-smoke`
 
 Expected:
 - fallback label present
 - build/confirm/execute still works in local mode
-- fallback screenshots captured.
+- fallback screenshots captured (or explicitly note if the current smoke script requires extension for fallback assertions).
 
 **Step 4: Commit any final fixes**
 
@@ -292,3 +312,36 @@ Expected:
 git add <touched files>
 git commit -m "chore: stabilize multi-signer transaction service flow"
 ```
+
+## Validation Evidence
+
+Date: YYYY-MM-DD
+
+### Automated validation
+
+- `cd apps/web && bun run vitest run <focused-tests>`
+  - PASS/FAIL:
+- `bun run test`
+  - PASS/FAIL:
+- `bun run check`
+  - PASS/FAIL:
+  - Notes:
+
+### Real browser validation
+
+- `cd apps/web && bun run e2e:safe-multisig`
+  - PASS/FAIL:
+  - Artifacts:
+    - `apps/web/e2e/artifacts/prd2/<file>.png`
+
+- `cd apps/web && bun run e2e:safe-smoke`
+  - PASS/FAIL:
+  - Artifacts:
+    - `apps/web/e2e/artifacts/<file>.png`
+
+### Regression sweep
+
+- Cross-session pending visibility: PASS/FAIL
+- Confirmation increment correctness: PASS/FAIL
+- Execute gating correctness: PASS/FAIL
+- Local fallback labeling and behavior: PASS/FAIL
