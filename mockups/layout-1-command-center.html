@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layout 1: Command Center</title>
+  <style>
+    /* ═══════════════════════════════════════════════════
+       NEO-BRUTALISM FOUNDATIONS
+       ═══════════════════════════════════════════════════ */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --black: #1a1a2e;
+      --white: #fefefe;
+      --border: 3px solid var(--black);
+      --border-thick: 4px solid var(--black);
+      --shadow: 5px 5px 0px var(--black);
+      --shadow-sm: 3px 3px 0px var(--black);
+      --shadow-lg: 8px 8px 0px var(--black);
+
+      /* Neo-Brutal palette */
+      --yellow: #FFE66D;
+      --pink: #FF6B9D;
+      --blue: #4ECDC4;
+      --purple: #C44DFF;
+      --orange: #FF8A5C;
+      --green: #95E86B;
+      --red: #FF4757;
+      --lavender: #D4ADFC;
+      --cream: #FFF8E7;
+      --sky: #A8E6CF;
+
+      --sidebar-w: 280px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--cream);
+      color: var(--black);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       TOP STATUS BAR
+       ═══════════════════════════════════════════════════ */
+    .status-bar {
+      background: var(--black);
+      color: var(--white);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      border-bottom: var(--border-thick);
+      z-index: 100;
+    }
+
+    .status-bar .chain-badge {
+      background: var(--green);
+      color: var(--black);
+      padding: 4px 12px;
+      border: 2px solid var(--black);
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .status-bar .wallet-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-bar .balance-pill {
+      background: var(--yellow);
+      color: var(--black);
+      padding: 4px 14px;
+      border: 2px solid var(--white);
+      font-weight: 700;
+    }
+
+    .status-bar .address {
+      opacity: 0.7;
+      font-size: 12px;
+    }
+
+    .status-bar .disconnect-btn {
+      background: var(--red);
+      color: var(--white);
+      border: 2px solid var(--white);
+      padding: 4px 12px;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       MAIN LAYOUT: SIDEBAR + CONTENT
+       ═══════════════════════════════════════════════════ */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      min-height: calc(100vh - 44px);
+    }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--white);
+      border-right: var(--border-thick);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .safe-identity {
+      padding: 24px 20px;
+      border-bottom: var(--border-thick);
+      background: var(--yellow);
+    }
+
+    .safe-identity .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      opacity: 0.6;
+      margin-bottom: 6px;
+    }
+
+    .safe-identity .safe-address {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    .safe-identity .safe-balance {
+      margin-top: 12px;
+      font-size: 28px;
+      font-weight: 700;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .safe-identity .safe-balance span {
+      font-size: 14px;
+      opacity: 0.6;
+    }
+
+    .safe-identity .threshold-badge {
+      display: inline-block;
+      margin-top: 10px;
+      background: var(--black);
+      color: var(--yellow);
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Navigation */
+    .sidebar-nav {
+      flex: 1;
+      padding: 8px 0;
+    }
+
+    .nav-section {
+      padding: 12px 20px 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      opacity: 0.4;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      cursor: pointer;
+      border-left: 4px solid transparent;
+      transition: all 0.1s;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .nav-item:hover {
+      background: var(--cream);
+    }
+
+    .nav-item.active {
+      background: var(--cream);
+      border-left-color: var(--black);
+      font-weight: 700;
+    }
+
+    .nav-item .nav-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--black);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .nav-item.active .nav-icon {
+      background: var(--yellow);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-item .nav-badge {
+      margin-left: auto;
+      background: var(--pink);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border: 2px solid var(--black);
+    }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: var(--border);
+      background: var(--cream);
+    }
+
+    .fund-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--green);
+      border: var(--border);
+      box-shadow: var(--shadow-sm);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .fund-btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px var(--black);
+    }
+
+    /* ─── MAIN CONTENT ─── */
+    .main-content {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+      background: var(--cream);
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-title .title-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--yellow);
+      border: var(--border);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       CARDS & PANELS
+       ═══════════════════════════════════════════════════ */
+    .card {
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .card-header .header-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 3px 8px;
+      border: 2px solid var(--black);
+      font-weight: 700;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* Status indicators */
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--black);
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .status-dot.active { background: var(--green); }
+    .status-dot.inactive { background: var(--red); }
+    .status-dot.pending { background: var(--yellow); }
+
+    /* ═══════════════════════════════════════════════════
+       OVERVIEW SECTION (DEFAULT VIEW)
+       ═══════════════════════════════════════════════════ */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      opacity: 0.5;
+      margin-bottom: 8px;
+    }
+
+    .stat-card .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .stat-card .stat-sub {
+      font-size: 12px;
+      margin-top: 6px;
+      opacity: 0.6;
+    }
+
+    .stat-card.highlight {
+      background: var(--yellow);
+    }
+
+    .stat-card.guard-active {
+      background: var(--sky);
+    }
+
+    .stat-card.module-active {
+      background: var(--lavender);
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .quick-action-btn {
+      padding: 16px;
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      text-align: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.1s;
+    }
+
+    .quick-action-btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px var(--black);
+    }
+
+    .quick-action-btn .qa-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .quick-action-btn.primary {
+      background: var(--yellow);
+    }
+
+    /* Activity Feed */
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 2px dashed #e0e0e0;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+
+    .activity-icon.tx-out { background: var(--pink); }
+    .activity-icon.tx-in { background: var(--green); }
+    .activity-icon.config { background: var(--blue); }
+
+    .activity-details {
+      flex: 1;
+    }
+
+    .activity-details .activity-title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .activity-details .activity-meta {
+      font-size: 12px;
+      opacity: 0.5;
+      margin-top: 2px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .activity-amount {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       GUARD SECTION
+       ═══════════════════════════════════════════════════ */
+    .guard-status-banner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .guard-status-banner.active {
+      background: var(--sky);
+    }
+
+    .guard-status-banner.inactive {
+      background: #f0f0f0;
+    }
+
+    .guard-status-banner .shield-icon {
+      font-size: 40px;
+    }
+
+    .guard-status-banner .guard-info h3 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .guard-status-banner .guard-info p {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    .guard-status-banner .guard-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+    }
+
+    .limit-display {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 24px;
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .limit-display .limit-value {
+      font-size: 48px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .limit-display .limit-value span {
+      font-size: 20px;
+      opacity: 0.5;
+    }
+
+    .limit-display .limit-bar {
+      flex: 1;
+      height: 24px;
+      background: #e8e8e8;
+      border: 2px solid var(--black);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .limit-display .limit-bar-fill {
+      height: 100%;
+      background: var(--green);
+      width: 35%;
+      border-right: 2px solid var(--black);
+    }
+
+    .limit-display .limit-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.5;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       MODULE SECTION
+       ═══════════════════════════════════════════════════ */
+    .delegates-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .delegate-card {
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .delegate-card .delegate-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .delegate-card .delegate-avatar {
+      width: 44px;
+      height: 44px;
+      background: var(--lavender);
+      border: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .delegate-card .delegate-address {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 8px;
+    }
+
+    .delegate-card .allowance-info {
+      margin-top: 12px;
+    }
+
+    .delegate-card .allowance-bar {
+      height: 16px;
+      background: #e8e8e8;
+      border: 2px solid var(--black);
+      margin: 8px 0;
+      overflow: hidden;
+    }
+
+    .delegate-card .allowance-bar-fill {
+      height: 100%;
+      background: var(--blue);
+    }
+
+    .delegate-card .allowance-numbers {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+    }
+
+    .delegate-card .reset-info {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 2px dashed #e0e0e0;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .delegate-card .reset-badge {
+      background: var(--yellow);
+      padding: 2px 8px;
+      border: 2px solid var(--black);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .add-delegate-card {
+      background: var(--cream);
+      border: 3px dashed var(--black);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: all 0.1s;
+    }
+
+    .add-delegate-card:hover {
+      opacity: 1;
+      background: var(--yellow);
+    }
+
+    .add-delegate-card .plus-icon {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       TRANSACTION SECTION
+       ═══════════════════════════════════════════════════ */
+    .tx-builder-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .tx-builder-form .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      padding: 10px 14px;
+      border: var(--border);
+      background: var(--white);
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Pending Transactions */
+    .pending-tx {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border-bottom: var(--border);
+    }
+
+    .pending-tx:last-child {
+      border-bottom: none;
+    }
+
+    .pending-tx .tx-id {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 13px;
+      width: 40px;
+      text-align: center;
+    }
+
+    .pending-tx .tx-details {
+      flex: 1;
+    }
+
+    .pending-tx .tx-to {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+    }
+
+    .pending-tx .tx-value {
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .pending-tx .sig-progress {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .pending-tx .sig-dot {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--black);
+    }
+
+    .pending-tx .sig-dot.signed {
+      background: var(--green);
+    }
+
+    .pending-tx .sig-dot.unsigned {
+      background: #e8e8e8;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       OWNERS SECTION
+       ═══════════════════════════════════════════════════ */
+    .owners-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .owner-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      border-bottom: var(--border);
+    }
+
+    .owner-row:last-child {
+      border-bottom: none;
+    }
+
+    .owner-avatar {
+      width: 40px;
+      height: 40px;
+      border: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .owner-avatar.you {
+      background: var(--yellow);
+    }
+
+    .owner-address {
+      flex: 1;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+    }
+
+    .owner-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border: 2px solid var(--black);
+      font-weight: 700;
+      background: var(--yellow);
+    }
+
+    .owner-remove {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--black);
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .owner-remove:hover {
+      background: var(--red);
+      color: var(--white);
+    }
+
+    /* Threshold control */
+    .threshold-control {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background: var(--yellow);
+      border: var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .threshold-control .thresh-label {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .threshold-control .thresh-selector {
+      display: flex;
+      gap: 0;
+    }
+
+    .threshold-control .thresh-option {
+      width: 40px;
+      height: 40px;
+      border: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      background: var(--white);
+      margin-left: -2px;
+    }
+
+    .threshold-control .thresh-option.selected {
+      background: var(--black);
+      color: var(--yellow);
+    }
+
+    .threshold-control .thresh-desc {
+      font-size: 12px;
+      opacity: 0.6;
+      margin-left: 8px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       BUTTONS
+       ═══════════════════════════════════════════════════ */
+    .btn {
+      padding: 10px 20px;
+      border: var(--border);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: none !important;
+    }
+
+    .btn-primary {
+      background: var(--yellow);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-success {
+      background: var(--green);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-outline {
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-ghost {
+      border: none;
+      background: none;
+      opacity: 0.6;
+    }
+
+    .btn-ghost:hover {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SECTION TABS (for sub-navigation within sections)
+       ═══════════════════════════════════════════════════ */
+    .section-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 24px;
+    }
+
+    .section-tab {
+      padding: 10px 20px;
+      border: var(--border);
+      margin-left: -3px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      background: var(--white);
+    }
+
+    .section-tab:first-child {
+      margin-left: 0;
+    }
+
+    .section-tab.active {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SECTION VISIBILITY (for mockup tab switching)
+       ═══════════════════════════════════════════════════ */
+    .section { display: none; }
+    .section.visible { display: block; }
+
+    /* Utility */
+    .mono { font-family: 'Space Mono', monospace; }
+    .text-sm { font-size: 12px; }
+    .text-muted { opacity: 0.5; }
+    .mt-16 { margin-top: 16px; }
+    .mb-16 { margin-bottom: 16px; }
+    .flex { display: flex; }
+    .gap-12 { gap: 12px; }
+    .gap-16 { gap: 16px; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+    /* ═══════════════════════════════════════════════════
+       DARK MODE
+       ═══════════════════════════════════════════════════ */
+    [data-theme="dark"] {
+      --black: #e0e0e0;
+      --white: #2a2a3e;
+      --cream: #1a1a2e;
+      --border: 3px solid #555;
+      --border-thick: 4px solid #555;
+      --shadow: 5px 5px 0px rgba(0,0,0,0.5);
+      --shadow-sm: 3px 3px 0px rgba(0,0,0,0.5);
+      --shadow-lg: 8px 8px 0px rgba(0,0,0,0.5);
+      --yellow: #c9a800;
+      --pink: #cc4070;
+      --blue: #2ea89e;
+      --purple: #9b3acc;
+      --orange: #cc6a3a;
+      --green: #6abb45;
+      --red: #cc3545;
+      --lavender: #8b6abf;
+      --sky: #5fad8a;
+    }
+
+    [data-theme="dark"] body {
+      color: #e0e0e0;
+    }
+
+    [data-theme="dark"] .status-bar {
+      background: #12121f;
+      border-bottom-color: #555;
+    }
+
+    [data-theme="dark"] .sidebar {
+      background: #222236;
+      border-right-color: #555;
+    }
+
+    [data-theme="dark"] .nav-item:hover {
+      background: #2e2e45;
+    }
+
+    [data-theme="dark"] .nav-item.active {
+      background: #2e2e45;
+    }
+
+    [data-theme="dark"] .sidebar-footer {
+      background: #1e1e30;
+      border-top-color: #555;
+    }
+
+    [data-theme="dark"] .activity-item {
+      border-bottom-color: #3a3a50;
+    }
+
+    [data-theme="dark"] .guard-status-banner.inactive {
+      background: #2a2a3e;
+    }
+
+    [data-theme="dark"] .limit-display .limit-bar {
+      background: #3a3a50;
+    }
+
+    [data-theme="dark"] .delegate-card .allowance-bar {
+      background: #3a3a50;
+    }
+
+    [data-theme="dark"] .add-delegate-card {
+      background: #22223a;
+      border-color: #555;
+    }
+
+    [data-theme="dark"] .add-delegate-card:hover {
+      background: var(--yellow);
+      color: #1a1a2e;
+    }
+
+    [data-theme="dark"] .pending-tx .sig-dot.unsigned {
+      background: #3a3a50;
+    }
+
+    [data-theme="dark"] .delegate-card .reset-info {
+      border-top-color: #3a3a50;
+    }
+
+    [data-theme="dark"] .form-group input,
+    [data-theme="dark"] .form-group textarea,
+    [data-theme="dark"] .form-group select {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      border-color: #555;
+    }
+
+    [data-theme="dark"] .section-tab {
+      background: #2a2a3e;
+      color: #e0e0e0;
+      border-color: #555;
+    }
+
+    [data-theme="dark"] .section-tab.active {
+      background: #e0e0e0;
+      color: #1a1a2e;
+    }
+
+    [data-theme="dark"] .owner-remove {
+      background: #2a2a3e;
+      border-color: #555;
+    }
+
+    [data-theme="dark"] .threshold-control .thresh-option {
+      background: #2a2a3e;
+      color: #e0e0e0;
+      border-color: #555;
+    }
+
+    [data-theme="dark"] .threshold-control .thresh-option.selected {
+      background: #e0e0e0;
+      color: #1a1a2e;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       COLOR PALETTES
+       ═══════════════════════════════════════════════════ */
+    [data-palette="cyber"] {
+      --yellow: #00ff88;
+      --pink: #ff00ff;
+      --blue: #00ccff;
+      --purple: #bf00ff;
+      --orange: #ff6600;
+      --green: #00ff88;
+      --red: #ff0055;
+      --lavender: #cc66ff;
+      --sky: #00e5cc;
+    }
+
+    [data-palette="cyber"][data-theme="dark"] {
+      --yellow: #00cc6a;
+      --pink: #cc00cc;
+      --blue: #00aadd;
+      --purple: #9900cc;
+      --orange: #cc5200;
+      --green: #00cc6a;
+      --red: #cc0044;
+      --lavender: #aa44dd;
+      --sky: #00b8a3;
+    }
+
+    [data-palette="sunset"] {
+      --yellow: #f7c948;
+      --pink: #ff6b6b;
+      --blue: #ff8a5c;
+      --purple: #e84393;
+      --orange: #ff6b35;
+      --green: #f7c948;
+      --red: #ff4757;
+      --lavender: #fd79a8;
+      --sky: #ffeaa7;
+    }
+
+    [data-palette="sunset"][data-theme="dark"] {
+      --yellow: #c49a2a;
+      --pink: #cc4444;
+      --blue: #cc6a3a;
+      --purple: #b8306f;
+      --orange: #cc5528;
+      --green: #c49a2a;
+      --red: #cc3545;
+      --lavender: #ca5c82;
+      --sky: #cbb87a;
+    }
+
+    [data-palette="ocean"] {
+      --yellow: #00cec9;
+      --pink: #6c5ce7;
+      --blue: #0984e3;
+      --purple: #6c5ce7;
+      --orange: #00b894;
+      --green: #00cec9;
+      --red: #d63031;
+      --lavender: #a29bfe;
+      --sky: #81ecec;
+    }
+
+    [data-palette="ocean"][data-theme="dark"] {
+      --yellow: #00a3a0;
+      --pink: #5648b8;
+      --blue: #0669b5;
+      --purple: #5648b8;
+      --orange: #009375;
+      --green: #00a3a0;
+      --red: #ab2626;
+      --lavender: #817bca;
+      --sky: #5fbfbf;
+    }
+
+    [data-palette="mono"] {
+      --yellow: #b2bec3;
+      --pink: #636e72;
+      --blue: #636e72;
+      --purple: #2d3436;
+      --orange: #b2bec3;
+      --green: #dfe6e9;
+      --red: #2d3436;
+      --lavender: #b2bec3;
+      --sky: #dfe6e9;
+    }
+
+    [data-palette="mono"][data-theme="dark"] {
+      --yellow: #636e72;
+      --pink: #4a5255;
+      --blue: #4a5255;
+      --purple: #dfe6e9;
+      --orange: #636e72;
+      --green: #4a5255;
+      --red: #dfe6e9;
+      --lavender: #636e72;
+      --sky: #4a5255;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       THEME CONTROLS
+       ═══════════════════════════════════════════════════ */
+    .theme-controls {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+    }
+
+    .theme-toggle {
+      width: 48px;
+      height: 48px;
+      border-radius: 0;
+      border: 3px solid var(--black, #1a1a2e);
+      background: var(--yellow, #FFE66D);
+      box-shadow: 4px 4px 0 var(--black, #1a1a2e);
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-family: inherit;
+      color: var(--black, #1a1a2e);
+    }
+
+    .theme-toggle:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--black, #1a1a2e);
+    }
+
+    .theme-toggle:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--black, #1a1a2e);
+    }
+
+    .palette-picker {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--white, #fefefe);
+      border: 3px solid var(--black, #1a1a2e);
+      box-shadow: 4px 4px 0 var(--black, #1a1a2e);
+    }
+
+    .palette-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 0;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 0;
+    }
+
+    .palette-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .palette-btn.active {
+      border-color: var(--black, #1a1a2e);
+      transform: scale(1.15);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ TOP STATUS BAR ═══ -->
+  <div class="status-bar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span style="font-weight:700;font-size:15px;letter-spacing:1px;">SAFE</span>
+      <span class="chain-badge">Chiado Testnet</span>
+      <span class="address">Block #18,294,721</span>
+    </div>
+    <div class="wallet-info">
+      <span class="address">0x7d1A...3fE9</span>
+      <span class="balance-pill">1.247 ETH</span>
+      <span class="disconnect-btn">DISCONNECT</span>
+    </div>
+  </div>
+
+  <div class="app-layout">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <div class="sidebar">
+      <div class="safe-identity">
+        <div class="label">Safe Wallet</div>
+        <div class="safe-address">0x9aB3...7cD2</div>
+        <div class="safe-balance">2.45 <span>ETH</span></div>
+        <div class="threshold-badge">2 of 3 owners</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">Main</div>
+
+        <div class="nav-item active" onclick="showSection('overview')">
+          <div class="nav-icon">&#9678;</div>
+          Overview
+        </div>
+
+        <div class="nav-item" onclick="showSection('transactions')">
+          <div class="nav-icon">&#8644;</div>
+          Transactions
+          <span class="nav-badge">2</span>
+        </div>
+
+        <div class="nav-section">Security</div>
+
+        <div class="nav-item" onclick="showSection('guard')">
+          <div class="nav-icon">&#9888;</div>
+          Spending Guard
+        </div>
+
+        <div class="nav-item" onclick="showSection('module')">
+          <div class="nav-icon">&#9881;</div>
+          Allowance Module
+        </div>
+
+        <div class="nav-section">Settings</div>
+
+        <div class="nav-item" onclick="showSection('owners')">
+          <div class="nav-icon">&#9823;</div>
+          Owners
+        </div>
+
+        <div class="nav-item">
+          <div class="nav-icon">&#9881;</div>
+          Configuration
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="fund-btn">+ Fund Safe (Dev)</div>
+      </div>
+    </div>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <div class="main-content">
+
+      <!-- ──── OVERVIEW SECTION ──── -->
+      <div class="section visible" id="section-overview">
+        <div class="page-title">
+          <div class="title-icon">&#9678;</div>
+          Dashboard
+        </div>
+
+        <!-- Stats Row -->
+        <div class="overview-grid">
+          <div class="stat-card highlight">
+            <div class="stat-label">Safe Balance</div>
+            <div class="stat-value">2.45</div>
+            <div class="stat-sub">ETH on Chiado</div>
+          </div>
+          <div class="stat-card guard-active">
+            <div class="stat-label">Spending Guard</div>
+            <div class="stat-value">0.5</div>
+            <div class="stat-sub"><span class="status-dot active"></span>ETH limit per tx</div>
+          </div>
+          <div class="stat-card module-active">
+            <div class="stat-label">Active Delegates</div>
+            <div class="stat-value">2</div>
+            <div class="stat-sub"><span class="status-dot active"></span>AllowanceModule enabled</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <div class="quick-action-btn primary">
+            <div class="qa-icon">&#8594;</div>
+            Send ETH
+          </div>
+          <div class="quick-action-btn">
+            <div class="qa-icon">&#9881;</div>
+            Set Allowance
+          </div>
+          <div class="quick-action-btn">
+            <div class="qa-icon">&#9823;</div>
+            Add Owner
+          </div>
+          <div class="quick-action-btn">
+            <div class="qa-icon">&#9888;</div>
+            Adjust Guard
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="card-header">
+            Recent Activity
+            <span class="header-tag">LAST 7 DAYS</span>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="activity-item" style="padding:14px 20px;">
+              <div class="activity-icon tx-out">&#8593;</div>
+              <div class="activity-details">
+                <div class="activity-title">Sent to 0xfA32...8bC1</div>
+                <div class="activity-meta">2 mins ago &middot; #18,294,720</div>
+              </div>
+              <div class="activity-amount">-0.15 ETH</div>
+            </div>
+            <div class="activity-item" style="padding:14px 20px;">
+              <div class="activity-icon config">&#9881;</div>
+              <div class="activity-details">
+                <div class="activity-title">Guard enabled: SpendingLimitGuard</div>
+                <div class="activity-meta">1 hour ago &middot; #18,294,600</div>
+              </div>
+              <div class="activity-amount" style="opacity:0.4;">config</div>
+            </div>
+            <div class="activity-item" style="padding:14px 20px;">
+              <div class="activity-icon tx-in">&#8595;</div>
+              <div class="activity-details">
+                <div class="activity-title">Received from 0x1234...abCd</div>
+                <div class="activity-meta">3 hours ago &middot; #18,294,500</div>
+              </div>
+              <div class="activity-amount" style="color:var(--green);">+1.0 ETH</div>
+            </div>
+            <div class="activity-item" style="padding:14px 20px;">
+              <div class="activity-icon tx-out">&#8593;</div>
+              <div class="activity-details">
+                <div class="activity-title">Delegate spend: 0xBe22...9aF7</div>
+                <div class="activity-meta">5 hours ago &middot; via AllowanceModule</div>
+              </div>
+              <div class="activity-amount">-0.08 ETH</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──── GUARD SECTION ──── -->
+      <div class="section" id="section-guard">
+        <div class="page-title">
+          <div class="title-icon" style="background:var(--sky);">&#9888;</div>
+          Spending Guard
+        </div>
+
+        <!-- Guard Status -->
+        <div class="guard-status-banner active">
+          <div class="shield-icon">&#128737;</div>
+          <div class="guard-info">
+            <h3>SpendingLimitGuard</h3>
+            <p>Active &middot; 0xGrd1...2345 &middot; Blocks transactions exceeding limit</p>
+          </div>
+          <div class="guard-actions">
+            <button class="btn btn-outline">Edit Limit</button>
+            <button class="btn btn-danger">Disable</button>
+          </div>
+        </div>
+
+        <!-- Limit Display -->
+        <div class="limit-display">
+          <div>
+            <div class="limit-label">Per-Transaction Limit</div>
+            <div class="limit-value">0.5 <span>ETH</span></div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:700;margin-bottom:6px;">Last Transaction Used</div>
+            <div class="limit-bar">
+              <div class="limit-bar-fill" style="width:30%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;opacity:0.5;margin-top:4px;">
+              <span>0.15 ETH used</span>
+              <span>0.5 ETH max</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guard Info Cards -->
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">How It Works</div>
+            <div class="card-body">
+              <p style="font-size:13px;line-height:1.6;">
+                The guard intercepts <strong>every transaction</strong> before execution. If the ETH value exceeds your limit, the transaction is reverted.<br><br>
+                This applies to both <strong>owner-signed</strong> and <strong>module-initiated</strong> transactions, providing a universal safety net.
+              </p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Change Limit</div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>New Limit (ETH)</label>
+                <input type="text" placeholder="0.5" value="0.5">
+              </div>
+              <div class="mt-16">
+                <button class="btn btn-primary">Update Limit</button>
+              </div>
+              <p class="text-sm text-muted mt-16">Requires re-deployment of the guard contract with the new limit.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──── MODULE SECTION ──── -->
+      <div class="section" id="section-module">
+        <div class="page-title">
+          <div class="title-icon" style="background:var(--lavender);">&#9881;</div>
+          Allowance Module
+        </div>
+
+        <!-- Module status -->
+        <div class="guard-status-banner active" style="background:var(--lavender);">
+          <div class="shield-icon">&#128273;</div>
+          <div class="guard-info">
+            <h3>AllowanceModule</h3>
+            <p>Active &middot; 0xMod1...6789 &middot; Delegates can spend without multi-sig</p>
+          </div>
+          <div class="guard-actions">
+            <button class="btn btn-outline">Add Delegate</button>
+            <button class="btn btn-danger">Disable</button>
+          </div>
+        </div>
+
+        <!-- Delegates Grid -->
+        <div class="delegates-grid">
+          <!-- Delegate 1 -->
+          <div class="delegate-card">
+            <div class="delegate-header">
+              <div class="delegate-avatar">&#9823;</div>
+              <button class="btn btn-ghost" style="font-size:18px;">...</button>
+            </div>
+            <div class="delegate-address">0xBe22...9aF7</div>
+            <div class="allowance-info">
+              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Allowance Used</div>
+              <div class="allowance-bar">
+                <div class="allowance-bar-fill" style="width:60%;"></div>
+              </div>
+              <div class="allowance-numbers">
+                <span>0.12 / 0.2 ETH</span>
+                <span style="opacity:0.4;">60%</span>
+              </div>
+            </div>
+            <div class="reset-info">
+              <span>Resets in 18h 24m</span>
+              <span class="reset-badge">DAILY</span>
+            </div>
+          </div>
+
+          <!-- Delegate 2 -->
+          <div class="delegate-card">
+            <div class="delegate-header">
+              <div class="delegate-avatar" style="background:var(--blue);">&#9823;</div>
+              <button class="btn btn-ghost" style="font-size:18px;">...</button>
+            </div>
+            <div class="delegate-address">0x4521...cDe3</div>
+            <div class="allowance-info">
+              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Allowance Used</div>
+              <div class="allowance-bar">
+                <div class="allowance-bar-fill" style="width:10%;background:var(--green);"></div>
+              </div>
+              <div class="allowance-numbers">
+                <span>0.05 / 0.5 ETH</span>
+                <span style="opacity:0.4;">10%</span>
+              </div>
+            </div>
+            <div class="reset-info">
+              <span>Resets in 5d 12h</span>
+              <span class="reset-badge">WEEKLY</span>
+            </div>
+          </div>
+
+          <!-- Add New Delegate -->
+          <div class="delegate-card add-delegate-card">
+            <div class="plus-icon">+</div>
+            <div style="font-weight:600;">Add Delegate</div>
+          </div>
+        </div>
+
+        <!-- Set Allowance Form -->
+        <div class="card mt-16" style="margin-top:24px;">
+          <div class="card-header">Set Allowance</div>
+          <div class="card-body">
+            <div class="tx-builder-form">
+              <div class="form-group">
+                <label>Delegate Address</label>
+                <input type="text" placeholder="0x...">
+              </div>
+              <div class="form-group">
+                <label>Allowance (ETH)</label>
+                <input type="text" placeholder="0.2">
+              </div>
+              <div class="form-group">
+                <label>Reset Period</label>
+                <select>
+                  <option>Daily (24h)</option>
+                  <option>Weekly (7d)</option>
+                  <option>Monthly (30d)</option>
+                  <option>No reset</option>
+                </select>
+              </div>
+              <div class="form-group" style="justify-content:flex-end;">
+                <button class="btn btn-primary">Set Allowance</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Execute as Delegate -->
+        <div class="card" style="margin-top:24px;">
+          <div class="card-header">
+            Execute as Delegate
+            <span class="header-tag" style="background:var(--blue);color:var(--white);">DELEGATE VIEW</span>
+          </div>
+          <div class="card-body">
+            <p class="text-sm text-muted mb-16" style="margin-bottom:16px;">If you are a delegate, you can spend from the Safe without multi-sig approval, up to your allowance.</p>
+            <div class="tx-builder-form">
+              <div class="form-group">
+                <label>Send To</label>
+                <input type="text" placeholder="0x...">
+              </div>
+              <div class="form-group">
+                <label>Amount (ETH)</label>
+                <input type="text" placeholder="0.05">
+              </div>
+              <div class="form-group full-width" style="flex-direction:row;justify-content:space-between;align-items:center;">
+                <span class="text-sm text-muted">Available: 0.08 ETH remaining</span>
+                <button class="btn btn-success">Execute Spend</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──── TRANSACTIONS SECTION ──── -->
+      <div class="section" id="section-transactions">
+        <div class="page-title">
+          <div class="title-icon" style="background:var(--pink);">&#8644;</div>
+          Transactions
+        </div>
+
+        <div class="section-tabs">
+          <div class="section-tab active">Build</div>
+          <div class="section-tab">Pending (2)</div>
+          <div class="section-tab">History</div>
+        </div>
+
+        <!-- Build Transaction -->
+        <div class="card">
+          <div class="card-header">New Transaction</div>
+          <div class="card-body">
+            <div class="tx-builder-form">
+              <div class="form-group full-width">
+                <label>Recipient Address</label>
+                <input type="text" placeholder="0x...">
+              </div>
+              <div class="form-group">
+                <label>Value (ETH)</label>
+                <input type="text" placeholder="0.0">
+              </div>
+              <div class="form-group">
+                <label>Operation</label>
+                <select>
+                  <option>Call (0)</option>
+                  <option>DelegateCall (1)</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label>Data (hex, optional)</label>
+                <textarea rows="3" placeholder="0x..." style="border:var(--border);font-family:'Space Mono',monospace;font-size:12px;padding:10px;resize:vertical;"></textarea>
+              </div>
+              <div class="form-group full-width" style="flex-direction:row;justify-content:flex-end;gap:12px;">
+                <button class="btn btn-outline">Clear</button>
+                <button class="btn btn-primary">Build Transaction</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pending Transactions -->
+        <div class="card">
+          <div class="card-header">
+            Pending Signatures
+            <span class="header-tag" style="background:var(--yellow);">2 PENDING</span>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="pending-tx">
+              <div class="tx-id">#1</div>
+              <div class="tx-details">
+                <div class="tx-to">To: 0xfA32...8bC1</div>
+              </div>
+              <div class="tx-value">0.25 ETH</div>
+              <div class="sig-progress">
+                <div class="sig-dot signed"></div>
+                <div class="sig-dot unsigned"></div>
+                <div class="sig-dot unsigned"></div>
+                <span class="text-sm mono" style="margin-left:4px;">1/3</span>
+              </div>
+              <button class="btn btn-success" style="padding:6px 14px;font-size:12px;">Sign</button>
+            </div>
+            <div class="pending-tx">
+              <div class="tx-id">#2</div>
+              <div class="tx-details">
+                <div class="tx-to">To: 0x9182...dE56</div>
+              </div>
+              <div class="tx-value">0.1 ETH</div>
+              <div class="sig-progress">
+                <div class="sig-dot signed"></div>
+                <div class="sig-dot signed"></div>
+                <div class="sig-dot unsigned"></div>
+                <span class="text-sm mono" style="margin-left:4px;">2/3</span>
+              </div>
+              <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;">Execute</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──── OWNERS SECTION ──── -->
+      <div class="section" id="section-owners">
+        <div class="page-title">
+          <div class="title-icon" style="background:var(--orange);">&#9823;</div>
+          Owners & Threshold
+        </div>
+
+        <!-- Threshold -->
+        <div class="threshold-control" style="margin-bottom:24px;">
+          <div class="thresh-label">Threshold</div>
+          <div class="thresh-selector">
+            <div class="thresh-option">1</div>
+            <div class="thresh-option selected">2</div>
+            <div class="thresh-option">3</div>
+          </div>
+          <div class="thresh-desc">of 3 owners must sign</div>
+          <button class="btn btn-outline" style="margin-left:auto;">Update</button>
+        </div>
+
+        <!-- Owners List -->
+        <div class="card">
+          <div class="card-header">
+            Owners (3)
+            <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;">+ Add Owner</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="owners-list">
+              <div class="owner-row">
+                <div class="owner-avatar you">&#9823;</div>
+                <div class="owner-address">0x7d1A...3fE9</div>
+                <span class="owner-tag">YOU</span>
+                <div class="owner-remove">&times;</div>
+              </div>
+              <div class="owner-row">
+                <div class="owner-avatar" style="background:var(--blue);">&#9823;</div>
+                <div class="owner-address">0xaB34...5678</div>
+                <div class="owner-remove">&times;</div>
+              </div>
+              <div class="owner-row">
+                <div class="owner-avatar" style="background:var(--lavender);">&#9823;</div>
+                <div class="owner-address">0xcD56...9012</div>
+                <div class="owner-remove">&times;</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ THEME CONTROLS ═══ -->
+  <div class="theme-controls">
+    <div class="palette-picker">
+      <button class="palette-btn active" data-palette="default" style="background:linear-gradient(135deg,#FFE66D,#FF6B9D);" onclick="setPalette('default')" title="Default"></button>
+      <button class="palette-btn" data-palette="cyber" style="background:linear-gradient(135deg,#00ff88,#00ccff);" onclick="setPalette('cyber')" title="Cyber"></button>
+      <button class="palette-btn" data-palette="sunset" style="background:linear-gradient(135deg,#ff6b35,#f7c948);" onclick="setPalette('sunset')" title="Sunset"></button>
+      <button class="palette-btn" data-palette="ocean" style="background:linear-gradient(135deg,#0984e3,#00cec9);" onclick="setPalette('ocean')" title="Ocean"></button>
+      <button class="palette-btn" data-palette="mono" style="background:linear-gradient(135deg,#2d3436,#636e72);" onclick="setPalette('mono')" title="Mono"></button>
+    </div>
+    <button class="theme-toggle" onclick="toggleDarkMode()">&#9789;</button>
+  </div>
+
+  <script>
+    function showSection(name) {
+      // Hide all sections
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+      // Show target
+      document.getElementById('section-' + name).classList.add('visible');
+      // Update nav
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+    }
+
+    /* ═══ DARK MODE TOGGLE ═══ */
+    function toggleDarkMode() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        html.removeAttribute('data-theme');
+        document.querySelector('.theme-toggle').innerHTML = '&#9789;';
+        localStorage.setItem('theme', 'light');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        document.querySelector('.theme-toggle').innerHTML = '&#9788;';
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    /* ═══ PALETTE SWITCHING ═══ */
+    function setPalette(name) {
+      var html = document.documentElement;
+      if (name === 'default') {
+        html.removeAttribute('data-palette');
+      } else {
+        html.setAttribute('data-palette', name);
+      }
+      // Update active button
+      document.querySelectorAll('.palette-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+      });
+      document.querySelector('.palette-btn[data-palette="' + name + '"]').classList.add('active');
+      localStorage.setItem('palette', name);
+    }
+
+    /* ═══ RESTORE SAVED PREFERENCES ═══ */
+    (function() {
+      var savedTheme = localStorage.getItem('theme');
+      var savedPalette = localStorage.getItem('palette');
+
+      if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var toggleBtn = document.querySelector('.theme-toggle');
+        if (toggleBtn) toggleBtn.innerHTML = '&#9788;';
+      }
+
+      if (savedPalette && savedPalette !== 'default') {
+        document.documentElement.setAttribute('data-palette', savedPalette);
+        document.querySelectorAll('.palette-btn').forEach(function(btn) {
+          btn.classList.remove('active');
+        });
+        var activeBtn = document.querySelector('.palette-btn[data-palette="' + savedPalette + '"]');
+        if (activeBtn) activeBtn.classList.add('active');
+      }
+    })();
+  </script>
+
+</body>
+</html>

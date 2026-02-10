@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glassmorphism - Split Workspace</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    /* ===== Palette Variables ===== */
+    :root{
+      /* Neon (default) */
+      --accent-1:#00d4ff;--accent-2:#ff6bca;--accent-3:#00e88f;--accent-4:#ffd36b;--accent-5:#ff4d6a;--accent-6:#b06bff;
+      --grad-1:#0a0a1a;--grad-2:#1a0a2e;--grad-3:#0a1a2e;
+      --orb-1:rgba(0,212,255,0.1);--orb-2:rgba(255,107,202,0.08);
+    }
+    [data-palette="neon"]{--accent-1:#00d4ff;--accent-2:#ff6bca;--accent-3:#00e88f;--accent-4:#ffd36b;--accent-5:#ff4d6a;--accent-6:#b06bff;--grad-1:#0a0a1a;--grad-2:#1a0a2e;--grad-3:#0a1a2e;--orb-1:rgba(0,212,255,0.1);--orb-2:rgba(255,107,202,0.08);}
+    [data-palette="aurora"]{--accent-1:#22d3ee;--accent-2:#34d399;--accent-3:#a78bfa;--accent-4:#67e8f9;--accent-5:#f472b6;--accent-6:#818cf8;--grad-1:#021a1a;--grad-2:#0a1e2e;--grad-3:#061a28;--orb-1:rgba(34,211,238,0.1);--orb-2:rgba(52,211,153,0.08);}
+    [data-palette="sunset"]{--accent-1:#fb923c;--accent-2:#f472b6;--accent-3:#fbbf24;--accent-4:#fb7185;--accent-5:#e879f9;--accent-6:#f97316;--grad-1:#1a0a0a;--grad-2:#2e1a0a;--grad-3:#1a1008;--orb-1:rgba(251,146,60,0.1);--orb-2:rgba(244,114,182,0.08);}
+    [data-palette="ice"]{--accent-1:#7dd3fc;--accent-2:#a5b4fc;--accent-3:#93c5fd;--accent-4:#c4b5fd;--accent-5:#67e8f9;--accent-6:#e0e7ff;--grad-1:#060d1a;--grad-2:#0a1028;--grad-3:#0c1220;--orb-1:rgba(125,211,252,0.1);--orb-2:rgba(165,180,252,0.08);}
+    [data-palette="ember"]{--accent-1:#ef4444;--accent-2:#f97316;--accent-3:#eab308;--accent-4:#fb923c;--accent-5:#dc2626;--accent-6:#f59e0b;--grad-1:#1a0808;--grad-2:#2a0e0a;--grad-3:#1a1008;--orb-1:rgba(239,68,68,0.1);--orb-2:rgba(249,115,22,0.08);}
+
+    /* ===== Dark Theme (default) ===== */
+    [data-theme="dark"]{
+      --glass-bg:rgba(255,255,255,0.1);--glass-bg-s:rgba(255,255,255,0.16);
+      --glass-border:1px solid rgba(255,255,255,0.18);--glass-shadow:0 8px 32px rgba(0,0,0,0.2);
+      --blur:blur(16px);--text:#fff;--muted:rgba(255,255,255,0.45);--sec:rgba(255,255,255,0.7);
+      --cyan:var(--accent-1);--pink:var(--accent-2);--green:var(--accent-3);--yellow:var(--accent-4);--red:var(--accent-5);--purple:var(--accent-6);
+      --bg-gradient:linear-gradient(160deg,var(--grad-1),var(--grad-2),var(--grad-3));
+      --topbar-bg:rgba(0,0,0,0.4);--panel-bg:rgba(0,0,0,0.2);
+      --input-bg:rgba(255,255,255,0.06);--input-focus-bg:rgba(255,255,255,0.1);
+      --hover-bg:rgba(255,255,255,0.03);--hover-bg-s:rgba(255,255,255,0.04);
+      --divider:rgba(255,255,255,0.06);--ctrl-bg:rgba(255,255,255,0.1);--ctrl-border:rgba(255,255,255,0.2);--ctrl-text:#fff;
+    }
+
+    /* ===== Light Theme ===== */
+    [data-theme="light"]{
+      --glass-bg:rgba(255,255,255,0.55);--glass-bg-s:rgba(255,255,255,0.65);
+      --glass-border:1px solid rgba(0,0,0,0.1);--glass-shadow:0 8px 32px rgba(0,0,0,0.08);
+      --blur:blur(16px);--text:#1a1a2e;--muted:rgba(0,0,0,0.4);--sec:rgba(0,0,0,0.6);
+      --cyan:var(--accent-1);--pink:var(--accent-2);--green:var(--accent-3);--yellow:var(--accent-4);--red:var(--accent-5);--purple:var(--accent-6);
+      --bg-gradient:linear-gradient(160deg,#e8ecf4,#f0e6f6,#e6f0f8);
+      --topbar-bg:rgba(255,255,255,0.6);--panel-bg:rgba(255,255,255,0.4);
+      --input-bg:rgba(0,0,0,0.04);--input-focus-bg:rgba(0,0,0,0.06);
+      --hover-bg:rgba(0,0,0,0.02);--hover-bg-s:rgba(0,0,0,0.03);
+      --divider:rgba(0,0,0,0.06);--ctrl-bg:rgba(0,0,0,0.06);--ctrl-border:rgba(0,0,0,0.12);--ctrl-text:#1a1a2e;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter',sans-serif;color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;background:var(--bg-gradient);background-attachment:fixed;transition:background 0.5s,color 0.3s;}
+    body::before,body::after{content:'';position:fixed;border-radius:50%;filter:blur(100px);z-index:0;pointer-events:none;transition:background 0.5s;}
+    body::before{width:500px;height:500px;background:var(--orb-1);top:-100px;left:30%;}
+    body::after{width:400px;height:400px;background:var(--orb-2);bottom:0;right:10%;}
+
+    /* Top bar */
+    .top-bar{background:var(--topbar-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:var(--glass-border);display:flex;align-items:center;padding:0 0 0 24px;height:56px;flex-shrink:0;z-index:10;position:relative;transition:background 0.3s;}
+    .top-bar .tb-logo{font-size:20px;font-weight:700;margin-right:24px;display:flex;align-items:center;gap:8px;}
+    .top-bar .tb-logo .logo-sq{width:32px;height:32px;background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    .top-bar .tb-safe-info{display:flex;align-items:center;gap:16px;padding:0 24px;height:100%;border-left:var(--glass-border);}
+    .top-bar .tb-addr{font-family:monospace;font-size:13px;font-weight:600;color:var(--sec);}
+    .top-bar .tb-bal{font-size:22px;font-weight:700;}
+    .top-bar .tb-bal span{font-size:12px;color:var(--muted);}
+    .top-bar .tb-pills{display:flex;gap:8px;margin-left:auto;padding-right:24px;}
+    .top-bar .pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+    .top-bar .pill.chain{background:rgba(0,232,143,0.12);border:1px solid rgba(0,232,143,0.3);color:var(--green);}
+    .top-bar .pill.thresh{background:var(--input-bg);border:var(--glass-border);color:var(--sec);}
+    .top-bar .tb-wallet{padding:0 20px;height:100%;display:flex;align-items:center;background:var(--input-bg);border-left:var(--glass-border);font-family:monospace;font-size:12px;font-weight:600;cursor:pointer;transition:background 0.3s;}
+
+    /* Workspace */
+    .workspace{display:flex;flex:1;overflow:hidden;position:relative;z-index:1;}
+
+    /* Left Panel */
+    .panel-left{width:420px;border-right:var(--glass-border);display:flex;flex-direction:column;background:var(--panel-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);overflow-y:auto;flex-shrink:0;transition:background 0.3s;}
+    .panel-tabs{display:flex;border-bottom:var(--glass-border);flex-shrink:0;}
+    .panel-tab{flex:1;padding:14px 12px;text-align:center;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:1px;cursor:pointer;color:var(--muted);background:transparent;border-right:var(--glass-border);transition:all 0.2s;}
+    .panel-tab:last-child{border-right:none;}
+    .panel-tab.active{color:var(--text);background:rgba(0,212,255,0.06);border-bottom:2px solid var(--cyan);}
+    .panel-tab:hover:not(.active){background:var(--hover-bg);}
+    .panel-tab .tab-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;background:var(--green);box-shadow:0 0 6px rgba(0,232,143,0.5);}
+    .panel-content{flex:1;overflow-y:auto;}
+
+    .p-section{border-bottom:var(--glass-border);}
+    .p-section-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;font-size:14px;background:var(--hover-bg);transition:background 0.2s;}
+    .p-section-header:hover{background:var(--hover-bg-s);}
+    .p-section-header .psh-icon{width:28px;height:28px;border-radius:8px;border:var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:14px;margin-right:10px;}
+    .p-section-header .psh-badge{padding:2px 10px;font-size:10px;border-radius:20px;border:var(--glass-border);font-weight:600;color:var(--muted);}
+    .p-section-body{padding:20px;}
+
+    /* Owners */
+    .owner-row-c{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--divider);}
+    .owner-row-c:last-child{border-bottom:none;}
+    .owner-dot{width:32px;height:32px;border-radius:8px;border:var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+    .owner-addr{font-family:monospace;font-size:12px;flex:1;color:var(--sec);}
+    .owner-you{padding:2px 8px;background:rgba(255,211,107,0.15);border:1px solid rgba(255,211,107,0.3);color:var(--yellow);border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;}
+    .owner-x{width:24px;height:24px;border-radius:6px;border:var(--glass-border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);background:transparent;transition:all 0.2s;}
+    .owner-x:hover{background:rgba(255,77,106,0.2);color:var(--red);}
+
+    .threshold-inline{display:flex;align-items:center;gap:12px;padding:12px 0;margin-top:8px;}
+    .threshold-inline .ti-label{font-size:12px;font-weight:600;}
+    .threshold-inline .ti-pips{display:flex;gap:4px;}
+    .threshold-inline .ti-pip{width:32px;height:32px;border-radius:8px;border:var(--glass-border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;background:var(--input-bg);color:var(--sec);}
+    .threshold-inline .ti-pip.sel{background:rgba(0,212,255,0.2);border-color:rgba(0,212,255,0.4);color:var(--cyan);}
+    .threshold-inline .ti-desc{font-size:11px;color:var(--muted);}
+
+    /* Guard */
+    .guard-summary{display:flex;align-items:center;gap:16px;padding:16px;background:rgba(0,232,143,0.06);border:1px solid rgba(0,232,143,0.15);border-radius:12px;margin-bottom:16px;}
+    .guard-summary .gs-shield{font-size:32px;}
+    .guard-summary .gs-info h4{font-size:14px;font-weight:700;}
+    .guard-summary .gs-info p{font-size:11px;color:var(--muted);}
+    .glc-val{font-size:28px;font-weight:700;font-family:monospace;}
+    .glc-val span{font-size:12px;color:var(--muted);}
+    .glc-bar{flex:1;height:12px;background:var(--input-bg);border-radius:6px;overflow:hidden;}
+    .glc-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:6px;}
+
+    /* Delegates */
+    .delegate-compact{padding:14px;border:var(--glass-border);border-radius:12px;margin-bottom:10px;background:var(--input-bg);transition:background 0.3s;}
+    .delegate-compact .dc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+    .delegate-compact .dc-addr{font-family:monospace;font-size:12px;font-weight:600;color:var(--sec);}
+    .delegate-compact .dc-tag{font-size:9px;padding:2px 8px;border-radius:10px;border:1px solid rgba(255,211,107,0.3);background:rgba(255,211,107,0.12);color:var(--yellow);font-weight:700;text-transform:uppercase;}
+    .delegate-compact .dc-bar{height:10px;background:var(--input-bg);border-radius:5px;overflow:hidden;}
+    .delegate-compact .dc-bar-fill{height:100%;border-radius:5px;}
+    .delegate-compact .dc-nums{display:flex;justify-content:space-between;font-size:11px;font-family:monospace;}
+    .delegate-compact .dc-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);font-size:11px;color:var(--muted);}
+    .add-delegate-inline{padding:16px;border:1px dashed rgba(255,255,255,0.12);border-radius:12px;text-align:center;cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;transition:all 0.2s;}
+    .add-delegate-inline:hover{background:rgba(176,107,255,0.08);border-color:rgba(176,107,255,0.3);color:var(--text);}
+
+    /* Right Panel */
+    .panel-right{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .right-header{display:flex;align-items:center;border-bottom:var(--glass-border);background:var(--panel-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-shrink:0;transition:background 0.3s;}
+    .right-tab{padding:14px 24px;font-weight:600;font-size:13px;cursor:pointer;color:var(--muted);position:relative;transition:all 0.2s;}
+    .right-tab.active{color:var(--text);border-bottom:2px solid var(--cyan);}
+    .right-tab:hover:not(.active){color:var(--sec);}
+    .right-tab .rt-badge{position:absolute;top:6px;right:6px;background:rgba(255,107,202,0.8);color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:8px;}
+    .right-content{flex:1;overflow-y:auto;padding:24px;}
+    .tx-workspace{max-width:680px;}
+
+    .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+    .form-group label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;color:var(--muted);}
+    .form-group input,.form-group textarea,.form-group select{padding:12px 14px;background:var(--input-bg);border:var(--glass-border);border-radius:10px;color:var(--text);font-family:monospace;font-size:13px;outline:none;transition:background 0.3s,border-color 0.3s;}
+    .form-group input::placeholder,.form-group textarea::placeholder{color:var(--muted);}
+    .form-group input:focus,.form-group textarea:focus{background:var(--input-focus-bg);border-color:rgba(0,212,255,0.4);box-shadow:0 0 20px rgba(0,212,255,0.1);}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+    .guard-inline-warning{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,232,143,0.08);border:1px solid rgba(0,232,143,0.2);border-radius:10px;font-size:12px;margin-bottom:16px;color:var(--green);}
+
+    .tx-preview{background:var(--glass-bg);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:var(--glass-border);border-radius:14px;padding:20px;margin-top:20px;box-shadow:var(--glass-shadow);transition:background 0.3s;}
+    .tx-preview h4{font-size:13px;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:12px;color:var(--muted);}
+    .tx-preview-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--divider);font-size:13px;}
+    .tx-preview-row:last-child{border-bottom:none;}
+    .tx-preview-row .tpr-label{font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:1px;color:var(--muted);}
+    .tx-preview-row .tpr-value{font-family:monospace;font-size:13px;text-align:right;}
+
+    /* Queue */
+    .queue-item{background:var(--glass-bg);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:var(--glass-border);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:var(--glass-shadow);transition:background 0.3s;}
+    .queue-item .qi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .queue-item .qi-id{font-family:monospace;font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px;}
+    .queue-item .qi-tag{padding:2px 10px;background:rgba(255,211,107,0.12);border:1px solid rgba(255,211,107,0.3);color:var(--yellow);border-radius:10px;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+    .queue-item .qi-time{font-size:11px;color:var(--muted);font-family:monospace;}
+    .queue-item .qi-details{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+    .queue-item .qi-field-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:600;color:var(--muted);margin-bottom:2px;}
+    .queue-item .qi-field-value{font-family:monospace;font-size:13px;font-weight:600;}
+    .sig-progress-bar{display:flex;align-items:center;gap:12px;}
+    .sig-progress-bar .spb-track{flex:1;display:flex;gap:4px;}
+    .sig-progress-bar .spb-seg{flex:1;height:28px;border-radius:6px;border:var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;}
+    .sig-progress-bar .spb-seg.signed{background:rgba(0,232,143,0.15);border-color:rgba(0,232,143,0.3);color:var(--green);}
+    .sig-progress-bar .spb-seg.unsigned{background:var(--input-bg);color:var(--muted);}
+    .sig-progress-bar .spb-label{font-size:12px;font-weight:600;font-family:monospace;white-space:nowrap;}
+    .queue-item .qi-actions{margin-top:16px;display:flex;gap:10px;justify-content:flex-end;}
+
+    /* History */
+    .history-item{display:flex;align-items:center;gap:14px;padding:14px;background:var(--glass-bg);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:var(--glass-border);border-radius:14px;margin-bottom:8px;box-shadow:var(--glass-shadow);transition:background 0.3s;}
+    .history-item .hi-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;border:var(--glass-border);}
+    .history-item .hi-icon.out{background:rgba(255,107,202,0.12);}
+    .history-item .hi-icon.in{background:rgba(0,232,143,0.12);}
+    .history-item .hi-icon.cfg{background:rgba(0,212,255,0.12);}
+    .history-item .hi-icon.mod{background:rgba(176,107,255,0.12);}
+    .history-item .hi-details{flex:1;}
+    .history-item .hi-title{font-weight:600;font-size:13px;}
+    .history-item .hi-meta{font-size:11px;font-family:monospace;color:var(--muted);margin-top:1px;}
+    .history-item .hi-amount{font-family:monospace;font-weight:700;font-size:14px;}
+    .history-item .hi-status{padding:3px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-radius:20px;border:1px solid rgba(0,232,143,0.3);background:rgba(0,232,143,0.12);color:var(--green);}
+
+    /* Delegate spend */
+    .delegate-spend-card{background:rgba(176,107,255,0.08);border:1px solid rgba(176,107,255,0.2);border-radius:16px;padding:24px;margin-bottom:24px;}
+    .delegate-spend-card h3{font-size:16px;font-weight:700;margin-bottom:4px;}
+    .delegate-spend-card p{font-size:12px;color:var(--muted);margin-bottom:16px;}
+
+    /* Buttons */
+    .btn{padding:10px 18px;border:var(--glass-border);border-radius:10px;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;color:var(--text);background:var(--input-bg);}
+    .btn:hover{background:var(--input-focus-bg);transform:translateY(-1px);}
+    .btn-primary{background:rgba(0,212,255,0.15);border-color:rgba(0,212,255,0.3);color:var(--cyan);}
+    .btn-danger{background:rgba(255,77,106,0.15);border-color:rgba(255,77,106,0.3);color:var(--red);}
+    .btn-success{background:rgba(0,232,143,0.15);border-color:rgba(0,232,143,0.3);color:var(--green);}
+    .btn-sm{padding:6px 12px;font-size:11px;}
+    .btn-block{width:100%;justify-content:center;}
+
+    .tab-content{display:none;} .tab-content.visible{display:block;}
+    .left-tab-content{display:none;} .left-tab-content.visible{display:block;}
+
+    /* ===== Theme Controls ===== */
+    .theme-controls{position:fixed;bottom:24px;right:24px;display:flex;align-items:center;gap:12px;z-index:1000;}
+    .theme-toggle{width:48px;height:48px;border-radius:50%;border:1px solid var(--ctrl-border);background:var(--ctrl-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ctrl-text);transition:all 0.3s;}
+    .theme-toggle:hover{background:rgba(255,255,255,0.2);transform:scale(1.1);}
+    [data-theme="light"] .theme-toggle:hover{background:rgba(0,0,0,0.1);}
+    .palette-picker{display:flex;gap:8px;padding:10px 16px;background:var(--ctrl-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--ctrl-border);border-radius:28px;transition:background 0.3s,border-color 0.3s;}
+    .palette-btn{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all 0.2s;padding:0;background:none;}
+    .palette-btn.active{border-color:rgba(255,255,255,0.8);transform:scale(1.15);}
+    [data-theme="light"] .palette-btn.active{border-color:rgba(0,0,0,0.5);}
+    .palette-btn[data-p="neon"]{background:linear-gradient(135deg,#00d4ff,#ff6bca);}
+    .palette-btn[data-p="aurora"]{background:linear-gradient(135deg,#22d3ee,#34d399);}
+    .palette-btn[data-p="sunset"]{background:linear-gradient(135deg,#fb923c,#f472b6);}
+    .palette-btn[data-p="ice"]{background:linear-gradient(135deg,#7dd3fc,#a5b4fc);}
+    .palette-btn[data-p="ember"]{background:linear-gradient(135deg,#ef4444,#f97316);}
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="tb-logo"><div class="logo-sq">&#9878;</div>SAFE</div>
+    <div class="tb-safe-info"><div class="tb-addr">0x9aB3...7cD2</div><div class="tb-bal">2.45 <span>ETH</span></div></div>
+    <div class="tb-pills"><span class="pill chain">Chiado</span><span class="pill thresh">2 of 3</span></div>
+    <div class="tb-wallet">0x7d1A...3fE9</div>
+  </div>
+
+  <div class="workspace">
+    <!-- LEFT -->
+    <div class="panel-left">
+      <div class="panel-tabs">
+        <div class="panel-tab active" onclick="showLeftTab('config')"><span class="tab-dot"></span> Config</div>
+        <div class="panel-tab" onclick="showLeftTab('guard')"><span class="tab-dot"></span> Guard</div>
+        <div class="panel-tab" onclick="showLeftTab('module')"><span class="tab-dot"></span> Module</div>
+      </div>
+      <div class="panel-content">
+        <!-- Config -->
+        <div class="left-tab-content visible" id="left-config">
+          <div class="p-section">
+            <div class="p-section-header"><div style="display:flex;align-items:center;"><div class="psh-icon" style="background:rgba(255,139,92,0.12);">&#9823;</div>Owners</div><span class="psh-badge">3</span></div>
+            <div class="p-section-body">
+              <div class="owner-row-c"><div class="owner-dot" style="background:rgba(255,211,107,0.12);">&#9823;</div><div class="owner-addr">0x7d1A...3fE9</div><span class="owner-you">YOU</span><div class="owner-x">&times;</div></div>
+              <div class="owner-row-c"><div class="owner-dot" style="background:rgba(0,212,255,0.12);">&#9823;</div><div class="owner-addr">0xaB34...5678</div><div class="owner-x">&times;</div></div>
+              <div class="owner-row-c"><div class="owner-dot" style="background:rgba(176,107,255,0.12);">&#9823;</div><div class="owner-addr">0xcD56...9012</div><div class="owner-x">&times;</div></div>
+              <div class="threshold-inline"><div class="ti-label">Threshold:</div><div class="ti-pips"><div class="ti-pip">1</div><div class="ti-pip sel">2</div><div class="ti-pip">3</div></div><div class="ti-desc">of 3 must sign</div></div>
+              <button class="btn btn-sm btn-block" style="margin-top:12px;">+ Add Owner</button>
+            </div>
+          </div>
+          <div class="p-section">
+            <div class="p-section-header"><div style="display:flex;align-items:center;"><div class="psh-icon" style="background:rgba(255,211,107,0.12);">&#9670;</div>Balance</div><span style="font-family:monospace;font-weight:600;">2.45 ETH</span></div>
+            <div class="p-section-body"><button class="btn btn-success btn-sm btn-block">Fund Safe (Dev Faucet)</button></div>
+          </div>
+        </div>
+        <!-- Guard -->
+        <div class="left-tab-content" id="left-guard">
+          <div class="p-section"><div class="p-section-body">
+            <div class="guard-summary"><div class="gs-shield">&#128737;</div><div class="gs-info"><h4>SpendingLimitGuard</h4><p>0xGrd1...2345 &middot; Active</p></div></div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div><div class="glc-val">0.5 <span>ETH</span></div></div>
+              <div style="flex:1;"><div class="glc-bar"><div class="glc-bar-fill" style="width:30%;"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;"><span>0.15 used</span><span>0.5 max</span></div></div>
+            </div>
+            <div style="margin-top:20px;">
+              <p style="font-size:12px;line-height:1.6;color:var(--muted);margin-bottom:16px;">Every transaction is checked against this limit before execution.</p>
+              <div class="form-group"><label>Update Limit (ETH)</label><input type="text" value="0.5"></div>
+              <div style="display:flex;gap:10px;margin-top:8px;"><button class="btn btn-primary btn-sm">Update</button><button class="btn btn-danger btn-sm">Disable</button></div>
+            </div>
+          </div></div>
+        </div>
+        <!-- Module -->
+        <div class="left-tab-content" id="left-module">
+          <div class="p-section">
+            <div class="p-section-header"><div style="display:flex;align-items:center;"><div class="psh-icon" style="background:rgba(176,107,255,0.12);">&#128273;</div>AllowanceModule</div><span class="psh-badge" style="background:rgba(0,232,143,0.12);border-color:rgba(0,232,143,0.3);color:var(--green);">ACTIVE</span></div>
+            <div class="p-section-body">
+              <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Delegates spend without multi-sig approval.</p>
+              <div class="delegate-compact">
+                <div class="dc-header"><div class="dc-addr">0xBe22...9aF7</div><span class="dc-tag">DAILY</span></div>
+                <div class="dc-bar"><div class="dc-bar-fill" style="width:60%;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:5px;"></div></div>
+                <div class="dc-nums"><span>0.12 / 0.2 ETH</span><span style="color:var(--muted);">60%</span></div>
+                <div class="dc-footer"><span>Resets 18h 24m</span><div style="display:flex;gap:6px;"><button class="btn btn-sm" style="padding:3px 8px;font-size:10px;">Edit</button><button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:10px;">Revoke</button></div></div>
+              </div>
+              <div class="delegate-compact">
+                <div class="dc-header"><div class="dc-addr">0x4521...cDe3</div><span class="dc-tag" style="background:rgba(0,232,143,0.12);border-color:rgba(0,232,143,0.3);color:var(--green);">WEEKLY</span></div>
+                <div class="dc-bar"><div class="dc-bar-fill" style="width:10%;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:5px;"></div></div>
+                <div class="dc-nums"><span>0.05 / 0.5 ETH</span><span style="color:var(--muted);">10%</span></div>
+                <div class="dc-footer"><span>Resets 5d 12h</span><div style="display:flex;gap:6px;"><button class="btn btn-sm" style="padding:3px 8px;font-size:10px;">Edit</button><button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:10px;">Revoke</button></div></div>
+              </div>
+              <div class="add-delegate-inline">+ Add Delegate</div>
+              <div style="margin-top:20px;padding-top:20px;border-top:var(--glass-border);">
+                <div style="font-weight:600;font-size:13px;margin-bottom:12px;">Set New Allowance</div>
+                <div class="form-group"><label>Delegate Address</label><input type="text" placeholder="0x..."></div>
+                <div class="form-row"><div class="form-group"><label>Amount (ETH)</label><input type="text" placeholder="0.2"></div><div class="form-group"><label>Reset Period</label><select style="padding:12px;background:var(--input-bg);border:var(--glass-border);border-radius:10px;color:var(--text);font-family:monospace;font-size:12px;"><option>Daily</option><option>Weekly</option><option>Monthly</option><option>Never</option></select></div></div>
+                <button class="btn btn-primary btn-block">Set Allowance</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="panel-right">
+      <div class="right-header">
+        <div class="right-tab active" onclick="showRightTab('build')">Build</div>
+        <div class="right-tab" onclick="showRightTab('queue')">Queue<span class="rt-badge">2</span></div>
+        <div class="right-tab" onclick="showRightTab('history')">History</div>
+        <div class="right-tab" onclick="showRightTab('delegate')">Delegate Spend</div>
+      </div>
+      <div class="right-content">
+        <!-- Build -->
+        <div class="tab-content visible" id="tab-build">
+          <div class="tx-workspace">
+            <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;">New Transaction</h3>
+            <div class="guard-inline-warning"><span>&#128737;</span><span><strong>Guard active:</strong> Max 0.5 ETH per transaction</span></div>
+            <div class="form-group"><label>Recipient Address</label><input type="text" placeholder="0x..."></div>
+            <div class="form-row"><div class="form-group"><label>Value (ETH)</label><input type="text" placeholder="0.0"></div><div class="form-group"><label>Operation</label><select style="padding:12px;background:var(--input-bg);border:var(--glass-border);border-radius:10px;color:var(--text);font-family:monospace;font-size:13px;"><option>Call (0)</option><option>DelegateCall (1)</option></select></div></div>
+            <div class="form-group"><label>Data (hex)</label><textarea rows="3" placeholder="0x..." style="background:var(--input-bg);border:var(--glass-border);border-radius:10px;color:var(--text);font-family:monospace;font-size:12px;padding:12px;resize:vertical;"></textarea></div>
+            <div style="display:flex;gap:12px;justify-content:flex-end;"><button class="btn">Clear</button><button class="btn btn-primary">Build & Sign</button></div>
+            <div class="tx-preview"><h4>Transaction Preview</h4>
+              <div class="tx-preview-row"><span class="tpr-label">To</span><span class="tpr-value">0xfA32...8bC1</span></div>
+              <div class="tx-preview-row"><span class="tpr-label">Value</span><span class="tpr-value">0.25 ETH</span></div>
+              <div class="tx-preview-row"><span class="tpr-label">Operation</span><span class="tpr-value">Call</span></div>
+              <div class="tx-preview-row"><span class="tpr-label">Guard Check</span><span class="tpr-value" style="color:var(--green);">PASS (0.25 &lt; 0.5)</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Queue -->
+        <div class="tab-content" id="tab-queue">
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;">Pending Transactions</h3>
+          <div class="queue-item">
+            <div class="qi-top"><div class="qi-id">TX #1 <span class="qi-tag">PENDING</span></div><div class="qi-time">2 min ago</div></div>
+            <div class="qi-details"><div><div class="qi-field-label">Recipient</div><div class="qi-field-value">0xfA32...8bC1</div></div><div><div class="qi-field-label">Value</div><div class="qi-field-value">0.25 ETH</div></div></div>
+            <div class="sig-progress-bar"><div class="spb-track"><div class="spb-seg signed">&#10003; You</div><div class="spb-seg unsigned">Owner 2</div><div class="spb-seg unsigned">Owner 3</div></div><div class="spb-label">1/2</div></div>
+            <div class="qi-actions"><button class="btn btn-sm">Details</button><button class="btn btn-success btn-sm">Sign</button></div>
+          </div>
+          <div class="queue-item">
+            <div class="qi-top"><div class="qi-id">TX #2 <span class="qi-tag" style="background:rgba(0,232,143,0.12);border-color:rgba(0,232,143,0.3);color:var(--green);">READY</span></div><div class="qi-time">15 min ago</div></div>
+            <div class="qi-details"><div><div class="qi-field-label">Recipient</div><div class="qi-field-value">0x9182...dE56</div></div><div><div class="qi-field-label">Value</div><div class="qi-field-value">0.1 ETH</div></div></div>
+            <div class="sig-progress-bar"><div class="spb-track"><div class="spb-seg signed">&#10003; You</div><div class="spb-seg signed">&#10003; Owner 2</div><div class="spb-seg unsigned">Owner 3</div></div><div class="spb-label">2/2</div></div>
+            <div class="qi-actions"><button class="btn btn-sm">Details</button><button class="btn btn-primary">Execute</button></div>
+          </div>
+        </div>
+        <!-- History -->
+        <div class="tab-content" id="tab-history">
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;">Transaction History</h3>
+          <div class="history-item"><div class="hi-icon out">&#8593;</div><div class="hi-details"><div class="hi-title">Sent to 0xfA32...8bC1</div><div class="hi-meta">2 min ago</div></div><div class="hi-amount">-0.15 ETH</div><span class="hi-status">EXECUTED</span></div>
+          <div class="history-item"><div class="hi-icon cfg">&#9881;</div><div class="hi-details"><div class="hi-title">Guard enabled</div><div class="hi-meta">1 hour ago</div></div><div class="hi-amount" style="opacity:0.3;">config</div><span class="hi-status">EXECUTED</span></div>
+          <div class="history-item"><div class="hi-icon in">&#8595;</div><div class="hi-details"><div class="hi-title">Received from 0x1234...abCd</div><div class="hi-meta">3 hours ago</div></div><div class="hi-amount" style="color:var(--green);">+1.0 ETH</div><span class="hi-status">EXECUTED</span></div>
+        </div>
+        <!-- Delegate Spend -->
+        <div class="tab-content" id="tab-delegate">
+          <div class="tx-workspace">
+            <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">Spend as Delegate</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:24px;">Spend directly from the Safe without multi-sig approval.</p>
+            <div class="delegate-spend-card">
+              <h3>Your Allowance</h3><p>0xBe22...9aF7</p>
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+                <div style="font-size:36px;font-weight:700;font-family:monospace;">0.08 <span style="font-size:16px;color:var(--muted);">ETH</span></div>
+                <div style="flex:1;"><div style="height:14px;background:rgba(0,0,0,0.2);border-radius:7px;overflow:hidden;"><div style="height:100%;width:60%;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:7px;"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;"><span>0.12 spent</span><span>0.2 total</span></div></div>
+              </div>
+              <div style="font-size:11px;color:var(--muted);">Daily reset &middot; Resets in 18h 24m</div>
+            </div>
+            <div class="form-group"><label>Send To</label><input type="text" placeholder="0x..."></div>
+            <div class="form-group"><label>Amount (ETH)</label><input type="text" placeholder="0.05"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:var(--muted);">Max: 0.08 ETH</span><button class="btn btn-success">Execute Spend</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Theme Controls -->
+  <div class="theme-controls">
+    <div class="palette-picker">
+      <button class="palette-btn active" data-p="neon" title="Neon"></button>
+      <button class="palette-btn" data-p="aurora" title="Aurora"></button>
+      <button class="palette-btn" data-p="sunset" title="Sunset"></button>
+      <button class="palette-btn" data-p="ice" title="Ice"></button>
+      <button class="palette-btn" data-p="ember" title="Ember"></button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">&#9790;</button>
+  </div>
+
+  <script>
+    /* Existing tab navigation */
+    function showLeftTab(n){document.querySelectorAll('.left-tab-content').forEach(t=>t.classList.remove('visible'));document.getElementById('left-'+n).classList.add('visible');document.querySelectorAll('.panel-tab').forEach(t=>t.classList.remove('active'));event.currentTarget.classList.add('active');}
+    function showRightTab(n){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('visible'));document.getElementById('tab-'+n).classList.add('visible');document.querySelectorAll('.right-tab').forEach(t=>t.classList.remove('active'));event.currentTarget.classList.add('active');}
+
+    /* Dark / Light toggle */
+    const html=document.documentElement;
+    const toggle=document.getElementById('themeToggle');
+    toggle.addEventListener('click',()=>{
+      const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
+      html.setAttribute('data-theme',next);
+      toggle.textContent=next==='dark'?'\u263E':'\u2600';
+    });
+
+    /* Palette switching */
+    document.querySelectorAll('.palette-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('.palette-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        html.setAttribute('data-palette',btn.dataset.p);
+      });
+    });
+  </script>
+</body>
+</html>

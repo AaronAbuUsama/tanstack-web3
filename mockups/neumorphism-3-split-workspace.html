@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neumorphism - Split Workspace</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+    :root{
+      --bg:#e0e5ec;--bg-dark:#c8cdd4;--bg-light:#f0f5fc;
+      --shadow-out:8px 8px 16px #b8bec7,-8px -8px 16px #ffffff;
+      --shadow-out-sm:4px 4px 8px #b8bec7,-4px -4px 8px #ffffff;
+      --shadow-in:inset 4px 4px 8px #b8bec7,inset -4px -4px 8px #ffffff;
+      --shadow-in-sm:inset 2px 2px 4px #b8bec7,inset -2px -2px 4px #ffffff;
+      --text:#2d3436;--text-muted:#636e72;--text-light:#b2bec3;
+      --accent:#6c5ce7;--accent-light:#a29bfe;--green:#00b894;--red:#e17055;--blue:#0984e3;--yellow:#fdcb6e;--pink:#fd79a8;
+      --radius:16px;
+    }
+    [data-theme="dark"] {
+      --bg: #2d3142;
+      --bg-dark: #232736;
+      --bg-light: #383d52;
+      --shadow-out: 8px 8px 16px #1a1d2e, -8px -8px 16px #404560;
+      --shadow-out-sm: 4px 4px 8px #1a1d2e, -4px -4px 8px #404560;
+      --shadow-in: inset 4px 4px 8px #1a1d2e, inset -4px -4px 8px #404560;
+      --shadow-in-sm: inset 2px 2px 4px #1a1d2e, inset -2px -2px 4px #404560;
+      --text: #e8e8f0;
+      --text-muted: #9a9ab0;
+      --text-light: #6a6a80;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+    /* ── Top Bar ── */
+    .top-bar{background:var(--bg);padding:0 24px;height:56px;display:flex;align-items:center;box-shadow:0 4px 12px rgba(0,0,0,0.06);flex-shrink:0;z-index:10;}
+    .tb-logo{font-size:18px;font-weight:800;color:var(--accent);margin-right:20px;display:flex;align-items:center;gap:8px;}
+    .tb-logo .logo-sq{width:32px;height:32px;background:var(--bg);box-shadow:var(--shadow-out-sm);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+    .tb-safe-info{display:flex;align-items:center;gap:16px;padding:0 20px;height:100%;border-left:1px solid var(--bg-dark);}
+    .tb-addr{font-family:monospace;font-size:13px;font-weight:600;color:var(--text-muted);}
+    .tb-bal{font-size:20px;font-weight:800;}
+    .tb-bal span{font-size:12px;color:var(--text-muted);}
+    .tb-pills{display:flex;gap:8px;margin-left:auto;}
+    .pill{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;background:var(--bg);box-shadow:var(--shadow-out-sm);}
+    .pill.chain{color:var(--green);}
+    .pill.thresh{color:var(--accent);}
+    .tb-wallet{padding:0 20px;height:100%;display:flex;align-items:center;border-left:1px solid var(--bg-dark);font-family:monospace;font-size:12px;font-weight:600;color:var(--text-muted);margin-left:16px;}
+
+    /* ── Workspace ── */
+    .workspace{display:flex;flex:1;overflow:hidden;}
+
+    /* ── Left Panel ── */
+    .panel-left{width:420px;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid var(--bg-dark);background:var(--bg);}
+    .panel-tabs{display:flex;flex-shrink:0;border-bottom:1px solid var(--bg-dark);}
+    .panel-tab{flex:1;padding:14px 12px;text-align:center;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;cursor:pointer;color:var(--text-light);background:var(--bg);border-right:1px solid var(--bg-dark);transition:all 0.2s;}
+    .panel-tab:last-child{border-right:none;}
+    .panel-tab.active{color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent);background:var(--bg-light);}
+    .panel-tab:hover:not(.active){color:var(--text-muted);}
+    .panel-tab .tab-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;background:var(--green);box-shadow:0 0 4px var(--green);}
+    .panel-content{flex:1;overflow-y:auto;padding:20px;}
+
+    /* Left panel sections */
+    .p-section{margin-bottom:20px;}
+    .p-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-weight:700;font-size:14px;}
+    .p-section-header .psh-icon{width:32px;height:32px;border-radius:10px;background:var(--bg);box-shadow:var(--shadow-out-sm);display:flex;align-items:center;justify-content:center;font-size:14px;margin-right:10px;}
+    .p-section-header .psh-badge{font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:4px 12px;border-radius:20px;background:var(--bg);box-shadow:var(--shadow-in-sm);font-weight:700;color:var(--text-muted);}
+
+    /* Owners */
+    .owner-row-c{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bg-dark);}
+    .owner-row-c:last-child{border-bottom:none;}
+    .owner-dot{width:36px;height:36px;border-radius:10px;background:var(--bg);box-shadow:var(--shadow-out-sm);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+    .owner-addr{font-family:monospace;font-size:12px;flex:1;color:var(--text-muted);}
+    .owner-you{padding:2px 8px;background:var(--bg);box-shadow:var(--shadow-out-sm);color:var(--yellow);border-radius:10px;font-size:9px;font-weight:800;text-transform:uppercase;}
+    .owner-x{width:24px;height:24px;border-radius:8px;background:var(--bg);box-shadow:var(--shadow-out-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-light);border:none;font-size:14px;transition:all 0.15s;}
+    .owner-x:hover{color:var(--red);}
+    .owner-x:active{box-shadow:var(--shadow-in-sm);}
+
+    /* Threshold pips */
+    .threshold-inline{display:flex;align-items:center;gap:12px;padding:14px 0;margin-top:8px;}
+    .threshold-inline .ti-label{font-size:12px;font-weight:700;}
+    .threshold-inline .ti-pips{display:flex;gap:6px;}
+    .threshold-inline .ti-pip{width:36px;height:36px;border-radius:10px;background:var(--bg);box-shadow:var(--shadow-out-sm);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;cursor:pointer;color:var(--text-muted);}
+    .threshold-inline .ti-pip.sel{box-shadow:var(--shadow-in);color:var(--accent);}
+    .threshold-inline .ti-desc{font-size:11px;color:var(--text-light);}
+
+    /* Guard inline */
+    .guard-summary{display:flex;align-items:center;gap:16px;padding:20px;background:var(--bg);box-shadow:var(--shadow-out);border-radius:var(--radius);margin-bottom:16px;}
+    .guard-summary .gs-shield{font-size:36px;}
+    .guard-summary .gs-info h4{font-size:15px;font-weight:800;}
+    .guard-summary .gs-info p{font-size:12px;color:var(--text-muted);}
+    .glc-row{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+    .glc-val{font-size:32px;font-weight:800;font-family:monospace;color:var(--accent);}
+    .glc-val span{font-size:14px;color:var(--text-muted);}
+    .glc-bar{flex:1;height:14px;background:var(--bg);box-shadow:var(--shadow-in-sm);border-radius:7px;overflow:hidden;}
+    .glc-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:7px;}
+
+    /* Delegate compact */
+    .delegate-compact{padding:16px;background:var(--bg);box-shadow:var(--shadow-out);border-radius:var(--radius);margin-bottom:12px;}
+    .delegate-compact .dc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+    .delegate-compact .dc-addr{font-family:monospace;font-size:12px;font-weight:700;color:var(--text-muted);}
+    .delegate-compact .dc-tag{font-size:9px;padding:3px 10px;border-radius:10px;background:var(--bg);box-shadow:var(--shadow-out-sm);font-weight:800;text-transform:uppercase;color:var(--yellow);}
+    .delegate-compact .dc-bar{height:10px;background:var(--bg);box-shadow:var(--shadow-in-sm);border-radius:5px;overflow:hidden;margin-bottom:6px;}
+    .delegate-compact .dc-bar-fill{height:100%;border-radius:5px;}
+    .delegate-compact .dc-nums{display:flex;justify-content:space-between;font-size:11px;font-family:monospace;font-weight:700;}
+    .delegate-compact .dc-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--bg-dark);font-size:11px;color:var(--text-muted);}
+    .add-delegate-inline{padding:16px;background:var(--bg);box-shadow:var(--shadow-in);border-radius:var(--radius);text-align:center;cursor:pointer;color:var(--text-light);font-weight:700;font-size:13px;transition:all 0.15s;margin-bottom:16px;}
+    .add-delegate-inline:hover{color:var(--accent);}
+
+    /* ── Right Panel ── */
+    .panel-right{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+    .right-header{display:flex;align-items:center;border-bottom:1px solid var(--bg-dark);flex-shrink:0;background:var(--bg);}
+    .right-tab{padding:14px 24px;font-weight:700;font-size:13px;cursor:pointer;color:var(--text-light);position:relative;transition:all 0.2s;}
+    .right-tab.active{color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent);}
+    .right-tab:hover:not(.active){color:var(--text-muted);}
+    .right-tab .rt-badge{position:absolute;top:6px;right:4px;background:var(--pink);color:#fff;font-size:9px;font-weight:800;width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:8px;}
+    .right-content{flex:1;overflow-y:auto;padding:28px;}
+    .tx-workspace{max-width:680px;}
+
+    /* Forms */
+    .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+    .form-group label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;color:var(--text-light);}
+    .form-group input,.form-group textarea,.form-group select{padding:12px 16px;background:var(--bg);box-shadow:var(--shadow-in);border:none;border-radius:12px;color:var(--text);font-family:monospace;font-size:13px;outline:none;}
+    .form-group input:focus,.form-group textarea:focus{box-shadow:var(--shadow-in),0 0 0 2px var(--accent-light);}
+    .form-group input::placeholder,.form-group textarea::placeholder{color:var(--text-light);}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+    /* Guard warning */
+    .guard-inline-warning{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg);box-shadow:var(--shadow-out-sm);border-radius:12px;font-size:12px;margin-bottom:20px;color:var(--green);font-weight:700;border-left:3px solid var(--green);}
+
+    /* TX Preview */
+    .tx-preview{background:var(--bg);box-shadow:var(--shadow-out);border-radius:var(--radius);padding:20px;margin-top:24px;}
+    .tx-preview h4{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:14px;color:var(--text-light);}
+    .tx-preview-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bg-dark);font-size:13px;}
+    .tx-preview-row:last-child{border-bottom:none;}
+    .tx-preview-row .tpr-label{font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:1px;color:var(--text-light);}
+    .tx-preview-row .tpr-value{font-family:monospace;font-size:13px;text-align:right;font-weight:600;}
+
+    /* Queue */
+    .queue-item{background:var(--bg);box-shadow:var(--shadow-out);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+    .queue-item .qi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .queue-item .qi-id{font-family:monospace;font-weight:800;font-size:16px;display:flex;align-items:center;gap:8px;}
+    .queue-item .qi-tag{padding:3px 10px;background:var(--bg);box-shadow:var(--shadow-out-sm);border-radius:10px;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:800;color:var(--yellow);}
+    .queue-item .qi-tag.ready{color:var(--green);}
+    .queue-item .qi-time{font-size:11px;color:var(--text-light);font-family:monospace;}
+    .queue-item .qi-details{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+    .qi-field-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;color:var(--text-light);margin-bottom:2px;}
+    .qi-field-value{font-family:monospace;font-size:13px;font-weight:700;}
+
+    /* Signature progress */
+    .sig-progress-bar{display:flex;align-items:center;gap:12px;}
+    .sig-progress-bar .spb-track{flex:1;display:flex;gap:4px;}
+    .sig-progress-bar .spb-seg{flex:1;height:32px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+    .sig-progress-bar .spb-seg.signed{box-shadow:var(--shadow-in);color:var(--green);}
+    .sig-progress-bar .spb-seg.unsigned{box-shadow:var(--shadow-out-sm);color:var(--text-light);}
+    .sig-progress-bar .spb-label{font-size:12px;font-weight:800;font-family:monospace;white-space:nowrap;}
+    .queue-item .qi-actions{margin-top:16px;display:flex;gap:10px;justify-content:flex-end;}
+
+    /* History */
+    .history-item{display:flex;align-items:center;gap:14px;padding:16px;background:var(--bg);box-shadow:var(--shadow-out);border-radius:var(--radius);margin-bottom:10px;}
+    .history-item .hi-icon{width:40px;height:40px;border-radius:12px;background:var(--bg);box-shadow:var(--shadow-out-sm);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+    .history-item .hi-icon.out{color:var(--pink);}
+    .history-item .hi-icon.in{color:var(--green);}
+    .history-item .hi-icon.cfg{color:var(--blue);}
+    .history-item .hi-details{flex:1;}
+    .history-item .hi-title{font-weight:700;font-size:13px;}
+    .history-item .hi-meta{font-size:11px;font-family:monospace;color:var(--text-light);margin-top:2px;}
+    .history-item .hi-amount{font-family:monospace;font-weight:800;font-size:14px;}
+    .history-item .hi-status{padding:4px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;border-radius:20px;background:var(--bg);box-shadow:var(--shadow-in-sm);color:var(--green);}
+
+    /* Delegate spend */
+    .delegate-spend-card{background:var(--bg);box-shadow:var(--shadow-out);border-radius:var(--radius);padding:24px;margin-bottom:24px;border-left:3px solid var(--accent);}
+    .delegate-spend-card h3{font-size:16px;font-weight:800;margin-bottom:4px;}
+    .delegate-spend-card p{font-size:12px;color:var(--text-muted);margin-bottom:16px;}
+
+    /* Buttons */
+    .btn{padding:10px 18px;background:var(--bg);box-shadow:var(--shadow-out-sm);border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px;color:var(--text);}
+    .btn:active{box-shadow:var(--shadow-in-sm);}
+    .btn-primary{color:var(--accent);}
+    .btn-danger{color:var(--red);}
+    .btn-success{color:var(--green);}
+    .btn-outline{color:var(--text-muted);}
+    .btn-sm{padding:6px 12px;font-size:11px;}
+    .btn-block{width:100%;justify-content:center;}
+
+    /* Tab content visibility */
+    .left-tab-content{display:none;} .left-tab-content.visible{display:block;}
+    .tab-content{display:none;} .tab-content.visible{display:block;}
+
+    /* Allowance form section */
+    .allowance-form-section{margin-top:20px;padding-top:20px;border-top:1px solid var(--bg-dark);}
+    .allowance-form-section .afs-title{font-weight:700;font-size:13px;margin-bottom:14px;}
+
+    /* Theme Controls */
+    .theme-controls{position:fixed;bottom:24px;right:24px;display:flex;align-items:center;gap:12px;z-index:1000;}
+    .theme-toggle{width:48px;height:48px;border-radius:50%;border:none;background:var(--bg);box-shadow:var(--shadow-out-sm);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;color:var(--text);}
+    .theme-toggle:hover{transform:scale(1.1);}
+    .theme-toggle:active{box-shadow:var(--shadow-in-sm);}
+    .palette-picker{display:flex;gap:8px;padding:10px 16px;background:var(--bg);box-shadow:var(--shadow-out-sm);border-radius:28px;}
+    .palette-btn{width:28px;height:28px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all 0.2s;box-shadow:var(--shadow-out-sm);}
+    .palette-btn:hover{transform:scale(1.15);}
+    .palette-btn.active{border-color:var(--text);transform:scale(1.15);}
+  </style>
+</head>
+<body>
+  <!-- ══ TOP BAR ══ -->
+  <div class="top-bar">
+    <div class="tb-logo"><div class="logo-sq">&#9878;</div>SAFE</div>
+    <div class="tb-safe-info">
+      <div class="tb-addr">0x9aB3...7cD2</div>
+      <div class="tb-bal">2.45 <span>ETH</span></div>
+    </div>
+    <div class="tb-pills">
+      <span class="pill chain">Chiado</span>
+      <span class="pill thresh">2 of 3</span>
+    </div>
+    <div class="tb-wallet">0x7d1A...3fE9</div>
+  </div>
+
+  <!-- ══ WORKSPACE ══ -->
+  <div class="workspace">
+
+    <!-- ══ LEFT PANEL ══ -->
+    <div class="panel-left">
+      <div class="panel-tabs">
+        <div class="panel-tab active" onclick="showLeftTab('config')"><span class="tab-dot"></span> Config</div>
+        <div class="panel-tab" onclick="showLeftTab('guard')"><span class="tab-dot"></span> Guard</div>
+        <div class="panel-tab" onclick="showLeftTab('module')"><span class="tab-dot"></span> Module</div>
+      </div>
+      <div class="panel-content">
+
+        <!-- ── Config Tab ── -->
+        <div class="left-tab-content visible" id="left-config">
+          <!-- Owners -->
+          <div class="p-section">
+            <div class="p-section-header">
+              <div style="display:flex;align-items:center;"><div class="psh-icon" style="color:var(--yellow);">&#9823;</div>Owners</div>
+              <span class="psh-badge">3</span>
+            </div>
+            <div class="owner-row-c">
+              <div class="owner-dot" style="color:var(--yellow);">&#9823;</div>
+              <div class="owner-addr">0x7d1A...3fE9</div>
+              <span class="owner-you">YOU</span>
+              <button class="owner-x">&times;</button>
+            </div>
+            <div class="owner-row-c">
+              <div class="owner-dot" style="color:var(--blue);">&#9823;</div>
+              <div class="owner-addr">0xaB34...5678</div>
+              <button class="owner-x">&times;</button>
+            </div>
+            <div class="owner-row-c">
+              <div class="owner-dot" style="color:var(--accent);">&#9823;</div>
+              <div class="owner-addr">0xcD56...9012</div>
+              <button class="owner-x">&times;</button>
+            </div>
+          </div>
+
+          <!-- Threshold -->
+          <div class="p-section">
+            <div class="threshold-inline">
+              <div class="ti-label">Threshold:</div>
+              <div class="ti-pips">
+                <div class="ti-pip">1</div>
+                <div class="ti-pip sel">2</div>
+                <div class="ti-pip">3</div>
+              </div>
+              <div class="ti-desc">of 3 must sign</div>
+            </div>
+            <button class="btn btn-primary btn-sm btn-block" style="margin-top:8px;">+ Add Owner</button>
+          </div>
+
+          <!-- Balance -->
+          <div class="p-section">
+            <div class="p-section-header">
+              <div style="display:flex;align-items:center;"><div class="psh-icon" style="color:var(--green);">&#9670;</div>Balance</div>
+              <span style="font-family:monospace;font-weight:800;font-size:14px;">2.45 ETH</span>
+            </div>
+            <button class="btn btn-success btn-sm btn-block">Fund Safe (Dev Faucet)</button>
+          </div>
+        </div>
+
+        <!-- ── Guard Tab ── -->
+        <div class="left-tab-content" id="left-guard">
+          <div class="guard-summary">
+            <div class="gs-shield">&#128737;</div>
+            <div class="gs-info">
+              <h4>SpendingLimitGuard</h4>
+              <p>0xGrd1...2345 &middot; Active</p>
+            </div>
+          </div>
+
+          <div class="glc-row">
+            <div>
+              <div class="glc-val">0.5 <span>ETH</span></div>
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-light);margin-top:4px;">Per-Tx Limit</div>
+            </div>
+            <div style="flex:1;">
+              <div class="glc-bar"><div class="glc-bar-fill" style="width:30%;"></div></div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-light);margin-top:4px;">
+                <span>0.15 used</span><span>0.5 max</span>
+              </div>
+            </div>
+          </div>
+
+          <p style="font-size:12px;line-height:1.7;color:var(--text-muted);margin:16px 0;">Every transaction is checked against this limit. If ETH value exceeds the limit, the transaction reverts.</p>
+
+          <div class="form-group"><label>Update Limit (ETH)</label><input type="text" value="0.5"></div>
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <button class="btn btn-primary btn-sm">Update Limit</button>
+            <button class="btn btn-danger btn-sm">Disable Guard</button>
+          </div>
+        </div>
+
+        <!-- ── Module Tab ── -->
+        <div class="left-tab-content" id="left-module">
+          <div class="p-section-header">
+            <div style="display:flex;align-items:center;"><div class="psh-icon" style="color:var(--blue);">&#128273;</div>AllowanceModule</div>
+            <span class="psh-badge" style="box-shadow:none;background:var(--bg);color:var(--green);box-shadow:var(--shadow-out-sm);">ACTIVE</span>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Delegates can spend from the Safe without multi-sig approval.</p>
+
+          <!-- Delegate 1 -->
+          <div class="delegate-compact">
+            <div class="dc-header">
+              <div class="dc-addr">0xBe22...9aF7</div>
+              <span class="dc-tag">DAILY</span>
+            </div>
+            <div class="dc-bar"><div class="dc-bar-fill" style="width:60%;background:linear-gradient(90deg,var(--accent),var(--blue));"></div></div>
+            <div class="dc-nums"><span>0.12 / 0.2 ETH</span><span style="color:var(--text-light);">60%</span></div>
+            <div class="dc-footer">
+              <span>Resets in 18h 24m</span>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-sm" style="padding:4px 10px;font-size:10px;">Edit</button>
+                <button class="btn btn-danger btn-sm" style="padding:4px 10px;font-size:10px;">Revoke</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delegate 2 -->
+          <div class="delegate-compact">
+            <div class="dc-header">
+              <div class="dc-addr">0x4521...cDe3</div>
+              <span class="dc-tag" style="color:var(--green);">WEEKLY</span>
+            </div>
+            <div class="dc-bar"><div class="dc-bar-fill" style="width:10%;background:linear-gradient(90deg,var(--green),var(--blue));"></div></div>
+            <div class="dc-nums"><span>0.05 / 0.5 ETH</span><span style="color:var(--text-light);">10%</span></div>
+            <div class="dc-footer">
+              <span>Resets in 5d 12h</span>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-sm" style="padding:4px 10px;font-size:10px;">Edit</button>
+                <button class="btn btn-danger btn-sm" style="padding:4px 10px;font-size:10px;">Revoke</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="add-delegate-inline">+ Add Delegate</div>
+
+          <!-- Set New Allowance Form -->
+          <div class="allowance-form-section">
+            <div class="afs-title">Set New Allowance</div>
+            <div class="form-group"><label>Delegate Address</label><input type="text" placeholder="0x..."></div>
+            <div class="form-row">
+              <div class="form-group"><label>Amount (ETH)</label><input type="text" placeholder="0.2"></div>
+              <div class="form-group"><label>Reset Period</label>
+                <select style="padding:12px;background:var(--bg);box-shadow:var(--shadow-in);border:none;border-radius:12px;font-family:monospace;font-size:12px;color:var(--text);">
+                  <option>Daily</option><option>Weekly</option><option>Monthly</option><option>Never</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block">Set Allowance</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ RIGHT PANEL ══ -->
+    <div class="panel-right">
+      <div class="right-header">
+        <div class="right-tab active" onclick="showRightTab('build')">Build</div>
+        <div class="right-tab" onclick="showRightTab('queue')">Queue<span class="rt-badge">2</span></div>
+        <div class="right-tab" onclick="showRightTab('history')">History</div>
+        <div class="right-tab" onclick="showRightTab('delegate')">Delegate Spend</div>
+      </div>
+      <div class="right-content">
+
+        <!-- ── Build Tab ── -->
+        <div class="tab-content visible" id="tab-build">
+          <div class="tx-workspace">
+            <h3 style="font-size:20px;font-weight:800;margin-bottom:20px;">New Transaction</h3>
+
+            <div class="guard-inline-warning">
+              <span>&#128737;</span>
+              <span><strong>Guard active:</strong> Max 0.5 ETH per transaction</span>
+            </div>
+
+            <div class="form-group"><label>Recipient Address</label><input type="text" placeholder="0x..."></div>
+            <div class="form-row">
+              <div class="form-group"><label>Value (ETH)</label><input type="text" placeholder="0.0"></div>
+              <div class="form-group"><label>Operation</label>
+                <select style="padding:12px;background:var(--bg);box-shadow:var(--shadow-in);border:none;border-radius:12px;font-family:monospace;font-size:13px;color:var(--text);">
+                  <option>Call (0)</option><option>DelegateCall (1)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group"><label>Data (hex)</label><textarea rows="3" placeholder="0x..." style="background:var(--bg);box-shadow:var(--shadow-in);border:none;border-radius:12px;color:var(--text);font-family:monospace;font-size:12px;padding:12px;resize:vertical;"></textarea></div>
+            <div style="display:flex;gap:12px;justify-content:flex-end;">
+              <button class="btn btn-outline">Clear</button>
+              <button class="btn btn-primary">Build &amp; Sign</button>
+            </div>
+
+            <div class="tx-preview">
+              <h4>Transaction Preview</h4>
+              <div class="tx-preview-row"><span class="tpr-label">To</span><span class="tpr-value">0xfA32...8bC1</span></div>
+              <div class="tx-preview-row"><span class="tpr-label">Value</span><span class="tpr-value">0.25 ETH</span></div>
+              <div class="tx-preview-row"><span class="tpr-label">Operation</span><span class="tpr-value">Call</span></div>
+              <div class="tx-preview-row"><span class="tpr-label">Guard Check</span><span class="tpr-value" style="color:var(--green);">PASS (0.25 &lt; 0.5)</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Queue Tab ── -->
+        <div class="tab-content" id="tab-queue">
+          <h3 style="font-size:20px;font-weight:800;margin-bottom:20px;">Pending Transactions</h3>
+
+          <div class="queue-item">
+            <div class="qi-top">
+              <div class="qi-id">TX #1 <span class="qi-tag">PENDING</span></div>
+              <div class="qi-time">2 min ago</div>
+            </div>
+            <div class="qi-details">
+              <div><div class="qi-field-label">Recipient</div><div class="qi-field-value">0xfA32...8bC1</div></div>
+              <div><div class="qi-field-label">Value</div><div class="qi-field-value">0.25 ETH</div></div>
+            </div>
+            <div class="sig-progress-bar">
+              <div class="spb-track">
+                <div class="spb-seg signed">&#10003; You</div>
+                <div class="spb-seg unsigned">Owner 2</div>
+                <div class="spb-seg unsigned">Owner 3</div>
+              </div>
+              <div class="spb-label">1/2</div>
+            </div>
+            <div class="qi-actions">
+              <button class="btn btn-sm btn-outline">Details</button>
+              <button class="btn btn-sm btn-success">Sign</button>
+            </div>
+          </div>
+
+          <div class="queue-item">
+            <div class="qi-top">
+              <div class="qi-id">TX #2 <span class="qi-tag ready">READY</span></div>
+              <div class="qi-time">15 min ago</div>
+            </div>
+            <div class="qi-details">
+              <div><div class="qi-field-label">Recipient</div><div class="qi-field-value">0x9182...dE56</div></div>
+              <div><div class="qi-field-label">Value</div><div class="qi-field-value">0.1 ETH</div></div>
+            </div>
+            <div class="sig-progress-bar">
+              <div class="spb-track">
+                <div class="spb-seg signed">&#10003; You</div>
+                <div class="spb-seg signed">&#10003; Owner 2</div>
+                <div class="spb-seg unsigned">Owner 3</div>
+              </div>
+              <div class="spb-label">2/2</div>
+            </div>
+            <div class="qi-actions">
+              <button class="btn btn-sm btn-outline">Details</button>
+              <button class="btn btn-sm btn-primary">Execute</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── History Tab ── -->
+        <div class="tab-content" id="tab-history">
+          <h3 style="font-size:20px;font-weight:800;margin-bottom:20px;">Transaction History</h3>
+
+          <div class="history-item">
+            <div class="hi-icon out">&#8593;</div>
+            <div class="hi-details">
+              <div class="hi-title">Sent to 0xfA32...8bC1</div>
+              <div class="hi-meta">2 min ago</div>
+            </div>
+            <div class="hi-amount">-0.15 ETH</div>
+            <span class="hi-status">EXECUTED</span>
+          </div>
+
+          <div class="history-item">
+            <div class="hi-icon cfg">&#9881;</div>
+            <div class="hi-details">
+              <div class="hi-title">Guard limit updated</div>
+              <div class="hi-meta">1 hour ago</div>
+            </div>
+            <div class="hi-amount" style="opacity:0.3;">config</div>
+            <span class="hi-status">EXECUTED</span>
+          </div>
+
+          <div class="history-item">
+            <div class="hi-icon in">&#8595;</div>
+            <div class="hi-details">
+              <div class="hi-title">Received from 0x1234...abCd</div>
+              <div class="hi-meta">3 hours ago</div>
+            </div>
+            <div class="hi-amount" style="color:var(--green);">+1.0 ETH</div>
+            <span class="hi-status">EXECUTED</span>
+          </div>
+        </div>
+
+        <!-- ── Delegate Spend Tab ── -->
+        <div class="tab-content" id="tab-delegate">
+          <div class="tx-workspace">
+            <h3 style="font-size:20px;font-weight:800;margin-bottom:8px;">Spend as Delegate</h3>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;">Spend directly from the Safe without multi-sig approval.</p>
+
+            <div class="delegate-spend-card">
+              <h3>Your Allowance</h3>
+              <p>0xBe22...9aF7</p>
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+                <div style="font-size:36px;font-weight:800;font-family:monospace;color:var(--accent);">0.08 <span style="font-size:16px;color:var(--text-muted);">ETH</span></div>
+                <div style="flex:1;">
+                  <div class="glc-bar"><div class="glc-bar-fill" style="width:60%;background:linear-gradient(90deg,var(--accent),var(--blue));"></div></div>
+                  <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-light);margin-top:4px;">
+                    <span>0.12 spent</span><span>0.2 total</span>
+                  </div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);">Daily reset &middot; Resets in 18h 24m</div>
+            </div>
+
+            <div class="form-group"><label>Send To</label><input type="text" placeholder="0x..."></div>
+            <div class="form-group"><label>Amount (ETH)</label><input type="text" placeholder="0.05"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:var(--text-muted);">Max: 0.08 ETH remaining</span>
+              <button class="btn btn-success">Execute Spend</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="theme-controls">
+    <div class="palette-picker">
+      <button class="palette-btn active" data-palette="purple" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);" onclick="setPalette('purple')" title="Purple"></button>
+      <button class="palette-btn" data-palette="emerald" style="background:linear-gradient(135deg,#00b894,#55efc4);" onclick="setPalette('emerald')" title="Emerald"></button>
+      <button class="palette-btn" data-palette="sunset" style="background:linear-gradient(135deg,#e17055,#ffeaa7);" onclick="setPalette('sunset')" title="Sunset"></button>
+      <button class="palette-btn" data-palette="ocean" style="background:linear-gradient(135deg,#0984e3,#74b9ff);" onclick="setPalette('ocean')" title="Ocean"></button>
+      <button class="palette-btn" data-palette="rose" style="background:linear-gradient(135deg,#fd79a8,#fab1a0);" onclick="setPalette('rose')" title="Rose"></button>
+    </div>
+    <button class="theme-toggle" onclick="toggleDarkMode()">&#9789;</button>
+  </div>
+
+  <script>
+    function showLeftTab(name){
+      document.querySelectorAll('.left-tab-content').forEach(function(t){t.classList.remove('visible');});
+      document.getElementById('left-'+name).classList.add('visible');
+      document.querySelectorAll('.panel-tab').forEach(function(t){t.classList.remove('active');});
+      event.currentTarget.classList.add('active');
+    }
+    function showRightTab(name){
+      document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('visible');});
+      document.getElementById('tab-'+name).classList.add('visible');
+      document.querySelectorAll('.right-tab').forEach(function(t){t.classList.remove('active');});
+      event.currentTarget.classList.add('active');
+    }
+
+    // Dark mode toggle
+    let isDark = false;
+    function toggleDarkMode() {
+      isDark = !isDark;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      document.querySelector('.theme-toggle').innerHTML = isDark ? '&#9788;' : '&#9789;';
+    }
+
+    // Color palettes
+    const palettes = {
+      purple: { accent:'#6c5ce7', accentLight:'#a29bfe', green:'#00b894', red:'#e17055', blue:'#0984e3', yellow:'#fdcb6e', pink:'#fd79a8' },
+      emerald: { accent:'#00b894', accentLight:'#55efc4', green:'#00cec9', red:'#fab1a0', blue:'#81ecec', yellow:'#ffeaa7', pink:'#dfe6e9' },
+      sunset: { accent:'#e17055', accentLight:'#fab1a0', green:'#fdcb6e', red:'#d63031', blue:'#f39c12', yellow:'#f9ca24', pink:'#fd79a8' },
+      ocean: { accent:'#0984e3', accentLight:'#74b9ff', green:'#00cec9', red:'#e17055', blue:'#81ecec', yellow:'#ffeaa7', pink:'#dfe6e9' },
+      rose: { accent:'#fd79a8', accentLight:'#fab1a0', green:'#55efc4', red:'#d63031', blue:'#a29bfe', yellow:'#ffeaa7', pink:'#e84393' }
+    };
+
+    function setPalette(name) {
+      const p = palettes[name];
+      const root = document.documentElement.style;
+      root.setProperty('--accent', p.accent);
+      root.setProperty('--accent-light', p.accentLight);
+      root.setProperty('--green', p.green);
+      root.setProperty('--red', p.red);
+      root.setProperty('--blue', p.blue);
+      root.setProperty('--yellow', p.yellow);
+      root.setProperty('--pink', p.pink);
+      document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('[data-palette="'+name+'"]').classList.add('active');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safe UI Design Gallery</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+    :root {
+      --black: #0a0a0a;
+      --white: #fafafa;
+      --gray: #888;
+      --border: 1px solid #222;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--black);
+      color: var(--white);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* Header */
+    .header {
+      padding: 60px 48px 40px;
+      border-bottom: var(--border);
+    }
+
+    .header h1 {
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    .header h1 span {
+      background: linear-gradient(135deg, #FFE66D, #FF6B9D, #4ECDC4, #C44DFF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-size: 16px;
+      color: var(--gray);
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    .header .stats {
+      display: flex;
+      gap: 32px;
+      margin-top: 24px;
+    }
+
+    .header .stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .header .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--gray);
+      margin-top: 2px;
+    }
+
+    /* Style Section */
+    .style-section {
+      border-bottom: var(--border);
+      padding: 48px;
+    }
+
+    .style-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .style-number {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      color: var(--gray);
+      width: 40px;
+      height: 40px;
+      border: 1px solid #333;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .style-info h2 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .style-info p {
+      font-size: 14px;
+      color: var(--gray);
+      margin-top: 4px;
+    }
+
+    .style-color-bar {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+    }
+
+    .style-color-bar .swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 1px solid #333;
+    }
+
+    /* Layout Grid */
+    .layout-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .layout-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      color: var(--white);
+      display: block;
+    }
+
+    .layout-card:hover {
+      border-color: #444;
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .layout-card .preview {
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .layout-card .preview iframe {
+      width: 1440px;
+      height: 900px;
+      border: none;
+      transform: scale(0.26);
+      transform-origin: top left;
+      pointer-events: none;
+    }
+
+    .layout-card .preview .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom, transparent 60%, #111 100%);
+      z-index: 2;
+    }
+
+    .layout-card .card-info {
+      padding: 18px 20px;
+    }
+
+    .layout-card .card-info .layout-name {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .layout-card .card-info .layout-desc {
+      font-size: 12px;
+      color: var(--gray);
+      line-height: 1.4;
+    }
+
+    .layout-card .card-info .layout-tags {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .layout-card .card-info .tag {
+      padding: 3px 10px;
+      border: 1px solid #333;
+      border-radius: 20px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray);
+    }
+
+    /* Footer */
+    .footer {
+      padding: 32px 48px;
+      text-align: center;
+      font-size: 13px;
+      color: #444;
+    }
+
+    /* Responsive */
+    @media (max-width: 1000px) {
+      .layout-grid { grid-template-columns: 1fr; }
+      .header h1 { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Safe UI <span>Design Gallery</span></h1>
+    <p>Four design styles, three layout architectures. Browse and compare to find the right visual direction for the Safe wallet dashboard.</p>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">4</div>
+        <div class="stat-label">Styles</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Layouts</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">12</div>
+        <div class="stat-label">Mockups</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       1. NEO-BRUTALISM
+       ═══════════════════════════════════════════ -->
+  <div class="style-section">
+    <div class="style-header">
+      <div class="style-number">01</div>
+      <div class="style-info">
+        <h2>Neo-Brutalism</h2>
+        <p>Bold borders, chunky shadows, saturated colors. Raw, exposed structure with playful confidence.</p>
+      </div>
+      <div class="style-color-bar">
+        <div class="swatch" style="background:#FFE66D;"></div>
+        <div class="swatch" style="background:#FF6B9D;"></div>
+        <div class="swatch" style="background:#4ECDC4;"></div>
+        <div class="swatch" style="background:#C44DFF;"></div>
+        <div class="swatch" style="background:#1a1a2e;"></div>
+      </div>
+    </div>
+    <div class="layout-grid">
+      <a class="layout-card" href="layout-1-command-center.html" target="_blank">
+        <div class="preview">
+          <iframe src="layout-1-command-center.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Command Center</div>
+          <div class="layout-desc">Sidebar navigation with full-page sections. Best for deep management workflows.</div>
+          <div class="layout-tags"><span class="tag">Sidebar</span><span class="tag">Multi-page</span></div>
+        </div>
+      </a>
+      <a class="layout-card" href="layout-2-card-stack.html" target="_blank">
+        <div class="preview">
+          <iframe src="layout-2-card-stack.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Card Stack</div>
+          <div class="layout-desc">Single-page scroll with hero and feature cards. Everything visible at once.</div>
+          <div class="layout-tags"><span class="tag">Scroll</span><span class="tag">Overview</span></div>
+        </div>
+      </a>
+      <a class="layout-card" href="layout-3-split-workspace.html" target="_blank">
+        <div class="preview">
+          <iframe src="layout-3-split-workspace.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Split Workspace</div>
+          <div class="layout-desc">Two-panel IDE-style. Config on left, transactions on right. Power user focused.</div>
+          <div class="layout-tags"><span class="tag">Split</span><span class="tag">Power User</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       2. GLASSMORPHISM
+       ═══════════════════════════════════════════ -->
+  <div class="style-section">
+    <div class="style-header">
+      <div class="style-number">02</div>
+      <div class="style-info">
+        <h2>Glassmorphism</h2>
+        <p>Frosted glass panels, translucent layers, gradient backgrounds. Airy, modern, ethereal.</p>
+      </div>
+      <div class="style-color-bar">
+        <div class="swatch" style="background:#00d4ff;"></div>
+        <div class="swatch" style="background:#ff6bca;"></div>
+        <div class="swatch" style="background:#00e88f;"></div>
+        <div class="swatch" style="background:#b06bff;"></div>
+        <div class="swatch" style="background:#0f0c29;"></div>
+      </div>
+    </div>
+    <div class="layout-grid">
+      <a class="layout-card" href="glassmorphism-1-command-center.html" target="_blank">
+        <div class="preview">
+          <iframe src="glassmorphism-1-command-center.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Command Center</div>
+          <div class="layout-desc">Frosted sidebar with glass panels. Deep purples and floating elements.</div>
+          <div class="layout-tags"><span class="tag">Sidebar</span><span class="tag">Multi-page</span></div>
+        </div>
+      </a>
+      <a class="layout-card" href="glassmorphism-2-card-stack.html" target="_blank">
+        <div class="preview">
+          <iframe src="glassmorphism-2-card-stack.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Card Stack</div>
+          <div class="layout-desc">Translucent cards floating on gradient backdrop. Scrollable overview.</div>
+          <div class="layout-tags"><span class="tag">Scroll</span><span class="tag">Overview</span></div>
+        </div>
+      </a>
+      <a class="layout-card" href="glassmorphism-3-split-workspace.html" target="_blank">
+        <div class="preview">
+          <iframe src="glassmorphism-3-split-workspace.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Split Workspace</div>
+          <div class="layout-desc">Glass panels with blurred backgrounds. Config and transactions side by side.</div>
+          <div class="layout-tags"><span class="tag">Split</span><span class="tag">Power User</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       3. NEUMORPHISM
+       ═══════════════════════════════════════════ -->
+  <div class="style-section">
+    <div class="style-header">
+      <div class="style-number">03</div>
+      <div class="style-info">
+        <h2>Neumorphism</h2>
+        <p>Soft extruded shadows, muted tones, pressed-in interactions. Subtle, tactile, clay-like.</p>
+      </div>
+      <div class="style-color-bar">
+        <div class="swatch" style="background:#6c5ce7;"></div>
+        <div class="swatch" style="background:#00b894;"></div>
+        <div class="swatch" style="background:#0984e3;"></div>
+        <div class="swatch" style="background:#fd79a8;"></div>
+        <div class="swatch" style="background:#e0e5ec;"></div>
+      </div>
+    </div>
+    <div class="layout-grid">
+      <a class="layout-card" href="neumorphism-1-command-center.html" target="_blank">
+        <div class="preview">
+          <iframe src="neumorphism-1-command-center.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Command Center</div>
+          <div class="layout-desc">Soft clay sidebar with pressed navigation items and raised cards.</div>
+          <div class="layout-tags"><span class="tag">Sidebar</span><span class="tag">Multi-page</span></div>
+        </div>
+      </a>
+      <a class="layout-card" href="neumorphism-2-card-stack.html" target="_blank">
+        <div class="preview">
+          <iframe src="neumorphism-2-card-stack.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Card Stack</div>
+          <div class="layout-desc">Raised cards on soft surface. Elements feel extruded from the page.</div>
+          <div class="layout-tags"><span class="tag">Scroll</span><span class="tag">Overview</span></div>
+        </div>
+      </a>
+      <a class="layout-card" href="neumorphism-3-split-workspace.html" target="_blank">
+        <div class="preview">
+          <iframe src="neumorphism-3-split-workspace.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Split Workspace</div>
+          <div class="layout-desc">Pressed-in panels with soft depth. Buttons feel pushable and tactile.</div>
+          <div class="layout-tags"><span class="tag">Split</span><span class="tag">Power User</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       4. SKEUOMORPHISM
+       ═══════════════════════════════════════════ -->
+  <div class="style-section">
+    <div class="style-header">
+      <div class="style-number">04</div>
+      <div class="style-info">
+        <h2>Skeuomorphism</h2>
+        <p>Leather textures, wood grain, paper surfaces, metallic buttons. Physical materials in digital form.</p>
+      </div>
+      <div class="style-color-bar">
+        <div class="swatch" style="background:#5D4037;"></div>
+        <div class="swatch" style="background:#8D6E63;"></div>
+        <div class="swatch" style="background:#FFD54F;"></div>
+        <div class="swatch" style="background:#FFF8E1;"></div>
+        <div class="swatch" style="background:#3E2723;"></div>
+      </div>
+    </div>
+    <div class="layout-grid">
+      <a class="layout-card" href="skeuomorphism-1-command-center.html" target="_blank">
+        <div class="preview">
+          <iframe src="skeuomorphism-1-command-center.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Command Center</div>
+          <div class="layout-desc">Leather sidebar, paper content area, metallic controls. Classic richness.</div>
+          <div class="layout-tags"><span class="tag">Sidebar</span><span class="tag">Multi-page</span></div>
+        </div>
+      </a>
+      <a class="layout-card" href="skeuomorphism-2-card-stack.html" target="_blank">
+        <div class="preview">
+          <iframe src="skeuomorphism-2-card-stack.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Card Stack</div>
+          <div class="layout-desc">Stitched paper cards on wood grain. Warm, tactile, scrollable.</div>
+          <div class="layout-tags"><span class="tag">Scroll</span><span class="tag">Overview</span></div>
+        </div>
+      </a>
+      <a class="layout-card" href="skeuomorphism-3-split-workspace.html" target="_blank">
+        <div class="preview">
+          <iframe src="skeuomorphism-3-split-workspace.html" loading="lazy"></iframe>
+          <div class="overlay"></div>
+        </div>
+        <div class="card-info">
+          <div class="layout-name">Split Workspace</div>
+          <div class="layout-desc">Leather config panel, paper transaction workspace. Material contrast.</div>
+          <div class="layout-tags"><span class="tag">Split</span><span class="tag">Power User</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">
+    Safe UI Design Gallery &middot; 4 Styles &times; 3 Layouts = 12 Mockups &middot; Static HTML Wireframes
+  </div>
+
+</body>
+</html>

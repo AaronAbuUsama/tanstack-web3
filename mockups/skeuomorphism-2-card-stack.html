@@ -1,0 +1,2604 @@
+<!DOCTYPE html>
+<html lang="en" data-palette="classic">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skeuomorphism Card Stack - Safe Wallet Dashboard</title>
+  <style>
+    /* ═══════════════════════════════════════════════════
+       SKEUOMORPHISM FOUNDATIONS
+       ═══════════════════════════════════════════════════ */
+
+    :root {
+      /* Wood & leather */
+      --wood-dark: #3E2723;
+      --wood-mid: #5D4037;
+      --wood-light: #795548;
+      --wood-highlight: #8D6E63;
+      --leather: #8D6E63;
+      --leather-dark: #6D4C41;
+      --leather-deep: #4E342E;
+
+      /* Paper & cream */
+      --paper: #FFF8E1;
+      --paper-dark: #F5F0E8;
+      --paper-edge: #E8DCC8;
+      --cream: #FFFDE7;
+      --parchment: #F5EDDC;
+
+      /* Accents */
+      --gold: #FFD54F;
+      --gold-dark: #F9A825;
+      --gold-shine: #FFECB3;
+
+      /* Metal */
+      --metal-light: #E0E0E0;
+      --metal-mid: #BDBDBD;
+      --metal-dark: #9E9E9E;
+
+      /* Status */
+      --green: #4CAF50;
+      --green-dark: #2E7D32;
+      --red: #E53935;
+      --red-dark: #B71C1C;
+      --blue: #1E88E5;
+      --orange: #FB8C00;
+
+      /* Text */
+      --text-dark: #3E2723;
+      --text-mid: #5D4037;
+      --text-light: #8D6E63;
+      --text-on-dark: #FFF8E1;
+
+      /* Body bg */
+      --body-bg-grain: rgba(93, 64, 55, 0.03);
+      --body-bg-start: #F5F0E8;
+      --body-bg-end: #EDE4D4;
+
+      /* Wood texture */
+      --wood-tex-grain1: rgba(62, 39, 35, 0.15);
+      --wood-tex-grain2: rgba(62, 39, 35, 0.08);
+      --wood-tex-grain3: rgba(121, 85, 72, 0.1);
+      --wood-tex-top: #5D4037;
+      --wood-tex-mid: #4E342E;
+      --wood-tex-bot: #3E2723;
+
+      /* Leather texture */
+      --leather-tex-hl1: rgba(141, 110, 99, 0.3);
+      --leather-tex-hl2: rgba(141, 110, 99, 0.2);
+      --leather-tex-grain: rgba(78, 52, 46, 0.05);
+      --leather-tex-top: #6D4C41;
+      --leather-tex-mid1: #5D4037;
+      --leather-tex-mid2: #4E342E;
+      --leather-tex-bot: #3E2723;
+
+      /* Paper texture */
+      --paper-tex-top: #FFF8E1;
+      --paper-tex-mid: #F5F0E8;
+      --paper-tex-bot: #F0E8D8;
+      --paper-tex-grain1: rgba(0,0,0,0.01);
+      --paper-tex-grain2: rgba(0,0,0,0.008);
+
+      /* Metal btn */
+      --metal-btn-top: #F5F5F5;
+      --metal-btn-mid: #E0E0E0;
+      --metal-btn-bot: #BDBDBD;
+      --metal-btn-border: #9E9E9E;
+      --metal-btn-border-top: #E8E8E8;
+      --metal-btn-border-bot: #888;
+      --metal-btn-inset-top: rgba(255,255,255,0.8);
+      --metal-btn-text-shadow: rgba(255,255,255,0.8);
+
+      /* Stitching */
+      --stitch-color: rgba(188, 170, 164, 0.25);
+      --stitch-color-card: rgba(141, 110, 99, 0.2);
+      --stitch-color-section: rgba(141, 110, 99, 0.15);
+
+      /* Navbar text */
+      --nav-text: #BCAAA4;
+      --nav-border: #2E1B14;
+
+      /* Form */
+      --form-bg: rgba(255,255,255,0.6);
+      --form-inset: rgba(0,0,0,0.06);
+
+      /* Card surfaces */
+      --card-inset-bg: rgba(0,0,0,0.03);
+      --card-inset-border: rgba(0,0,0,0.04);
+      --card-inset-shadow: rgba(0,0,0,0.04);
+
+      /* Section dividers */
+      --divider: rgba(0,0,0,0.06);
+      --divider-light: rgba(0,0,0,0.05);
+
+      /* Noise */
+      --noise-opacity: 0.015;
+
+      /* Scrollbar */
+      --scroll-track: rgba(0,0,0,0.03);
+      --scroll-thumb: var(--paper-edge);
+      --scroll-thumb-hover: var(--wood-highlight);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PALETTE: CLASSIC (default - no overrides needed)
+       ═══════════════════════════════════════════════════ */
+
+    /* ═══════════════════════════════════════════════════
+       PALETTE: MAHOGANY
+       ═══════════════════════════════════════════════════ */
+    [data-palette="mahogany"] {
+      --wood-dark: #3B0A0A;
+      --wood-mid: #5C1A1A;
+      --wood-light: #7B2E2E;
+      --wood-highlight: #8B3A3A;
+      --leather: #8B3A3A;
+      --leather-dark: #6B2222;
+      --leather-deep: #4A0E0E;
+      --paper: #FFF0E8;
+      --paper-dark: #F5E8E0;
+      --paper-edge: #E8D0C0;
+      --cream: #FFF5ED;
+      --parchment: #F5E0D0;
+      --gold: #FF7043;
+      --gold-dark: #E64A19;
+      --gold-shine: #FFCCBC;
+      --text-dark: #3B0A0A;
+      --text-mid: #5C1A1A;
+      --text-light: #8B3A3A;
+      --text-on-dark: #FFF0E8;
+      --body-bg-grain: rgba(92, 26, 26, 0.03);
+      --body-bg-start: #F5E8E0;
+      --body-bg-end: #EDDCD0;
+      --wood-tex-grain1: rgba(59, 10, 10, 0.15);
+      --wood-tex-grain2: rgba(59, 10, 10, 0.08);
+      --wood-tex-grain3: rgba(123, 46, 46, 0.1);
+      --wood-tex-top: #5C1A1A;
+      --wood-tex-mid: #4A0E0E;
+      --wood-tex-bot: #3B0A0A;
+      --leather-tex-hl1: rgba(139, 58, 58, 0.3);
+      --leather-tex-hl2: rgba(139, 58, 58, 0.2);
+      --leather-tex-grain: rgba(74, 14, 14, 0.05);
+      --leather-tex-top: #6B2222;
+      --leather-tex-mid1: #5C1A1A;
+      --leather-tex-mid2: #4A0E0E;
+      --leather-tex-bot: #3B0A0A;
+      --paper-tex-top: #FFF0E8;
+      --paper-tex-mid: #F5E8E0;
+      --paper-tex-bot: #F0DDD0;
+      --stitch-color: rgba(180, 140, 130, 0.25);
+      --stitch-color-card: rgba(139, 58, 58, 0.2);
+      --stitch-color-section: rgba(139, 58, 58, 0.15);
+      --nav-text: #C49A8A;
+      --nav-border: #2A0606;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PALETTE: OLIVE
+       ═══════════════════════════════════════════════════ */
+    [data-palette="olive"] {
+      --wood-dark: #2E3B1F;
+      --wood-mid: #4A5D32;
+      --wood-light: #6B7F4A;
+      --wood-highlight: #7D9058;
+      --leather: #7D9058;
+      --leather-dark: #5A6B3A;
+      --leather-deep: #3A4D24;
+      --paper: #F5F8E8;
+      --paper-dark: #EDF2DC;
+      --paper-edge: #D6DEC0;
+      --cream: #F8FAE8;
+      --parchment: #EEF2D8;
+      --gold: #AED581;
+      --gold-dark: #7CB342;
+      --gold-shine: #DCEDC8;
+      --text-dark: #2E3B1F;
+      --text-mid: #4A5D32;
+      --text-light: #7D9058;
+      --text-on-dark: #F5F8E8;
+      --body-bg-grain: rgba(74, 93, 50, 0.03);
+      --body-bg-start: #EDF2DC;
+      --body-bg-end: #E2EACC;
+      --wood-tex-grain1: rgba(46, 59, 31, 0.15);
+      --wood-tex-grain2: rgba(46, 59, 31, 0.08);
+      --wood-tex-grain3: rgba(107, 127, 74, 0.1);
+      --wood-tex-top: #4A5D32;
+      --wood-tex-mid: #3A4D24;
+      --wood-tex-bot: #2E3B1F;
+      --leather-tex-hl1: rgba(125, 144, 88, 0.3);
+      --leather-tex-hl2: rgba(125, 144, 88, 0.2);
+      --leather-tex-grain: rgba(58, 77, 36, 0.05);
+      --leather-tex-top: #5A6B3A;
+      --leather-tex-mid1: #4A5D32;
+      --leather-tex-mid2: #3A4D24;
+      --leather-tex-bot: #2E3B1F;
+      --paper-tex-top: #F5F8E8;
+      --paper-tex-mid: #EDF2DC;
+      --paper-tex-bot: #E5ECCC;
+      --stitch-color: rgba(170, 190, 140, 0.25);
+      --stitch-color-card: rgba(125, 144, 88, 0.2);
+      --stitch-color-section: rgba(125, 144, 88, 0.15);
+      --nav-text: #A8BB8A;
+      --nav-border: #1E2A14;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PALETTE: NAVY
+       ═══════════════════════════════════════════════════ */
+    [data-palette="navy"] {
+      --wood-dark: #1A1A3E;
+      --wood-mid: #2A2A5C;
+      --wood-light: #3D3D7A;
+      --wood-highlight: #4E4E8D;
+      --leather: #4E4E8D;
+      --leather-dark: #35356B;
+      --leather-deep: #22224E;
+      --paper: #EEF0FA;
+      --paper-dark: #E4E6F4;
+      --paper-edge: #C8CCDE;
+      --cream: #F0F2FC;
+      --parchment: #E6E8F5;
+      --gold: #7986CB;
+      --gold-dark: #5C6BC0;
+      --gold-shine: #C5CAE9;
+      --text-dark: #1A1A3E;
+      --text-mid: #2A2A5C;
+      --text-light: #4E4E8D;
+      --text-on-dark: #EEF0FA;
+      --body-bg-grain: rgba(42, 42, 92, 0.03);
+      --body-bg-start: #E4E6F4;
+      --body-bg-end: #D8DCEE;
+      --wood-tex-grain1: rgba(26, 26, 62, 0.15);
+      --wood-tex-grain2: rgba(26, 26, 62, 0.08);
+      --wood-tex-grain3: rgba(61, 61, 122, 0.1);
+      --wood-tex-top: #2A2A5C;
+      --wood-tex-mid: #22224E;
+      --wood-tex-bot: #1A1A3E;
+      --leather-tex-hl1: rgba(78, 78, 141, 0.3);
+      --leather-tex-hl2: rgba(78, 78, 141, 0.2);
+      --leather-tex-grain: rgba(34, 34, 78, 0.05);
+      --leather-tex-top: #35356B;
+      --leather-tex-mid1: #2A2A5C;
+      --leather-tex-mid2: #22224E;
+      --leather-tex-bot: #1A1A3E;
+      --paper-tex-top: #EEF0FA;
+      --paper-tex-mid: #E4E6F4;
+      --paper-tex-bot: #DADCEE;
+      --stitch-color: rgba(150, 155, 195, 0.25);
+      --stitch-color-card: rgba(78, 78, 141, 0.2);
+      --stitch-color-section: rgba(78, 78, 141, 0.15);
+      --nav-text: #9498C4;
+      --nav-border: #0E0E2A;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PALETTE: CHARCOAL
+       ═══════════════════════════════════════════════════ */
+    [data-palette="charcoal"] {
+      --wood-dark: #2D2D2D;
+      --wood-mid: #4A4A4A;
+      --wood-light: #666666;
+      --wood-highlight: #7A7A7A;
+      --leather: #7A7A7A;
+      --leather-dark: #5A5A5A;
+      --leather-deep: #3D3D3D;
+      --paper: #F2F2F2;
+      --paper-dark: #E8E8E8;
+      --paper-edge: #D0D0D0;
+      --cream: #F5F5F5;
+      --parchment: #ECECEC;
+      --gold: #90A4AE;
+      --gold-dark: #607D8B;
+      --gold-shine: #CFD8DC;
+      --text-dark: #2D2D2D;
+      --text-mid: #4A4A4A;
+      --text-light: #7A7A7A;
+      --text-on-dark: #F2F2F2;
+      --body-bg-grain: rgba(74, 74, 74, 0.03);
+      --body-bg-start: #E8E8E8;
+      --body-bg-end: #DCDCDC;
+      --wood-tex-grain1: rgba(45, 45, 45, 0.15);
+      --wood-tex-grain2: rgba(45, 45, 45, 0.08);
+      --wood-tex-grain3: rgba(102, 102, 102, 0.1);
+      --wood-tex-top: #4A4A4A;
+      --wood-tex-mid: #3D3D3D;
+      --wood-tex-bot: #2D2D2D;
+      --leather-tex-hl1: rgba(122, 122, 122, 0.3);
+      --leather-tex-hl2: rgba(122, 122, 122, 0.2);
+      --leather-tex-grain: rgba(61, 61, 61, 0.05);
+      --leather-tex-top: #5A5A5A;
+      --leather-tex-mid1: #4A4A4A;
+      --leather-tex-mid2: #3D3D3D;
+      --leather-tex-bot: #2D2D2D;
+      --paper-tex-top: #F2F2F2;
+      --paper-tex-mid: #E8E8E8;
+      --paper-tex-bot: #DEDEDE;
+      --stitch-color: rgba(160, 160, 160, 0.25);
+      --stitch-color-card: rgba(122, 122, 122, 0.2);
+      --stitch-color-section: rgba(122, 122, 122, 0.15);
+      --nav-text: #A0A0A0;
+      --nav-border: #1A1A1A;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       DARK MODE
+       ═══════════════════════════════════════════════════ */
+    [data-theme="dark"] {
+      --paper: #2A2218;
+      --paper-dark: #241E16;
+      --paper-edge: #3D3328;
+      --cream: #302820;
+      --parchment: #2E2620;
+
+      --metal-light: #4A4440;
+      --metal-mid: #3A3530;
+      --metal-dark: #2E2A26;
+
+      --text-dark: #E8DCC8;
+      --text-mid: #C8B89A;
+      --text-light: #9A8A72;
+      --text-on-dark: #E8DCC8;
+
+      --body-bg-start: #1A1510;
+      --body-bg-end: #14100C;
+
+      --paper-tex-top: #2A2218;
+      --paper-tex-mid: #241E16;
+      --paper-tex-bot: #201A14;
+      --paper-tex-grain1: rgba(255,255,255,0.01);
+      --paper-tex-grain2: rgba(255,255,255,0.008);
+
+      --metal-btn-top: #4A4440;
+      --metal-btn-mid: #3A3530;
+      --metal-btn-bot: #2E2A26;
+      --metal-btn-border: #1E1A16;
+      --metal-btn-border-top: #5A5450;
+      --metal-btn-border-bot: #1A1610;
+      --metal-btn-inset-top: rgba(255,255,255,0.12);
+      --metal-btn-text-shadow: rgba(0,0,0,0.5);
+
+      --form-bg: rgba(0,0,0,0.2);
+      --form-inset: rgba(0,0,0,0.15);
+
+      --card-inset-bg: rgba(0,0,0,0.15);
+      --card-inset-border: rgba(0,0,0,0.2);
+      --card-inset-shadow: rgba(0,0,0,0.15);
+
+      --divider: rgba(255,255,255,0.06);
+      --divider-light: rgba(255,255,255,0.04);
+
+      --noise-opacity: 0.025;
+
+      --scroll-track: rgba(255,255,255,0.03);
+      --scroll-thumb: #3D3328;
+      --scroll-thumb-hover: #5A4A38;
+    }
+
+    /* Dark mode - palette-specific dark overrides */
+    [data-theme="dark"][data-palette="classic"] {
+      --body-bg-grain: rgba(93, 64, 55, 0.05);
+      --wood-tex-grain1: rgba(255, 220, 180, 0.06);
+      --wood-tex-grain2: rgba(255, 220, 180, 0.03);
+      --wood-tex-grain3: rgba(255, 220, 180, 0.04);
+      --wood-tex-top: #3A2E24;
+      --wood-tex-mid: #2E2218;
+      --wood-tex-bot: #221A12;
+      --leather-tex-hl1: rgba(180, 150, 120, 0.15);
+      --leather-tex-hl2: rgba(180, 150, 120, 0.1);
+      --leather-tex-grain: rgba(120, 90, 60, 0.04);
+      --leather-tex-top: #3E3228;
+      --leather-tex-mid1: #322820;
+      --leather-tex-mid2: #28201A;
+      --leather-tex-bot: #1E1812;
+      --stitch-color: rgba(180, 160, 130, 0.15);
+      --stitch-color-card: rgba(180, 160, 130, 0.12);
+      --stitch-color-section: rgba(180, 160, 130, 0.08);
+      --nav-text: #9A8A72;
+      --nav-border: #0E0A06;
+    }
+
+    [data-theme="dark"][data-palette="mahogany"] {
+      --body-bg-grain: rgba(92, 26, 26, 0.05);
+      --wood-tex-grain1: rgba(255, 180, 160, 0.06);
+      --wood-tex-grain2: rgba(255, 180, 160, 0.03);
+      --wood-tex-grain3: rgba(255, 180, 160, 0.04);
+      --wood-tex-top: #3A1A1A;
+      --wood-tex-mid: #2E1010;
+      --wood-tex-bot: #220A0A;
+      --leather-tex-hl1: rgba(180, 100, 90, 0.15);
+      --leather-tex-hl2: rgba(180, 100, 90, 0.1);
+      --leather-tex-grain: rgba(120, 40, 30, 0.04);
+      --leather-tex-top: #3E2020;
+      --leather-tex-mid1: #321818;
+      --leather-tex-mid2: #281010;
+      --leather-tex-bot: #1E0A0A;
+      --paper: #2A1E1A;
+      --paper-dark: #241816;
+      --paper-edge: #3D2E28;
+      --stitch-color: rgba(180, 130, 120, 0.15);
+      --stitch-color-card: rgba(180, 130, 120, 0.12);
+      --stitch-color-section: rgba(180, 130, 120, 0.08);
+      --nav-text: #9A7A6A;
+      --nav-border: #0E0404;
+      --paper-tex-top: #2A1E1A;
+      --paper-tex-mid: #241816;
+      --paper-tex-bot: #201410;
+    }
+
+    [data-theme="dark"][data-palette="olive"] {
+      --body-bg-grain: rgba(74, 93, 50, 0.05);
+      --wood-tex-grain1: rgba(200, 230, 160, 0.06);
+      --wood-tex-grain2: rgba(200, 230, 160, 0.03);
+      --wood-tex-grain3: rgba(200, 230, 160, 0.04);
+      --wood-tex-top: #2A3420;
+      --wood-tex-mid: #202A18;
+      --wood-tex-bot: #182210;
+      --leather-tex-hl1: rgba(140, 170, 100, 0.15);
+      --leather-tex-hl2: rgba(140, 170, 100, 0.1);
+      --leather-tex-grain: rgba(70, 100, 40, 0.04);
+      --leather-tex-top: #303A24;
+      --leather-tex-mid1: #28321E;
+      --leather-tex-mid2: #202A18;
+      --leather-tex-bot: #182210;
+      --paper: #222A1A;
+      --paper-dark: #1E2416;
+      --paper-edge: #343E28;
+      --stitch-color: rgba(160, 190, 120, 0.15);
+      --stitch-color-card: rgba(160, 190, 120, 0.12);
+      --stitch-color-section: rgba(160, 190, 120, 0.08);
+      --nav-text: #7A9060;
+      --nav-border: #0C1408;
+      --paper-tex-top: #222A1A;
+      --paper-tex-mid: #1E2416;
+      --paper-tex-bot: #1A2012;
+    }
+
+    [data-theme="dark"][data-palette="navy"] {
+      --body-bg-grain: rgba(42, 42, 92, 0.05);
+      --wood-tex-grain1: rgba(160, 170, 240, 0.06);
+      --wood-tex-grain2: rgba(160, 170, 240, 0.03);
+      --wood-tex-grain3: rgba(160, 170, 240, 0.04);
+      --wood-tex-top: #1E1E40;
+      --wood-tex-mid: #161634;
+      --wood-tex-bot: #101028;
+      --leather-tex-hl1: rgba(100, 110, 180, 0.15);
+      --leather-tex-hl2: rgba(100, 110, 180, 0.1);
+      --leather-tex-grain: rgba(40, 40, 90, 0.04);
+      --leather-tex-top: #242450;
+      --leather-tex-mid1: #1E1E42;
+      --leather-tex-mid2: #181836;
+      --leather-tex-bot: #10102A;
+      --paper: #1E1E30;
+      --paper-dark: #1A1A28;
+      --paper-edge: #30304A;
+      --stitch-color: rgba(120, 130, 190, 0.15);
+      --stitch-color-card: rgba(120, 130, 190, 0.12);
+      --stitch-color-section: rgba(120, 130, 190, 0.08);
+      --nav-text: #6A70A0;
+      --nav-border: #060616;
+      --paper-tex-top: #1E1E30;
+      --paper-tex-mid: #1A1A28;
+      --paper-tex-bot: #161622;
+    }
+
+    [data-theme="dark"][data-palette="charcoal"] {
+      --body-bg-grain: rgba(74, 74, 74, 0.05);
+      --wood-tex-grain1: rgba(200, 200, 200, 0.06);
+      --wood-tex-grain2: rgba(200, 200, 200, 0.03);
+      --wood-tex-grain3: rgba(200, 200, 200, 0.04);
+      --wood-tex-top: #303030;
+      --wood-tex-mid: #262626;
+      --wood-tex-bot: #1C1C1C;
+      --leather-tex-hl1: rgba(140, 140, 140, 0.15);
+      --leather-tex-hl2: rgba(140, 140, 140, 0.1);
+      --leather-tex-grain: rgba(80, 80, 80, 0.04);
+      --leather-tex-top: #383838;
+      --leather-tex-mid1: #2E2E2E;
+      --leather-tex-mid2: #262626;
+      --leather-tex-bot: #1C1C1C;
+      --paper: #242424;
+      --paper-dark: #202020;
+      --paper-edge: #383838;
+      --stitch-color: rgba(160, 160, 160, 0.12);
+      --stitch-color-card: rgba(160, 160, 160, 0.1);
+      --stitch-color-section: rgba(160, 160, 160, 0.06);
+      --nav-text: #888888;
+      --nav-border: #0E0E0E;
+      --paper-tex-top: #242424;
+      --paper-tex-mid: #202020;
+      --paper-tex-bot: #1C1C1C;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       DARK MODE COMPONENT OVERRIDES
+       ═══════════════════════════════════════════════════ */
+
+    [data-theme="dark"] .metal-btn {
+      background: linear-gradient(180deg, var(--metal-btn-top) 0%, var(--metal-btn-mid) 40%, var(--metal-btn-bot) 100%);
+      border: 1px solid var(--metal-btn-border);
+      border-top-color: var(--metal-btn-border-top);
+      border-bottom-color: var(--metal-btn-border-bot);
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.5),
+        inset 0 1px 0 var(--metal-btn-inset-top),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+      color: var(--text-dark);
+      text-shadow: 0 1px 0 var(--metal-btn-text-shadow);
+    }
+
+    [data-theme="dark"] .metal-btn:hover {
+      background: linear-gradient(180deg, #5A5450 0%, #4A4440 40%, #3A3530 100%);
+    }
+
+    [data-theme="dark"] .metal-btn:active {
+      background: linear-gradient(180deg, #2E2A26 0%, #3A3530 40%, #4A4440 100%);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    [data-theme="dark"] .embossed {
+      text-shadow: 0 1px 0 rgba(255,255,255,0.08), 0 -1px 0 rgba(0,0,0,0.3);
+    }
+
+    [data-theme="dark"] .debossed {
+      text-shadow: 0 -1px 0 rgba(255,255,255,0.05), 0 1px 2px rgba(0,0,0,0.6);
+    }
+
+    [data-theme="dark"] .hero {
+      box-shadow:
+        0 6px 20px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        inset 0 -2px 4px rgba(0,0,0,0.3);
+      border: 1px solid rgba(0,0,0,0.5);
+    }
+
+    [data-theme="dark"] .hero-btn.primary {
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    [data-theme="dark"] .hero-btn.secondary {
+      background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    [data-theme="dark"] .feature-card,
+    [data-theme="dark"] .section-card,
+    [data-theme="dark"] .full-card,
+    [data-theme="dark"] .delegate-card {
+      box-shadow:
+        0 4px 14px rgba(0,0,0,0.3),
+        0 1px 3px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+      border: 1px solid var(--paper-edge);
+    }
+
+    [data-theme="dark"] .stat-card {
+      box-shadow:
+        0 3px 10px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        inset 0 -1px 0 rgba(0,0,0,0.15);
+      border: 1px solid var(--paper-edge);
+    }
+
+    [data-theme="dark"] .form-input {
+      background: var(--form-bg);
+      border: 1px solid var(--paper-edge);
+      color: var(--text-dark);
+      box-shadow: inset 0 2px 4px var(--form-inset);
+    }
+
+    [data-theme="dark"] .form-input::placeholder {
+      color: var(--text-light);
+    }
+
+    [data-theme="dark"] .form-input:focus {
+      border-color: var(--gold-dark);
+      box-shadow: inset 0 2px 4px var(--form-inset), 0 0 0 3px rgba(255,213,79,0.15);
+    }
+
+    [data-theme="dark"] .owner-item {
+      background: var(--card-inset-bg);
+      border: 1px solid var(--card-inset-border);
+      box-shadow: inset 0 1px 2px var(--card-inset-shadow);
+      color: var(--text-mid);
+    }
+
+    [data-theme="dark"] .delegate-bar {
+      background: var(--card-inset-bg);
+      border: 1px solid var(--card-inset-border);
+      box-shadow: inset 0 1px 2px var(--card-inset-shadow);
+    }
+
+    [data-theme="dark"] .delegate-stat {
+      background: var(--card-inset-bg);
+      border: 1px solid var(--card-inset-border);
+      box-shadow: inset 0 1px 2px var(--card-inset-shadow);
+    }
+
+    [data-theme="dark"] .pending-item {
+      background: var(--card-inset-bg);
+      border: 1px solid var(--card-inset-border);
+      box-shadow: inset 0 1px 2px var(--card-inset-shadow);
+    }
+
+    [data-theme="dark"] .pending-status.waiting {
+      background: linear-gradient(180deg, rgba(255,213,79,0.15), rgba(249,168,37,0.2));
+      color: var(--gold);
+      border: 1px solid rgba(255,213,79,0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    [data-theme="dark"] .pending-status.ready {
+      background: linear-gradient(180deg, rgba(76,175,80,0.15), rgba(46,125,50,0.2));
+      color: #81C784;
+      border: 1px solid rgba(76,175,80,0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    [data-theme="dark"] .section-title-bar {
+      border-bottom: 1px solid var(--divider);
+    }
+
+    [data-theme="dark"] .activity-item {
+      border-bottom: 1px solid var(--divider-light);
+    }
+
+    [data-theme="dark"] .activity-item:hover {
+      background: rgba(255,213,79,0.03);
+    }
+
+    [data-theme="dark"] .sig-bar-bg {
+      background: rgba(255,255,255,0.06);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    [data-theme="dark"] .limit-bar-container {
+      background: rgba(255,255,255,0.06);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    [data-theme="dark"] .threshold-badge.metal {
+      background: linear-gradient(180deg, var(--metal-btn-top) 0%, var(--metal-btn-mid) 50%, var(--metal-btn-bot) 100%);
+      border: 1px solid var(--metal-btn-border);
+      border-top-color: var(--metal-btn-border-top);
+      color: var(--text-dark);
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.4),
+        inset 0 1px 0 var(--metal-btn-inset-top),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+      text-shadow: 0 1px 0 var(--metal-btn-text-shadow);
+    }
+
+    [data-theme="dark"] .submit-btn {
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    [data-theme="dark"] .count-badge {
+      background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+    }
+
+    [data-theme="dark"] .owner-bubble {
+      border: 3px solid var(--paper);
+    }
+
+    [data-theme="dark"] .delegate-card-btn.edit {
+      background: linear-gradient(180deg, var(--metal-btn-top) 0%, var(--metal-btn-mid) 50%, var(--metal-btn-bot) 100%);
+      border: 1px solid var(--metal-btn-border);
+      border-top-color: var(--metal-btn-border-top);
+      color: var(--text-dark);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 var(--metal-btn-inset-top);
+      text-shadow: 0 1px 0 var(--metal-btn-text-shadow);
+    }
+
+    [data-theme="dark"] .delegate-card-btn.revoke {
+      background: linear-gradient(180deg, #4A2020 0%, #3A1818 100%);
+      border: 1px solid #5A2828;
+      color: #EF9A9A;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    [data-theme="dark"] .wallet-pill.metal-btn span {
+      color: var(--text-dark) !important;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       THEME CONTROLS - Skeuomorphic Metal/Leather
+       ═══════════════════════════════════════════════════ */
+    .theme-controls {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .palette-picker {
+      display: flex;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 100%),
+        linear-gradient(180deg, var(--metal-btn-top) 0%, var(--metal-btn-mid) 40%, var(--metal-btn-bot) 100%);
+      border: 1px solid var(--metal-btn-border);
+      border-top-color: var(--metal-btn-border-top);
+      border-bottom-color: var(--metal-btn-border-bot);
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.25),
+        inset 0 1px 0 var(--metal-btn-inset-top),
+        inset 0 -1px 0 rgba(0,0,0,0.15);
+    }
+
+    .palette-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        inset 0 -1px 0 rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .palette-btn:hover {
+      transform: scale(1.12);
+      box-shadow:
+        0 3px 8px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.4),
+        inset 0 -1px 0 rgba(0,0,0,0.15);
+    }
+
+    .palette-btn.active {
+      border-color: var(--gold);
+      box-shadow:
+        0 0 0 2px var(--gold),
+        0 2px 6px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.4);
+      transform: scale(1.08);
+    }
+
+    .palette-btn:active {
+      transform: scale(0.95);
+      box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.3),
+        0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .theme-toggle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      transition: all 0.2s;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255,255,255,0.2) 0%, transparent 60%),
+        linear-gradient(180deg, var(--metal-btn-top) 0%, var(--metal-btn-mid) 40%, var(--metal-btn-bot) 100%);
+      border: 2px solid var(--metal-btn-border);
+      border-top-color: var(--metal-btn-border-top);
+      border-bottom-color: var(--metal-btn-border-bot);
+      box-shadow:
+        0 4px 10px rgba(0,0,0,0.25),
+        inset 0 1px 0 var(--metal-btn-inset-top),
+        inset 0 -1px 0 rgba(0,0,0,0.15);
+      color: var(--text-mid);
+      text-shadow: 0 1px 0 var(--metal-btn-text-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.08);
+      box-shadow:
+        0 5px 14px rgba(0,0,0,0.3),
+        inset 0 1px 0 var(--metal-btn-inset-top),
+        inset 0 -1px 0 rgba(0,0,0,0.15);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.95);
+      box-shadow:
+        inset 0 2px 6px rgba(0,0,0,0.35),
+        0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    [data-theme="dark"] .theme-toggle {
+      color: var(--gold);
+      text-shadow: 0 0 8px rgba(255,213,79,0.3);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       BASE STYLES
+       ═══════════════════════════════════════════════════ */
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          var(--body-bg-grain) 0px,
+          var(--body-bg-grain) 1px,
+          transparent 1px,
+          transparent 4px
+        ),
+        linear-gradient(180deg, var(--body-bg-start) 0%, var(--body-bg-end) 100%);
+      color: var(--text-dark);
+      min-height: 100vh;
+      line-height: 1.5;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: Georgia, 'Times New Roman', Times, serif;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       NOISE TEXTURE OVERLAY (simulated via SVG)
+       ═══════════════════════════════════════════════════ */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 10000;
+      opacity: var(--noise-opacity);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SHARED TEXTURES
+       ═══════════════════════════════════════════════════ */
+    .wood-texture {
+      background:
+        repeating-linear-gradient(
+          87deg,
+          var(--wood-tex-grain1) 0px,
+          transparent 2px,
+          transparent 6px,
+          var(--wood-tex-grain2) 8px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          var(--wood-tex-grain3) 0px,
+          transparent 1px,
+          transparent 12px
+        ),
+        linear-gradient(180deg, var(--wood-tex-top) 0%, var(--wood-tex-mid) 40%, var(--wood-tex-bot) 100%);
+    }
+
+    .leather-texture {
+      background:
+        radial-gradient(ellipse at 20% 50%, var(--leather-tex-hl1) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 30%, var(--leather-tex-hl2) 0%, transparent 40%),
+        repeating-linear-gradient(
+          45deg,
+          var(--leather-tex-grain) 0px,
+          transparent 2px,
+          transparent 4px
+        ),
+        linear-gradient(160deg, var(--leather-tex-top) 0%, var(--leather-tex-mid1) 30%, var(--leather-tex-mid2) 70%, var(--leather-tex-bot) 100%);
+    }
+
+    .paper-texture {
+      background:
+        repeating-linear-gradient(
+          0deg,
+          var(--paper-tex-grain1) 0px,
+          transparent 1px,
+          transparent 3px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          var(--paper-tex-grain2) 0px,
+          transparent 1px,
+          transparent 4px
+        ),
+        linear-gradient(170deg, var(--paper-tex-top) 0%, var(--paper-tex-mid) 60%, var(--paper-tex-bot) 100%);
+    }
+
+    .metal-btn {
+      background: linear-gradient(180deg, var(--metal-btn-top) 0%, var(--metal-btn-mid) 40%, var(--metal-btn-bot) 100%);
+      border: 1px solid var(--metal-btn-border);
+      border-top-color: var(--metal-btn-border-top);
+      border-bottom-color: var(--metal-btn-border-bot);
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.3),
+        inset 0 1px 0 var(--metal-btn-inset-top),
+        inset 0 -1px 0 rgba(0,0,0,0.1);
+      color: var(--text-dark);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.1s;
+      text-shadow: 0 1px 0 var(--metal-btn-text-shadow);
+    }
+
+    .metal-btn:hover {
+      background: linear-gradient(180deg, #FAFAFA 0%, #EEEEEE 40%, #D0D0D0 100%);
+    }
+
+    .metal-btn:active {
+      background: linear-gradient(180deg, #BDBDBD 0%, #D0D0D0 40%, #E0E0E0 100%);
+      box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.3),
+        0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    .embossed {
+      text-shadow: 0 1px 0 rgba(255,255,255,0.6), 0 -1px 0 rgba(0,0,0,0.1);
+    }
+
+    .debossed {
+      text-shadow: 0 -1px 0 rgba(255,255,255,0.3), 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .stitched {
+      border: 2px dashed rgba(139, 109, 95, 0.4);
+      border-radius: 12px;
+      padding: 2px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       STICKY NAVBAR - Dark Wood
+       ═══════════════════════════════════════════════════ */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 64px;
+      border-bottom: 3px solid var(--nav-border);
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.4),
+        inset 0 -1px 0 rgba(255,255,255,0.05),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 0 10px rgba(255,213,79,0.15);
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.4),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+      border: 1px solid var(--gold-dark);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-link {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--nav-text);
+      text-decoration: none;
+      transition: all 0.2s;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .nav-link:hover {
+      color: var(--paper);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .nav-link.active {
+      color: var(--gold);
+      background: rgba(255,213,79,0.1);
+      box-shadow: inset 0 -2px 0 var(--gold);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .chain-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: linear-gradient(180deg, rgba(76,175,80,0.2) 0%, rgba(46,125,50,0.25) 100%);
+      color: #A5D6A7;
+      border: 1px solid rgba(76,175,80,0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .chain-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4CAF50;
+      box-shadow: 0 0 6px rgba(76,175,80,0.5);
+    }
+
+    .wallet-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px 6px 10px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      color: var(--paper);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .wallet-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      border: 2px solid rgba(255,213,79,0.4);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       CONTENT CONTAINER
+       ═══════════════════════════════════════════════════ */
+    .content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       HERO SECTION - Leather Texture
+       ═══════════════════════════════════════════════════ */
+    .hero {
+      border-radius: 16px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        0 6px 20px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        inset 0 -2px 4px rgba(0,0,0,0.2);
+      border: 1px solid rgba(0,0,0,0.3);
+    }
+
+    /* Stitching around hero */
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 10px; left: 10px; right: 10px; bottom: 10px;
+      border: 2px dashed var(--stitch-color);
+      border-radius: 10px;
+      pointer-events: none;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .safe-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--nav-text);
+      margin-bottom: 6px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .safe-address {
+      font-family: 'Courier New', monospace;
+      font-size: 22px;
+      color: var(--gold);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 0 15px rgba(255,213,79,0.1);
+      letter-spacing: 1px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .hero-btn {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
+    .hero-btn.primary {
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+      color: var(--wood-dark);
+      border: 1px solid var(--gold-dark);
+      border-top-color: var(--gold-shine);
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    .hero-btn.secondary {
+      background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+      color: var(--nav-text);
+      border: 1px solid rgba(188,170,164,0.3);
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .balance-section {
+      text-align: center;
+      padding: 20px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .balance-label {
+      font-size: 13px;
+      color: var(--nav-text);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .balance-value {
+      font-family: Georgia, serif;
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--paper);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5), 0 0 30px rgba(255,248,225,0.08);
+      letter-spacing: -1px;
+    }
+
+    .balance-usd {
+      font-size: 18px;
+      color: var(--nav-text);
+      margin-top: 4px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .stat-cards {
+      display: flex;
+      gap: 16px;
+      margin-top: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat-card {
+      flex: 1;
+      border-radius: 12px;
+      padding: 18px 20px;
+      text-align: center;
+      box-shadow:
+        0 3px 10px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.7),
+        inset 0 -1px 0 rgba(0,0,0,0.05);
+      border: 1px solid var(--paper-edge);
+    }
+
+    .stat-card .stat-num {
+      font-family: Georgia, serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .stat-card .stat-label {
+      font-size: 12px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       FEATURE CARDS - Paper Texture, Stitched Borders
+       ═══════════════════════════════════════════════════ */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      border-radius: 14px;
+      position: relative;
+      box-shadow:
+        0 4px 14px rgba(0,0,0,0.12),
+        0 1px 3px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      border: 1px solid var(--paper-edge);
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 8px; left: 8px; right: 8px; bottom: 8px;
+      border: 2px dashed var(--stitch-color-card);
+      border-radius: 8px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .feature-header {
+      padding: 20px 24px 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .feature-icon-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        inset 0 -1px 0 rgba(0,0,0,0.1);
+    }
+
+    .feature-icon.owners {
+      background: linear-gradient(135deg, #1E88E5, #1565C0);
+      border: 1px solid #0D47A1;
+    }
+
+    .feature-icon.guard {
+      background: linear-gradient(135deg, #FB8C00, #E65100);
+      border: 1px solid #BF360C;
+    }
+
+    .feature-icon.module {
+      background: linear-gradient(135deg, #4CAF50, #2E7D32);
+      border: 1px solid #1B5E20;
+    }
+
+    .feature-title {
+      font-family: Georgia, serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .feature-subtitle {
+      font-size: 13px;
+      color: var(--text-light);
+      padding: 0 24px;
+      margin-bottom: 16px;
+    }
+
+    .feature-body {
+      padding: 0 24px 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Owners card */
+    .owners-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .owner-bubbles {
+      display: flex;
+      gap: 0;
+    }
+
+    .owner-bubble {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      border: 3px solid var(--paper);
+      margin-right: -10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .owner-bubble:nth-child(1) {
+      background: linear-gradient(135deg, #1E88E5, #1565C0);
+      z-index: 3;
+    }
+
+    .owner-bubble:nth-child(2) {
+      background: linear-gradient(135deg, #4CAF50, #2E7D32);
+      z-index: 2;
+    }
+
+    .owner-bubble:nth-child(3) {
+      background: linear-gradient(135deg, #FB8C00, #E65100);
+      z-index: 1;
+    }
+
+    .threshold-badge {
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: Georgia, serif;
+    }
+
+    .threshold-badge.metal {
+      background: linear-gradient(180deg, #F5F5F5 0%, #E0E0E0 50%, #BDBDBD 100%);
+      border: 1px solid #999;
+      border-top-color: #ddd;
+      color: var(--text-dark);
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.9),
+        inset 0 -1px 0 rgba(0,0,0,0.15);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .owner-list {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .owner-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      color: var(--text-mid);
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: var(--card-inset-bg);
+      border: 1px solid var(--card-inset-border);
+      box-shadow: inset 0 1px 2px var(--card-inset-shadow);
+    }
+
+    .owner-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Guard card */
+    .limit-display {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .limit-amount {
+      font-family: Georgia, serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .limit-label-text {
+      font-size: 13px;
+      color: var(--text-light);
+    }
+
+    .limit-bar-container {
+      background: rgba(0,0,0,0.06);
+      border-radius: 12px;
+      height: 24px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      border: 1px solid rgba(0,0,0,0.05);
+      position: relative;
+    }
+
+    .limit-bar-fill {
+      height: 100%;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #FB8C00, #F9A825);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.4),
+        0 1px 3px rgba(249,168,37,0.3);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+    }
+
+    .limit-bar-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--wood-dark);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    .limit-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-light);
+    }
+
+    /* Module card - delegate bars */
+    .delegate-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--card-inset-bg);
+      border: 1px solid var(--card-inset-border);
+      box-shadow: inset 0 1px 2px var(--card-inset-shadow);
+      margin-bottom: 10px;
+    }
+
+    .delegate-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    .delegate-info {
+      flex: 1;
+    }
+
+    .delegate-addr {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    .delegate-meta {
+      font-size: 11px;
+      color: var(--text-light);
+    }
+
+    .delegate-pct {
+      font-family: Georgia, serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .delegate-period {
+      font-size: 10px;
+      color: var(--text-light);
+      text-align: right;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       TRANSACTION SECTION
+       ═══════════════════════════════════════════════════ */
+    .tx-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .section-card {
+      border-radius: 14px;
+      box-shadow:
+        0 4px 14px rgba(0,0,0,0.12),
+        0 1px 3px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      border: 1px solid var(--paper-edge);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .section-card::before {
+      content: '';
+      position: absolute;
+      top: 8px; left: 8px; right: 8px; bottom: 8px;
+      border: 2px dashed var(--stitch-color-section);
+      border-radius: 8px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .section-title-bar {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+    }
+
+    .section-title {
+      font-family: Georgia, serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title .icon {
+      font-size: 20px;
+    }
+
+    .section-body {
+      padding: 20px 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* TX Builder Form */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-light);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--paper-edge);
+      background: var(--form-bg);
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      color: var(--text-dark);
+      box-shadow: inset 0 2px 4px var(--form-inset);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--gold-dark);
+      box-shadow: inset 0 2px 4px var(--form-inset), 0 0 0 3px rgba(255,213,79,0.2);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-light);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      margin-top: 8px;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+      color: var(--wood-dark);
+      border: 1px solid var(--gold-dark);
+      border-top-color: var(--gold-shine);
+      box-shadow:
+        0 3px 8px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+      font-family: Georgia, serif;
+    }
+
+    /* Pending Queue */
+    .pending-item {
+      padding: 16px;
+      border-radius: 10px;
+      background: var(--card-inset-bg);
+      border: 1px solid var(--card-inset-border);
+      box-shadow: inset 0 1px 2px var(--card-inset-shadow);
+      margin-bottom: 14px;
+    }
+
+    .pending-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .pending-id {
+      font-family: Georgia, serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text-dark);
+    }
+
+    .pending-status {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pending-status.waiting {
+      background: linear-gradient(180deg, #FFF8E1, #FFECB3);
+      color: #E65100;
+      border: 1px solid #FFD54F;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    }
+
+    .pending-status.ready {
+      background: linear-gradient(180deg, #E8F5E9, #C8E6C9);
+      color: #2E7D32;
+      border: 1px solid #A5D6A7;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    }
+
+    .pending-detail {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-mid);
+      margin-bottom: 10px;
+    }
+
+    .pending-amount {
+      font-family: Georgia, serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text-dark);
+    }
+
+    .pending-to {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .sig-bar-bg {
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.06);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .sig-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #4CAF50, #66BB6A);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+      transition: width 0.3s;
+    }
+
+    .sig-label {
+      font-size: 12px;
+      color: var(--text-light);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .pending-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .pending-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
+    .pending-btn.approve {
+      background: linear-gradient(180deg, #66BB6A, #43A047);
+      color: white;
+      border: 1px solid #2E7D32;
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+      text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    }
+
+    .pending-btn.reject {
+      background: linear-gradient(180deg, #EF5350, #E53935);
+      color: white;
+      border: 1px solid #C62828;
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+      text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       DELEGATE MANAGEMENT GRID
+       ═══════════════════════════════════════════════════ */
+    .delegate-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .delegate-card {
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow:
+        0 3px 10px rgba(0,0,0,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      border: 1px solid var(--paper-edge);
+      position: relative;
+    }
+
+    .delegate-card::before {
+      content: '';
+      position: absolute;
+      top: 6px; left: 6px; right: 6px; bottom: 6px;
+      border: 2px dashed var(--stitch-color-section);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .delegate-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .delegate-card-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      box-shadow:
+        0 3px 8px rgba(0,0,0,0.2),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+    }
+
+    .delegate-card-info h4 {
+      font-family: 'Courier New', monospace;
+      font-size: 15px;
+      color: var(--text-dark);
+    }
+
+    .delegate-card-info span {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+
+    .delegate-card-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .delegate-stat {
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--card-inset-bg);
+      border: 1px solid var(--card-inset-border);
+      box-shadow: inset 0 1px 2px var(--card-inset-shadow);
+    }
+
+    .delegate-stat .val {
+      font-family: Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .delegate-stat .label {
+      font-size: 11px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .delegate-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .delegate-card-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .delegate-card-btn.edit {
+      background: linear-gradient(180deg, #F5F5F5 0%, #E0E0E0 50%, #BDBDBD 100%);
+      border: 1px solid #999;
+      border-top-color: #ddd;
+      color: var(--text-dark);
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .delegate-card-btn.revoke {
+      background: linear-gradient(180deg, #FFCDD2 0%, #EF9A9A 100%);
+      border: 1px solid #E57373;
+      color: #B71C1C;
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       ACTIVITY FEED
+       ═══════════════════════════════════════════════════ */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--divider-light);
+      position: relative;
+      z-index: 2;
+      transition: background 0.15s;
+    }
+
+    .activity-item:hover {
+      background: rgba(255,213,79,0.04);
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon-wrap {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.12),
+        inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    .activity-icon-wrap.send {
+      background: linear-gradient(135deg, #EF5350, #C62828);
+    }
+
+    .activity-icon-wrap.receive {
+      background: linear-gradient(135deg, #66BB6A, #2E7D32);
+    }
+
+    .activity-icon-wrap.config {
+      background: linear-gradient(135deg, #42A5F5, #1565C0);
+    }
+
+    .activity-icon-wrap.guard-ev {
+      background: linear-gradient(135deg, #FFA726, #E65100);
+    }
+
+    .activity-body {
+      flex: 1;
+    }
+
+    .activity-title-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .activity-desc {
+      font-size: 12px;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+
+    .activity-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .activity-amount {
+      font-family: Georgia, serif;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .activity-amount.out { color: var(--red); }
+    .activity-amount.in { color: var(--green-dark); }
+    .activity-amount.neutral { color: var(--text-mid); }
+
+    .activity-time {
+      font-size: 11px;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       FULL-WIDTH SECTIONS
+       ═══════════════════════════════════════════════════ */
+    .full-card {
+      border-radius: 14px;
+      box-shadow:
+        0 4px 14px rgba(0,0,0,0.12),
+        0 1px 3px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      border: 1px solid var(--paper-edge);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .full-card::before {
+      content: '';
+      position: absolute;
+      top: 8px; left: 8px; right: 8px; bottom: 8px;
+      border: 2px dashed var(--stitch-color-section);
+      border-radius: 8px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Section count badge */
+    .count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 11px;
+      font-size: 12px;
+      font-weight: 700;
+      background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+      color: var(--wood-dark);
+      border: 1px solid var(--gold-dark);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+      padding: 0 6px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SCROLLBAR STYLING
+       ═══════════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track {
+      background: var(--scroll-track);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--scroll-thumb);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--scroll-thumb-hover);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════
+       THEME CONTROLS
+       ═══════════════════════════════════════════════════ -->
+  <div class="theme-controls">
+    <div class="palette-picker">
+      <button class="palette-btn active" data-palette="classic" style="background:linear-gradient(135deg,#8B4513,#DAA520);" onclick="setPalette('classic')" title="Classic"></button>
+      <button class="palette-btn" data-palette="mahogany" style="background:linear-gradient(135deg,#4a0e0e,#8b2500);" onclick="setPalette('mahogany')" title="Mahogany"></button>
+      <button class="palette-btn" data-palette="olive" style="background:linear-gradient(135deg,#556b2f,#8fbc8f);" onclick="setPalette('olive')" title="Olive"></button>
+      <button class="palette-btn" data-palette="navy" style="background:linear-gradient(135deg,#1a1a4e,#4169e1);" onclick="setPalette('navy')" title="Navy"></button>
+      <button class="palette-btn" data-palette="charcoal" style="background:linear-gradient(135deg,#2d2d2d,#708090);" onclick="setPalette('charcoal')" title="Charcoal"></button>
+    </div>
+    <button class="theme-toggle" onclick="toggleDarkMode()">&#9789;</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       NAVBAR - Dark Wood Texture
+       ═══════════════════════════════════════════════════ -->
+  <nav class="navbar wood-texture">
+    <div class="nav-left">
+      <div class="logo">
+        <div class="logo-icon">&#x1f6e1;</div>
+        SafeVault
+      </div>
+      <div class="nav-links">
+        <a href="#" class="nav-link active">Dashboard</a>
+        <a href="#" class="nav-link">Transactions</a>
+        <a href="#" class="nav-link">Settings</a>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="chain-badge">
+        <span class="chain-dot"></span>
+        Chiado Testnet
+      </div>
+      <div class="wallet-pill metal-btn" style="border-radius: 24px; padding: 5px 14px 5px 8px;">
+        <div class="wallet-avatar"></div>
+        <span style="color: var(--text-dark);">0x7d1A...3fE9</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════
+       MAIN CONTENT - Card Stack
+       ═══════════════════════════════════════════════════ -->
+  <main class="content">
+
+    <!-- HERO - Leather Texture -->
+    <section class="hero leather-texture">
+      <div class="hero-top">
+        <div>
+          <div class="safe-label">Safe Multisig Wallet</div>
+          <div class="safe-address">0x9aB3...7cD2</div>
+        </div>
+        <div class="hero-actions">
+          <button class="hero-btn primary">&#8593; Send</button>
+          <button class="hero-btn secondary">&#8595; Receive</button>
+        </div>
+      </div>
+
+      <div class="balance-section">
+        <div class="balance-label">Total Balance</div>
+        <div class="balance-value">2.45 ETH</div>
+        <div class="balance-usd">&#8776; $4,812.50 USD</div>
+      </div>
+
+      <div class="stat-cards">
+        <div class="stat-card paper-texture">
+          <div class="stat-num">3</div>
+          <div class="stat-label">Owners</div>
+        </div>
+        <div class="stat-card paper-texture">
+          <div class="stat-num">2/3</div>
+          <div class="stat-label">Threshold</div>
+        </div>
+        <div class="stat-card paper-texture">
+          <div class="stat-num">2</div>
+          <div class="stat-label">Pending Tx</div>
+        </div>
+        <div class="stat-card paper-texture">
+          <div class="stat-num">1</div>
+          <div class="stat-label">Active Guard</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURE CARDS -->
+    <section class="features-grid">
+
+      <!-- Owners Card -->
+      <div class="feature-card paper-texture">
+        <div class="feature-header">
+          <div class="feature-icon-row">
+            <div class="feature-icon owners">&#128101;</div>
+            <div class="feature-title embossed">Owners</div>
+          </div>
+        </div>
+        <div class="feature-subtitle">Multisig signers for this Safe</div>
+        <div class="feature-body">
+          <div class="owners-row">
+            <div class="owner-bubbles">
+              <div class="owner-bubble">A</div>
+              <div class="owner-bubble">B</div>
+              <div class="owner-bubble">C</div>
+            </div>
+            <div class="threshold-badge metal">2 / 3</div>
+          </div>
+          <div class="owner-list">
+            <div class="owner-item">
+              <span class="owner-dot" style="background: #1E88E5;"></span>
+              0x7d1A...3fE9 <span style="color: #1E88E5; margin-left: auto; font-size: 10px; font-family: system-ui;">(you)</span>
+            </div>
+            <div class="owner-item">
+              <span class="owner-dot" style="background: #4CAF50;"></span>
+              0xBe22...9a41
+            </div>
+            <div class="owner-item">
+              <span class="owner-dot" style="background: #FB8C00;"></span>
+              0x4521...cE07
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spending Guard Card -->
+      <div class="feature-card paper-texture">
+        <div class="feature-header">
+          <div class="feature-icon-row">
+            <div class="feature-icon guard">&#128737;</div>
+            <div class="feature-title embossed">Spending Guard</div>
+          </div>
+        </div>
+        <div class="feature-subtitle">Daily transaction limit enforcement</div>
+        <div class="feature-body">
+          <div class="limit-display">
+            <div class="limit-amount">0.5 ETH</div>
+            <div class="limit-label-text">daily limit per transaction</div>
+          </div>
+          <div class="limit-bar-container">
+            <div class="limit-bar-fill" style="width: 50%;">
+              <span class="limit-bar-text">0.25 ETH</span>
+            </div>
+          </div>
+          <div class="limit-info">
+            <span>0.25 ETH spent today</span>
+            <span>0.25 ETH remaining</span>
+          </div>
+          <div style="margin-top: 16px; padding: 10px; border-radius: 8px; background: rgba(76,175,80,0.08); border: 1px solid rgba(76,175,80,0.15);">
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green-dark); font-weight: 600;">
+              <span>&#10003;</span> Guard Active
+            </div>
+            <div style="font-size: 11px; color: var(--text-light); margin-top: 4px;">
+              Transactions exceeding 0.5 ETH will be blocked by the guard contract.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Allowance Module Card -->
+      <div class="feature-card paper-texture">
+        <div class="feature-header">
+          <div class="feature-icon-row">
+            <div class="feature-icon module">&#128273;</div>
+            <div class="feature-title embossed">Allowance Module</div>
+          </div>
+        </div>
+        <div class="feature-subtitle">Delegated spending allowances</div>
+        <div class="feature-body">
+          <div class="delegate-bar">
+            <div class="delegate-avatar" style="background: linear-gradient(135deg, #42A5F5, #1565C0);">B</div>
+            <div class="delegate-info">
+              <div class="delegate-addr">0xBe22...9a41</div>
+              <div class="delegate-meta">Daily reset &middot; 0.3 ETH used</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="delegate-pct">60%</div>
+              <div class="delegate-period">daily</div>
+            </div>
+          </div>
+          <div class="delegate-bar">
+            <div class="delegate-avatar" style="background: linear-gradient(135deg, #FFA726, #E65100);">C</div>
+            <div class="delegate-info">
+              <div class="delegate-addr">0x4521...cE07</div>
+              <div class="delegate-meta">Weekly reset &middot; 0.05 ETH used</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="delegate-pct">10%</div>
+              <div class="delegate-period">weekly</div>
+            </div>
+          </div>
+          <div style="margin-top: 10px; text-align: center;">
+            <button class="metal-btn" style="padding: 8px 20px; border-radius: 6px; font-size: 13px;">+ Add Delegate</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRANSACTION SECTION -->
+    <section class="tx-section">
+
+      <!-- TX Builder Form -->
+      <div class="section-card paper-texture">
+        <div class="section-title-bar">
+          <div class="section-title">
+            <span class="icon">&#9998;</span>
+            New Transaction
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Recipient Address</label>
+            <input type="text" class="form-input" placeholder="0x..." value="">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Amount</label>
+              <input type="text" class="form-input" placeholder="0.0" value="">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Token</label>
+              <select class="form-input" style="font-family: system-ui; cursor: pointer;">
+                <option>ETH</option>
+                <option>USDC</option>
+                <option>DAI</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data (optional)</label>
+            <input type="text" class="form-input" placeholder="0x..." value="">
+          </div>
+          <button class="submit-btn">Create Transaction</button>
+          <div style="margin-top: 10px; font-size: 11px; color: var(--text-light); text-align: center;">
+            Requires 2 of 3 owner signatures to execute.
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Queue -->
+      <div class="section-card paper-texture">
+        <div class="section-title-bar">
+          <div class="section-title">
+            <span class="icon">&#9203;</span>
+            Pending Queue
+          </div>
+          <span class="count-badge">2</span>
+        </div>
+        <div class="section-body">
+
+          <!-- TX #1 -->
+          <div class="pending-item">
+            <div class="pending-header">
+              <span class="pending-id">TX #1</span>
+              <span class="pending-status waiting">Awaiting Sigs</span>
+            </div>
+            <div class="pending-detail">
+              <div>
+                <div class="pending-amount">0.25 ETH</div>
+                <div class="pending-to">To: 0xAbCd...Ef01</div>
+              </div>
+              <div style="text-align: right; font-size: 11px; color: var(--text-light);">
+                <div>Created 2h ago</div>
+                <div>by 0x7d1A</div>
+              </div>
+            </div>
+            <div class="sig-bar-bg">
+              <div class="sig-bar-fill" style="width: 33.3%;"></div>
+            </div>
+            <div class="sig-label">
+              <span>1 of 3 signatures</span>
+              <span>needs 1 more</span>
+            </div>
+            <div class="pending-actions">
+              <button class="pending-btn approve">&#10003; Approve</button>
+              <button class="pending-btn reject">&#10007; Reject</button>
+            </div>
+          </div>
+
+          <!-- TX #2 -->
+          <div class="pending-item">
+            <div class="pending-header">
+              <span class="pending-id">TX #2</span>
+              <span class="pending-status ready">Ready</span>
+            </div>
+            <div class="pending-detail">
+              <div>
+                <div class="pending-amount">0.1 ETH</div>
+                <div class="pending-to">To: 0x9876...5432</div>
+              </div>
+              <div style="text-align: right; font-size: 11px; color: var(--text-light);">
+                <div>Created 5h ago</div>
+                <div>by 0xBe22</div>
+              </div>
+            </div>
+            <div class="sig-bar-bg">
+              <div class="sig-bar-fill" style="width: 66.6%;"></div>
+            </div>
+            <div class="sig-label">
+              <span>2 of 3 signatures</span>
+              <span>threshold met!</span>
+            </div>
+            <div class="pending-actions">
+              <button class="pending-btn approve" style="background: linear-gradient(180deg, #FFD54F 0%, #F9A825 100%); color: var(--wood-dark); border-color: #C8A415; text-shadow: 0 1px 0 rgba(255,255,255,0.3);">&#9889; Execute</button>
+              <button class="pending-btn reject">&#10007; Reject</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- DELEGATE MANAGEMENT -->
+    <div class="full-card paper-texture">
+      <div class="section-title-bar">
+        <div class="section-title">
+          <span class="icon">&#128101;</span>
+          Delegate Management
+        </div>
+        <button class="metal-btn" style="padding: 6px 16px; border-radius: 6px; font-size: 13px;">+ New Delegate</button>
+      </div>
+      <div class="section-body">
+        <div class="delegate-grid">
+
+          <!-- Delegate 1 -->
+          <div class="delegate-card paper-texture">
+            <div class="delegate-card-header">
+              <div class="delegate-card-avatar" style="background: linear-gradient(135deg, #42A5F5, #1565C0); border: 2px solid rgba(30,136,229,0.3);">B</div>
+              <div class="delegate-card-info">
+                <h4>0xBe22...9a41</h4>
+                <span>Active &middot; Daily allowance</span>
+              </div>
+            </div>
+            <div class="delegate-card-stats">
+              <div class="delegate-stat">
+                <div class="val">60%</div>
+                <div class="label">Allowance</div>
+              </div>
+              <div class="delegate-stat">
+                <div class="val">0.3</div>
+                <div class="label">ETH Used</div>
+              </div>
+              <div class="delegate-stat">
+                <div class="val">12</div>
+                <div class="label">Total TXs</div>
+              </div>
+              <div class="delegate-stat">
+                <div class="val">Daily</div>
+                <div class="label">Reset</div>
+              </div>
+            </div>
+            <div class="delegate-card-actions">
+              <button class="delegate-card-btn edit">Edit Limits</button>
+              <button class="delegate-card-btn revoke">Revoke</button>
+            </div>
+          </div>
+
+          <!-- Delegate 2 -->
+          <div class="delegate-card paper-texture">
+            <div class="delegate-card-header">
+              <div class="delegate-card-avatar" style="background: linear-gradient(135deg, #FFA726, #E65100); border: 2px solid rgba(255,167,38,0.3);">C</div>
+              <div class="delegate-card-info">
+                <h4>0x4521...cE07</h4>
+                <span>Active &middot; Weekly allowance</span>
+              </div>
+            </div>
+            <div class="delegate-card-stats">
+              <div class="delegate-stat">
+                <div class="val">10%</div>
+                <div class="label">Allowance</div>
+              </div>
+              <div class="delegate-stat">
+                <div class="val">0.05</div>
+                <div class="label">ETH Used</div>
+              </div>
+              <div class="delegate-stat">
+                <div class="val">3</div>
+                <div class="label">Total TXs</div>
+              </div>
+              <div class="delegate-stat">
+                <div class="val">Weekly</div>
+                <div class="label">Reset</div>
+              </div>
+            </div>
+            <div class="delegate-card-actions">
+              <button class="delegate-card-btn edit">Edit Limits</button>
+              <button class="delegate-card-btn revoke">Revoke</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY FEED -->
+    <div class="full-card paper-texture">
+      <div class="section-title-bar">
+        <div class="section-title">
+          <span class="icon">&#128240;</span>
+          Activity Feed
+        </div>
+        <button class="metal-btn" style="padding: 6px 16px; border-radius: 6px; font-size: 13px;">View All</button>
+      </div>
+      <div class="activity-list">
+
+        <div class="activity-item">
+          <div class="activity-icon-wrap send">&#8593;</div>
+          <div class="activity-body">
+            <div class="activity-title-text">Sent ETH</div>
+            <div class="activity-desc">To 0xAbCd...Ef01 &middot; TX #47</div>
+          </div>
+          <div class="activity-right">
+            <div class="activity-amount out">-0.15 ETH</div>
+            <div class="activity-time">12 min ago</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-icon-wrap receive">&#8595;</div>
+          <div class="activity-body">
+            <div class="activity-title-text">Received ETH</div>
+            <div class="activity-desc">From 0xFe98...1234 &middot; Deposit</div>
+          </div>
+          <div class="activity-right">
+            <div class="activity-amount in">+0.5 ETH</div>
+            <div class="activity-time">1 hour ago</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-icon-wrap guard-ev">&#128737;</div>
+          <div class="activity-body">
+            <div class="activity-title-text">Guard Updated</div>
+            <div class="activity-desc">SpendingLimitGuard limit changed to 0.5 ETH</div>
+          </div>
+          <div class="activity-right">
+            <div class="activity-amount neutral">Config</div>
+            <div class="activity-time">3 hours ago</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-icon-wrap config">&#9881;</div>
+          <div class="activity-body">
+            <div class="activity-title-text">Module Enabled</div>
+            <div class="activity-desc">AllowanceModule added &middot; 2 delegates configured</div>
+          </div>
+          <div class="activity-right">
+            <div class="activity-amount neutral">Config</div>
+            <div class="activity-time">5 hours ago</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-icon-wrap send">&#8593;</div>
+          <div class="activity-body">
+            <div class="activity-title-text">Delegate Spend</div>
+            <div class="activity-desc">0xBe22 spent via AllowanceModule</div>
+          </div>
+          <div class="activity-right">
+            <div class="activity-amount out">-0.1 ETH</div>
+            <div class="activity-time">6 hours ago</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-icon-wrap receive">&#8595;</div>
+          <div class="activity-body">
+            <div class="activity-title-text">Received ETH</div>
+            <div class="activity-desc">From 0x3344...aaBb &middot; Payment</div>
+          </div>
+          <div class="activity-right">
+            <div class="activity-amount in">+1.0 ETH</div>
+            <div class="activity-time">Yesterday</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    /* ═══════════════════════════════════════════════════
+       THEME & PALETTE SWITCHING
+       ═══════════════════════════════════════════════════ */
+
+    function setPalette(palette) {
+      document.documentElement.setAttribute('data-palette', palette);
+      document.querySelectorAll('.palette-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-palette') === palette);
+      });
+      try { localStorage.setItem('skeu-palette', palette); } catch(e) {}
+    }
+
+    function toggleDarkMode() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        html.removeAttribute('data-theme');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+      }
+      var toggle = document.querySelector('.theme-toggle');
+      if (toggle) {
+        toggle.innerHTML = isDark ? '&#9789;' : '&#9788;';
+      }
+      try { localStorage.setItem('skeu-dark', isDark ? '' : 'dark'); } catch(e) {}
+    }
+
+    /* Restore saved preferences on load */
+    (function() {
+      try {
+        var savedPalette = localStorage.getItem('skeu-palette');
+        if (savedPalette) setPalette(savedPalette);
+        var savedDark = localStorage.getItem('skeu-dark');
+        if (savedDark === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          var toggle = document.querySelector('.theme-toggle');
+          if (toggle) toggle.innerHTML = '&#9788;';
+        }
+      } catch(e) {}
+    })();
+  </script>
+
+</body>
+</html>

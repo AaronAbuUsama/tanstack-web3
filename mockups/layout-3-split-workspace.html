@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layout 3: Split Workspace</title>
+  <style>
+    /* ═══════════════════════════════════════════════════
+       NEO-BRUTALISM FOUNDATIONS
+       ═══════════════════════════════════════════════════ */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --black: #1a1a2e;
+      --white: #fefefe;
+      --border: 3px solid var(--black);
+      --border-thick: 4px solid var(--black);
+      --shadow: 6px 6px 0px var(--black);
+      --shadow-sm: 3px 3px 0px var(--black);
+      --shadow-lg: 10px 10px 0px var(--black);
+
+      --yellow: #FFE66D;
+      --pink: #FF6B9D;
+      --blue: #4ECDC4;
+      --purple: #C44DFF;
+      --orange: #FF8A5C;
+      --green: #95E86B;
+      --red: #FF4757;
+      --lavender: #D4ADFC;
+      --cream: #FFF8E7;
+      --sky: #A8E6CF;
+      --peach: #FFD3B6;
+
+      --bg: #e8e5de;
+      --text: var(--black);
+      --panel-bg: var(--white);
+      --panel-right-bg: var(--cream);
+      --section-header-bg: var(--cream);
+      --section-header-hover: #f0ede6;
+      --tab-hover: #f0ede6;
+      --input-bg: var(--white);
+      --card-bg: var(--white);
+      --dashed-border: #e8e8e8;
+      --bar-bg: #e8e8e8;
+      --right-tab-hover: #f8f8f8;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       DARK MODE
+       ═══════════════════════════════════════════════════ */
+    [data-theme="dark"] {
+      --black: #f0f0f0;
+      --white: #2a2a3e;
+      --bg: #1a1a2e;
+      --text: #f0f0f0;
+      --panel-bg: #242438;
+      --panel-right-bg: #1e1e32;
+      --section-header-bg: #2e2e44;
+      --section-header-hover: #3a3a52;
+      --tab-hover: #3a3a52;
+      --input-bg: #2e2e44;
+      --card-bg: #2a2a3e;
+      --cream: #2e2e44;
+      --dashed-border: #3a3a52;
+      --bar-bg: #3a3a52;
+      --right-tab-hover: #2e2e44;
+
+      --border: 3px solid var(--black);
+      --border-thick: 4px solid var(--black);
+      --shadow: 6px 6px 0px #0a0a18;
+      --shadow-sm: 3px 3px 0px #0a0a18;
+      --shadow-lg: 10px 10px 0px #0a0a18;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PALETTE: CYBER
+       ═══════════════════════════════════════════════════ */
+    [data-palette="cyber"] {
+      --yellow: #00ff88;
+      --pink: #ff00ff;
+      --blue: #00ccff;
+      --purple: #bf00ff;
+      --orange: #ff6600;
+      --green: #00ff88;
+      --red: #ff2255;
+      --lavender: #cc88ff;
+      --sky: #00ccff;
+      --peach: #ff9966;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PALETTE: SUNSET
+       ═══════════════════════════════════════════════════ */
+    [data-palette="sunset"] {
+      --yellow: #f7c948;
+      --pink: #ff6b35;
+      --blue: #e8a87c;
+      --purple: #d35400;
+      --orange: #ff6b35;
+      --green: #f7c948;
+      --red: #c0392b;
+      --lavender: #e8a87c;
+      --sky: #ffeaa7;
+      --peach: #fab1a0;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PALETTE: OCEAN
+       ═══════════════════════════════════════════════════ */
+    [data-palette="ocean"] {
+      --yellow: #74b9ff;
+      --pink: #a29bfe;
+      --blue: #00cec9;
+      --purple: #6c5ce7;
+      --orange: #55efc4;
+      --green: #00b894;
+      --red: #d63031;
+      --lavender: #a29bfe;
+      --sky: #81ecec;
+      --peach: #dfe6e9;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PALETTE: MONO
+       ═══════════════════════════════════════════════════ */
+    [data-palette="mono"] {
+      --yellow: #b2bec3;
+      --pink: #636e72;
+      --blue: #95a5a6;
+      --purple: #636e72;
+      --orange: #7f8c8d;
+      --green: #95a5a6;
+      --red: #2d3436;
+      --lavender: #b2bec3;
+      --sky: #dfe6e9;
+      --peach: #b2bec3;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mono { font-family: 'Space Mono', monospace; }
+
+    /* ═══════════════════════════════════════════════════
+       THEME CONTROLS
+       ═══════════════════════════════════════════════════ */
+    .theme-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .palette-picker {
+      display: flex;
+      gap: 6px;
+      padding: 8px 10px;
+      background: var(--panel-bg);
+      border: 3px solid var(--black);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .palette-btn {
+      width: 28px;
+      height: 28px;
+      border: 3px solid var(--black);
+      border-radius: 0;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 2px 2px 0px var(--black);
+      padding: 0;
+    }
+
+    .palette-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px var(--black);
+    }
+
+    .palette-btn.active {
+      transform: translate(2px, 2px);
+      box-shadow: none;
+      outline: 2px solid var(--black);
+      outline-offset: 2px;
+    }
+
+    .theme-toggle {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--black);
+      border-radius: 0;
+      background: var(--panel-bg);
+      color: var(--text);
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.1s, box-shadow 0.1s;
+      padding: 0;
+    }
+
+    .theme-toggle:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px var(--black);
+    }
+
+    .theme-toggle:active {
+      transform: translate(2px, 2px);
+      box-shadow: none;
+    }
+
+    [data-theme="dark"] .theme-toggle {
+      box-shadow: 3px 3px 0px #0a0a18;
+    }
+
+    [data-theme="dark"] .palette-picker {
+      box-shadow: 3px 3px 0px #0a0a18;
+    }
+
+    [data-theme="dark"] .palette-btn {
+      box-shadow: 2px 2px 0px #0a0a18;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       TOP BAR - Full width identity bar
+       ═══════════════════════════════════════════════════ */
+    .top-bar {
+      background: var(--yellow);
+      border-bottom: var(--border-thick);
+      display: flex;
+      align-items: center;
+      padding: 0 0 0 24px;
+      height: 56px;
+      flex-shrink: 0;
+    }
+
+    .top-bar .tb-logo {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-bar .tb-logo .logo-square {
+      width: 32px;
+      height: 32px;
+      background: var(--black);
+      border: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--yellow);
+      font-size: 16px;
+    }
+
+    .top-bar .tb-safe-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 24px;
+      height: 100%;
+      border-left: var(--border);
+    }
+
+    .top-bar .tb-address {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .top-bar .tb-balance {
+      font-size: 22px;
+      font-weight: 700;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .top-bar .tb-balance span {
+      font-size: 12px;
+      opacity: 0.5;
+    }
+
+    .top-bar .tb-pills {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+      padding-right: 24px;
+    }
+
+    .top-bar .pill {
+      padding: 5px 12px;
+      border: 2px solid var(--black);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .top-bar .pill.chain { background: var(--sky); }
+    .top-bar .pill.threshold { background: var(--card-bg); }
+
+    .top-bar .tb-wallet {
+      padding: 0 20px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      background: var(--black);
+      color: var(--panel-bg);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border-left: var(--border);
+    }
+
+    [data-theme="dark"] .top-bar .tb-wallet {
+      color: #1a1a2e;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       MAIN SPLIT LAYOUT
+       ═══════════════════════════════════════════════════ */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ─── LEFT PANEL: Safe Config ─── */
+    .panel-left {
+      width: 440px;
+      border-right: var(--border-thick);
+      display: flex;
+      flex-direction: column;
+      background: var(--panel-bg);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    /* Tab switcher at top of left panel */
+    .panel-tabs {
+      display: flex;
+      border-bottom: var(--border);
+      flex-shrink: 0;
+    }
+
+    .panel-tab {
+      flex: 1;
+      padding: 14px 12px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-right: var(--border);
+      background: var(--section-header-bg);
+    }
+
+    .panel-tab:last-child {
+      border-right: none;
+    }
+
+    .panel-tab.active {
+      background: var(--panel-bg);
+      border-bottom: 3px solid var(--yellow);
+    }
+
+    .panel-tab:hover:not(.active) {
+      background: var(--tab-hover);
+    }
+
+    .panel-tab .tab-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 2px solid var(--black);
+      margin-right: 4px;
+    }
+
+    .panel-tab .tab-dot.on { background: var(--green); }
+    .panel-tab .tab-dot.off { background: var(--bar-bg); }
+
+    /* Panel content area */
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* Panel sections */
+    .p-section {
+      border-bottom: var(--border);
+    }
+
+    .p-section-header {
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      background: var(--section-header-bg);
+    }
+
+    .p-section-header:hover {
+      background: var(--section-header-hover);
+    }
+
+    .p-section-header .psh-icon {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+
+    .p-section-header .psh-badge {
+      padding: 2px 8px;
+      font-size: 10px;
+      border: 2px solid var(--black);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .p-section-body {
+      padding: 20px;
+    }
+
+    /* ═══ Owners list in panel ═══ */
+    .owner-row-compact {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 2px dashed var(--dashed-border);
+    }
+
+    .owner-row-compact:last-child {
+      border-bottom: none;
+    }
+
+    .owner-dot {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .owner-addr {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      flex: 1;
+    }
+
+    .owner-you {
+      padding: 2px 6px;
+      background: var(--yellow);
+      border: 2px solid var(--black);
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .owner-x {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      background: var(--card-bg);
+    }
+
+    .owner-x:hover { background: var(--red); color: var(--panel-bg); }
+
+    /* Threshold slider */
+    .threshold-inline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      margin-top: 8px;
+    }
+
+    .threshold-inline .ti-label {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .threshold-inline .ti-pips {
+      display: flex;
+      gap: 0;
+    }
+
+    .threshold-inline .ti-pip {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      background: var(--card-bg);
+      margin-left: -2px;
+    }
+
+    .threshold-inline .ti-pip:first-child { margin-left: 0; }
+    .threshold-inline .ti-pip.selected { background: var(--black); color: var(--yellow); }
+
+    [data-theme="dark"] .threshold-inline .ti-pip.selected {
+      color: #1a1a2e;
+    }
+
+    .threshold-inline .ti-desc {
+      font-size: 11px;
+      opacity: 0.5;
+    }
+
+    /* ═══ Guard section in panel ═══ */
+    .guard-summary {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: var(--sky);
+      border: 2px solid var(--black);
+      margin-bottom: 16px;
+    }
+
+    .guard-summary .gs-shield {
+      font-size: 32px;
+    }
+
+    .guard-summary .gs-info h4 {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .guard-summary .gs-info p {
+      font-size: 11px;
+      opacity: 0.6;
+    }
+
+    .guard-limit-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .guard-limit-control .glc-val {
+      font-size: 32px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .guard-limit-control .glc-val span {
+      font-size: 14px;
+      opacity: 0.4;
+    }
+
+    .guard-limit-control .glc-bar {
+      flex: 1;
+      height: 16px;
+      background: var(--bar-bg);
+      border: 2px solid var(--black);
+      overflow: hidden;
+    }
+
+    .guard-limit-control .glc-bar-fill {
+      height: 100%;
+      background: var(--green);
+    }
+
+    /* ═══ Module / Delegates in panel ═══ */
+    .delegate-compact {
+      padding: 14px;
+      border: 2px solid var(--black);
+      margin-bottom: 10px;
+      background: var(--card-bg);
+    }
+
+    .delegate-compact .dc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .delegate-compact .dc-addr {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .delegate-compact .dc-tag {
+      font-size: 9px;
+      padding: 2px 6px;
+      border: 2px solid var(--black);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .delegate-compact .dc-bar {
+      height: 12px;
+      background: var(--bar-bg);
+      border: 2px solid var(--black);
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .delegate-compact .dc-bar-fill {
+      height: 100%;
+    }
+
+    .delegate-compact .dc-nums {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .delegate-compact .dc-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 2px dashed var(--dashed-border);
+      font-size: 11px;
+    }
+
+    .add-delegate-inline {
+      padding: 16px;
+      border: 2px dashed var(--black);
+      text-align: center;
+      cursor: pointer;
+      opacity: 0.4;
+      font-weight: 700;
+      font-size: 13px;
+      transition: all 0.1s;
+    }
+
+    .add-delegate-inline:hover {
+      opacity: 1;
+      background: var(--lavender);
+      border-style: solid;
+    }
+
+    /* ─── RIGHT PANEL: Transaction Workspace ─── */
+    .panel-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--panel-right-bg);
+      overflow: hidden;
+    }
+
+    /* Right panel header */
+    .right-header {
+      display: flex;
+      align-items: center;
+      border-bottom: var(--border);
+      background: var(--panel-bg);
+      flex-shrink: 0;
+    }
+
+    .right-tab {
+      padding: 14px 24px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      border-right: var(--border);
+      position: relative;
+    }
+
+    .right-tab.active {
+      background: var(--panel-right-bg);
+    }
+
+    .right-tab:hover:not(.active) {
+      background: var(--right-tab-hover);
+    }
+
+    .right-tab .rt-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: var(--pink);
+      color: var(--panel-bg);
+      font-size: 9px;
+      font-weight: 700;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--black);
+    }
+
+    /* Right content */
+    .right-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    /* ═══ TX Builder ═══ */
+    .tx-workspace {
+      max-width: 680px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child { margin-bottom: 0; }
+
+    .form-group label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      padding: 12px 14px;
+      border: var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      box-shadow: var(--shadow-sm);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* Guard warning inline */
+    .guard-inline-warning {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--sky);
+      border: 2px solid var(--black);
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+
+    .guard-inline-warning .giw-icon {
+      font-size: 18px;
+    }
+
+    /* TX Preview */
+    .tx-preview {
+      background: var(--card-bg);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .tx-preview h4 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .tx-preview-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 2px dashed var(--dashed-border);
+      font-size: 13px;
+    }
+
+    .tx-preview-row:last-child { border-bottom: none; }
+
+    .tx-preview-row .tpr-label {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 1px;
+      opacity: 0.5;
+    }
+
+    .tx-preview-row .tpr-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      text-align: right;
+    }
+
+    /* ═══ Pending Queue ═══ */
+    .queue-item {
+      background: var(--card-bg);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .queue-item .qi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .queue-item .qi-id {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .queue-item .qi-id .qi-tag {
+      padding: 2px 8px;
+      background: var(--yellow);
+      border: 2px solid var(--black);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .queue-item .qi-time {
+      font-size: 11px;
+      opacity: 0.4;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .queue-item .qi-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .queue-item .qi-field-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      opacity: 0.4;
+      margin-bottom: 2px;
+    }
+
+    .queue-item .qi-field-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* Signature progress bar */
+    .sig-progress-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sig-progress-bar .spb-track {
+      flex: 1;
+      display: flex;
+      gap: 4px;
+    }
+
+    .sig-progress-bar .spb-seg {
+      flex: 1;
+      height: 28px;
+      border: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .sig-progress-bar .spb-seg.signed {
+      background: var(--green);
+    }
+
+    .sig-progress-bar .spb-seg.unsigned {
+      background: var(--bar-bg);
+    }
+
+    .sig-progress-bar .spb-label {
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      white-space: nowrap;
+    }
+
+    .queue-item .qi-actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* ═══ History items ═══ */
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      background: var(--card-bg);
+      border: var(--border);
+      margin-bottom: -3px;
+    }
+
+    .history-item:first-child {
+      box-shadow: var(--shadow);
+    }
+
+    .history-item:last-child {
+      box-shadow: var(--shadow);
+    }
+
+    .history-item .hi-icon {
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .history-item .hi-icon.out { background: var(--pink); }
+    .history-item .hi-icon.in { background: var(--green); }
+    .history-item .hi-icon.cfg { background: var(--blue); }
+    .history-item .hi-icon.mod { background: var(--lavender); }
+
+    .history-item .hi-details {
+      flex: 1;
+    }
+
+    .history-item .hi-title {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .history-item .hi-meta {
+      font-size: 11px;
+      font-family: 'Space Mono', monospace;
+      opacity: 0.4;
+      margin-top: 1px;
+    }
+
+    .history-item .hi-amount {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .history-item .hi-status {
+      padding: 3px 8px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 2px solid var(--black);
+      background: var(--green);
+    }
+
+    /* ═══ Delegate Spend View ═══ */
+    .delegate-spend-card {
+      background: var(--lavender);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .delegate-spend-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .delegate-spend-card p {
+      font-size: 12px;
+      opacity: 0.6;
+      margin-bottom: 16px;
+    }
+
+    .delegate-spend-card .dsc-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .delegate-spend-card .dsc-available {
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       BUTTONS
+       ═══════════════════════════════════════════════════ */
+    .btn {
+      padding: 10px 18px;
+      border: var(--border);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+    }
+
+    .btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: none !important;
+    }
+
+    .btn-primary { background: var(--yellow); box-shadow: var(--shadow-sm); }
+    .btn-danger { background: var(--red); color: var(--panel-bg); box-shadow: var(--shadow-sm); }
+    .btn-success { background: var(--green); box-shadow: var(--shadow-sm); }
+    .btn-outline { background: var(--card-bg); box-shadow: var(--shadow-sm); }
+    .btn-sm { padding: 6px 12px; font-size: 11px; }
+    .btn-block { width: 100%; justify-content: center; }
+
+    /* Tab visibility */
+    .tab-content { display: none; }
+    .tab-content.visible { display: block; }
+
+    .left-tab-content { display: none; }
+    .left-tab-content.visible { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ TOP BAR ═══ -->
+  <div class="top-bar">
+    <div class="tb-logo">
+      <div class="logo-square">&#9878;</div>
+      SAFE
+    </div>
+    <div class="tb-safe-info">
+      <div class="tb-address">0x9aB3...7cD2</div>
+      <div class="tb-balance">2.45 <span>ETH</span></div>
+    </div>
+    <div class="tb-pills">
+      <span class="pill chain">Chiado</span>
+      <span class="pill threshold">2 of 3</span>
+    </div>
+    <div class="tb-wallet">0x7d1A...3fE9</div>
+  </div>
+
+  <!-- ═══ SPLIT WORKSPACE ═══ -->
+  <div class="workspace">
+
+    <!-- ═══ LEFT PANEL ═══ -->
+    <div class="panel-left">
+      <div class="panel-tabs">
+        <div class="panel-tab active" onclick="showLeftTab('config')">
+          <span class="tab-dot on"></span> Config
+        </div>
+        <div class="panel-tab" onclick="showLeftTab('guard')">
+          <span class="tab-dot on"></span> Guard
+        </div>
+        <div class="panel-tab" onclick="showLeftTab('module')">
+          <span class="tab-dot on"></span> Module
+        </div>
+      </div>
+
+      <div class="panel-content">
+
+        <!-- ═══ CONFIG TAB ═══ -->
+        <div class="left-tab-content visible" id="left-config">
+          <!-- Owners -->
+          <div class="p-section">
+            <div class="p-section-header">
+              <div style="display:flex;align-items:center;">
+                <div class="psh-icon" style="background:var(--orange);">&#9823;</div>
+                Owners
+              </div>
+              <span class="psh-badge" style="background:var(--section-header-bg);">3</span>
+            </div>
+            <div class="p-section-body">
+              <div class="owner-row-compact">
+                <div class="owner-dot" style="background:var(--yellow);">&#9823;</div>
+                <div class="owner-addr">0x7d1A...3fE9</div>
+                <span class="owner-you">YOU</span>
+                <div class="owner-x">&times;</div>
+              </div>
+              <div class="owner-row-compact">
+                <div class="owner-dot" style="background:var(--blue);">&#9823;</div>
+                <div class="owner-addr">0xaB34...5678</div>
+                <div class="owner-x">&times;</div>
+              </div>
+              <div class="owner-row-compact">
+                <div class="owner-dot" style="background:var(--lavender);">&#9823;</div>
+                <div class="owner-addr">0xcD56...9012</div>
+                <div class="owner-x">&times;</div>
+              </div>
+
+              <div class="threshold-inline">
+                <div class="ti-label">Threshold:</div>
+                <div class="ti-pips">
+                  <div class="ti-pip">1</div>
+                  <div class="ti-pip selected">2</div>
+                  <div class="ti-pip">3</div>
+                </div>
+                <div class="ti-desc">of 3 must sign</div>
+              </div>
+
+              <button class="btn btn-outline btn-sm btn-block" style="margin-top:12px;">+ Add Owner</button>
+            </div>
+          </div>
+
+          <!-- Balance -->
+          <div class="p-section">
+            <div class="p-section-header">
+              <div style="display:flex;align-items:center;">
+                <div class="psh-icon" style="background:var(--yellow);">&#9670;</div>
+                Balance
+              </div>
+              <span style="font-family:'Space Mono',monospace;font-weight:700;">2.45 ETH</span>
+            </div>
+            <div class="p-section-body">
+              <button class="btn btn-success btn-sm btn-block">Fund Safe (Dev Faucet)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ GUARD TAB ═══ -->
+        <div class="left-tab-content" id="left-guard">
+          <div class="p-section">
+            <div class="p-section-body">
+              <div class="guard-summary">
+                <div class="gs-shield">&#128737;</div>
+                <div class="gs-info">
+                  <h4>SpendingLimitGuard</h4>
+                  <p>0xGrd1...2345 &middot; Active</p>
+                </div>
+              </div>
+
+              <div class="guard-limit-control">
+                <div>
+                  <div class="glc-val">0.5 <span>ETH</span></div>
+                </div>
+                <div style="flex:1;">
+                  <div class="glc-bar">
+                    <div class="glc-bar-fill" style="width:30%;"></div>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:10px;opacity:0.4;margin-top:4px;">
+                    <span>Last tx: 0.15</span>
+                    <span>Limit: 0.5</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top:20px;">
+                <p style="font-size:12px;line-height:1.6;opacity:0.6;margin-bottom:16px;">
+                  Every transaction (owner or module) is checked against this limit before execution. Exceeding it reverts the transaction.
+                </p>
+                <div class="form-group">
+                  <label>Update Limit (ETH)</label>
+                  <input type="text" value="0.5" placeholder="0.5">
+                </div>
+                <div style="display:flex;gap:10px;margin-top:8px;">
+                  <button class="btn btn-primary btn-sm">Update</button>
+                  <button class="btn btn-danger btn-sm">Disable Guard</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ MODULE TAB ═══ -->
+        <div class="left-tab-content" id="left-module">
+          <div class="p-section">
+            <div class="p-section-header">
+              <div style="display:flex;align-items:center;">
+                <div class="psh-icon" style="background:var(--lavender);">&#128273;</div>
+                AllowanceModule
+              </div>
+              <span class="psh-badge" style="background:var(--green);">ACTIVE</span>
+            </div>
+            <div class="p-section-body">
+              <p style="font-size:12px;opacity:0.5;margin-bottom:16px;">Delegates can spend from the Safe without multi-sig approval, up to their allowance limit.</p>
+
+              <!-- Delegate 1 -->
+              <div class="delegate-compact">
+                <div class="dc-header">
+                  <div class="dc-addr">0xBe22...9aF7</div>
+                  <span class="dc-tag" style="background:var(--yellow);">DAILY</span>
+                </div>
+                <div class="dc-bar">
+                  <div class="dc-bar-fill" style="width:60%;background:var(--blue);"></div>
+                </div>
+                <div class="dc-nums">
+                  <span>0.12 / 0.2 ETH</span>
+                  <span style="opacity:0.4;">60%</span>
+                </div>
+                <div class="dc-footer">
+                  <span>Resets in 18h 24m</span>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:10px;">Edit</button>
+                    <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:10px;">Revoke</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Delegate 2 -->
+              <div class="delegate-compact">
+                <div class="dc-header">
+                  <div class="dc-addr">0x4521...cDe3</div>
+                  <span class="dc-tag" style="background:var(--sky);">WEEKLY</span>
+                </div>
+                <div class="dc-bar">
+                  <div class="dc-bar-fill" style="width:10%;background:var(--green);"></div>
+                </div>
+                <div class="dc-nums">
+                  <span>0.05 / 0.5 ETH</span>
+                  <span style="opacity:0.4;">10%</span>
+                </div>
+                <div class="dc-footer">
+                  <span>Resets in 5d 12h</span>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:10px;">Edit</button>
+                    <button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:10px;">Revoke</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Add Delegate -->
+              <div class="add-delegate-inline">+ Add Delegate</div>
+
+              <!-- Set Allowance Form -->
+              <div style="margin-top:20px;padding-top:20px;border-top:var(--border);">
+                <div style="font-weight:700;font-size:13px;margin-bottom:12px;">Set New Allowance</div>
+                <div class="form-group">
+                  <label>Delegate Address</label>
+                  <input type="text" placeholder="0x...">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Amount (ETH)</label>
+                    <input type="text" placeholder="0.2">
+                  </div>
+                  <div class="form-group">
+                    <label>Reset Period</label>
+                    <select style="padding:12px;border:var(--border);font-family:'Space Mono',monospace;font-size:12px;background:var(--input-bg);color:var(--text);">
+                      <option>Daily</option>
+                      <option>Weekly</option>
+                      <option>Monthly</option>
+                      <option>Never</option>
+                    </select>
+                  </div>
+                </div>
+                <button class="btn btn-primary btn-block">Set Allowance</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ RIGHT PANEL ═══ -->
+    <div class="panel-right">
+      <div class="right-header">
+        <div class="right-tab active" onclick="showRightTab('build')">Build</div>
+        <div class="right-tab" onclick="showRightTab('queue')">
+          Queue
+          <span class="rt-badge">2</span>
+        </div>
+        <div class="right-tab" onclick="showRightTab('history')">History</div>
+        <div class="right-tab" onclick="showRightTab('delegate')">Delegate Spend</div>
+      </div>
+
+      <div class="right-content">
+
+        <!-- ═══ BUILD TAB ═══ -->
+        <div class="tab-content visible" id="tab-build">
+          <div class="tx-workspace">
+            <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;">New Transaction</h3>
+
+            <!-- Guard warning -->
+            <div class="guard-inline-warning">
+              <div class="giw-icon">&#128737;</div>
+              <span><strong>Guard active:</strong> Max 0.5 ETH per transaction</span>
+            </div>
+
+            <div class="form-group">
+              <label>Recipient Address</label>
+              <input type="text" placeholder="0x...">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Value (ETH)</label>
+                <input type="text" placeholder="0.0">
+              </div>
+              <div class="form-group">
+                <label>Operation</label>
+                <select style="padding:12px;border:var(--border);font-family:'Space Mono',monospace;font-size:13px;background:var(--input-bg);color:var(--text);">
+                  <option>Call (0)</option>
+                  <option>DelegateCall (1)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Data (hex, optional)</label>
+              <textarea rows="3" placeholder="0x..." style="border:var(--border);font-family:'Space Mono',monospace;font-size:12px;padding:12px;resize:vertical;background:var(--input-bg);color:var(--text);"></textarea>
+            </div>
+
+            <div style="display:flex;gap:12px;justify-content:flex-end;">
+              <button class="btn btn-outline">Clear</button>
+              <button class="btn btn-primary">Build & Sign</button>
+            </div>
+
+            <!-- Preview -->
+            <div class="tx-preview">
+              <h4>Transaction Preview</h4>
+              <div class="tx-preview-row">
+                <span class="tpr-label">To</span>
+                <span class="tpr-value">0xfA32...8bC1</span>
+              </div>
+              <div class="tx-preview-row">
+                <span class="tpr-label">Value</span>
+                <span class="tpr-value">0.25 ETH</span>
+              </div>
+              <div class="tx-preview-row">
+                <span class="tpr-label">Operation</span>
+                <span class="tpr-value">Call</span>
+              </div>
+              <div class="tx-preview-row">
+                <span class="tpr-label">Guard Check</span>
+                <span class="tpr-value" style="color:var(--green);">PASS (0.25 &lt; 0.5)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ QUEUE TAB ═══ -->
+        <div class="tab-content" id="tab-queue">
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;">Pending Transactions</h3>
+
+          <div class="queue-item">
+            <div class="qi-top">
+              <div class="qi-id">
+                TX #1
+                <span class="qi-tag">PENDING</span>
+              </div>
+              <div class="qi-time">2 min ago</div>
+            </div>
+            <div class="qi-details">
+              <div>
+                <div class="qi-field-label">Recipient</div>
+                <div class="qi-field-value">0xfA32...8bC1</div>
+              </div>
+              <div>
+                <div class="qi-field-label">Value</div>
+                <div class="qi-field-value">0.25 ETH</div>
+              </div>
+            </div>
+            <div class="sig-progress-bar">
+              <div class="spb-track">
+                <div class="spb-seg signed">&#10003; You</div>
+                <div class="spb-seg unsigned">Owner 2</div>
+                <div class="spb-seg unsigned">Owner 3</div>
+              </div>
+              <div class="spb-label">1/2 needed</div>
+            </div>
+            <div class="qi-actions">
+              <button class="btn btn-outline btn-sm">View Details</button>
+              <button class="btn btn-success btn-sm">Sign</button>
+            </div>
+          </div>
+
+          <div class="queue-item">
+            <div class="qi-top">
+              <div class="qi-id">
+                TX #2
+                <span class="qi-tag" style="background:var(--green);">READY</span>
+              </div>
+              <div class="qi-time">15 min ago</div>
+            </div>
+            <div class="qi-details">
+              <div>
+                <div class="qi-field-label">Recipient</div>
+                <div class="qi-field-value">0x9182...dE56</div>
+              </div>
+              <div>
+                <div class="qi-field-label">Value</div>
+                <div class="qi-field-value">0.1 ETH</div>
+              </div>
+            </div>
+            <div class="sig-progress-bar">
+              <div class="spb-track">
+                <div class="spb-seg signed">&#10003; You</div>
+                <div class="spb-seg signed">&#10003; Owner 2</div>
+                <div class="spb-seg unsigned">Owner 3</div>
+              </div>
+              <div class="spb-label">2/2 reached</div>
+            </div>
+            <div class="qi-actions">
+              <button class="btn btn-outline btn-sm">View Details</button>
+              <button class="btn btn-primary">Execute Now</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ HISTORY TAB ═══ -->
+        <div class="tab-content" id="tab-history">
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;">Transaction History</h3>
+
+          <div class="history-item">
+            <div class="hi-icon out">&#8593;</div>
+            <div class="hi-details">
+              <div class="hi-title">Sent to 0xfA32...8bC1</div>
+              <div class="hi-meta">2 min ago &middot; #18,294,720</div>
+            </div>
+            <div class="hi-amount">-0.15 ETH</div>
+            <span class="hi-status">EXECUTED</span>
+          </div>
+
+          <div class="history-item">
+            <div class="hi-icon cfg">&#9881;</div>
+            <div class="hi-details">
+              <div class="hi-title">Guard enabled: SpendingLimitGuard</div>
+              <div class="hi-meta">1 hour ago &middot; #18,294,600</div>
+            </div>
+            <div class="hi-amount" style="opacity:0.3;">config</div>
+            <span class="hi-status">EXECUTED</span>
+          </div>
+
+          <div class="history-item">
+            <div class="hi-icon in">&#8595;</div>
+            <div class="hi-details">
+              <div class="hi-title">Received from 0x1234...abCd</div>
+              <div class="hi-meta">3 hours ago &middot; #18,294,500</div>
+            </div>
+            <div class="hi-amount" style="color:var(--green);">+1.0 ETH</div>
+            <span class="hi-status">EXECUTED</span>
+          </div>
+
+          <div class="history-item">
+            <div class="hi-icon mod">&#128273;</div>
+            <div class="hi-details">
+              <div class="hi-title">Delegate spend: 0xBe22...9aF7</div>
+              <div class="hi-meta">5 hours ago &middot; via AllowanceModule</div>
+            </div>
+            <div class="hi-amount">-0.08 ETH</div>
+            <span class="hi-status">EXECUTED</span>
+          </div>
+        </div>
+
+        <!-- ═══ DELEGATE SPEND TAB ═══ -->
+        <div class="tab-content" id="tab-delegate">
+          <div class="tx-workspace">
+            <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">Spend as Delegate</h3>
+            <p style="font-size:13px;opacity:0.5;margin-bottom:24px;">If you have an allowance on this Safe, you can spend directly without multi-sig approval.</p>
+
+            <div class="delegate-spend-card">
+              <h3>Your Allowance</h3>
+              <p>0xBe22...9aF7</p>
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+                <div style="font-size:36px;font-weight:700;font-family:'Space Mono',monospace;">0.08 <span style="font-size:16px;opacity:0.4;">ETH</span></div>
+                <div style="flex:1;">
+                  <div style="height:16px;background:var(--bar-bg);border:2px solid var(--black);overflow:hidden;">
+                    <div style="height:100%;width:60%;background:var(--blue);"></div>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:10px;opacity:0.5;margin-top:4px;">
+                    <span>0.12 spent</span>
+                    <span>0.2 total</span>
+                  </div>
+                </div>
+              </div>
+              <div style="font-size:11px;opacity:0.5;">Daily reset &middot; Resets in 18h 24m</div>
+            </div>
+
+            <div class="form-group">
+              <label>Send To</label>
+              <input type="text" placeholder="0x...">
+            </div>
+            <div class="form-group">
+              <label>Amount (ETH)</label>
+              <input type="text" placeholder="0.05">
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+              <span style="font-size:12px;opacity:0.5;">Max: 0.08 ETH available</span>
+              <button class="btn btn-success">Execute Spend</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ THEME CONTROLS ═══ -->
+  <div class="theme-controls">
+    <div class="palette-picker">
+      <button class="palette-btn active" data-palette="default" style="background:linear-gradient(135deg,#FFE66D,#FF6B9D);" onclick="setPalette('default')" title="Default"></button>
+      <button class="palette-btn" data-palette="cyber" style="background:linear-gradient(135deg,#00ff88,#00ccff);" onclick="setPalette('cyber')" title="Cyber"></button>
+      <button class="palette-btn" data-palette="sunset" style="background:linear-gradient(135deg,#ff6b35,#f7c948);" onclick="setPalette('sunset')" title="Sunset"></button>
+      <button class="palette-btn" data-palette="ocean" style="background:linear-gradient(135deg,#0984e3,#00cec9);" onclick="setPalette('ocean')" title="Ocean"></button>
+      <button class="palette-btn" data-palette="mono" style="background:linear-gradient(135deg,#2d3436,#636e72);" onclick="setPalette('mono')" title="Mono"></button>
+    </div>
+    <button class="theme-toggle" onclick="toggleDarkMode()">&#9789;</button>
+  </div>
+
+  <script>
+    function showLeftTab(name) {
+      document.querySelectorAll('.left-tab-content').forEach(t => t.classList.remove('visible'));
+      document.getElementById('left-' + name).classList.add('visible');
+      document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+    }
+
+    function showRightTab(name) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('visible'));
+      document.getElementById('tab-' + name).classList.add('visible');
+      document.querySelectorAll('.right-tab').forEach(t => t.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+    }
+
+    function toggleDarkMode() {
+      var html = document.documentElement;
+      var btn = document.querySelector('.theme-toggle');
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        // Re-apply current palette (or remove it for default)
+        var current = document.querySelector('.palette-btn.active');
+        if (current) {
+          var palette = current.getAttribute('data-palette');
+          if (palette === 'default') {
+            html.removeAttribute('data-palette');
+          } else {
+            html.setAttribute('data-palette', palette);
+          }
+        }
+        btn.innerHTML = '&#9789;';
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        // Re-apply current palette
+        var current = document.querySelector('.palette-btn.active');
+        if (current) {
+          var palette = current.getAttribute('data-palette');
+          if (palette === 'default') {
+            html.removeAttribute('data-palette');
+          } else {
+            html.setAttribute('data-palette', palette);
+          }
+        }
+        btn.innerHTML = '&#9788;';
+      }
+    }
+
+    function setPalette(name) {
+      var html = document.documentElement;
+      // Update active button
+      document.querySelectorAll('.palette-btn').forEach(function(b) {
+        b.classList.remove('active');
+      });
+      document.querySelector('.palette-btn[data-palette="' + name + '"]').classList.add('active');
+      // Apply palette
+      if (name === 'default') {
+        html.removeAttribute('data-palette');
+      } else {
+        html.setAttribute('data-palette', name);
+      }
+    }
+  </script>
+
+</body>
+</html>
