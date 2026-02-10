@@ -73,6 +73,7 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
 
   await expect(page.getByText('Safe Address')).toBeVisible({ timeout: 120_000 })
   await expect(page.getByRole('heading', { name: 'Transactions', exact: true })).toBeVisible()
+  await expect(page.getByText(/Local-only:/)).toBeVisible()
 
   await takeArtifact(page, '04-safe-deployed-dashboard.png')
 

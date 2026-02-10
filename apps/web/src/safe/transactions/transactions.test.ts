@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildTransaction, OperationType } from './transactions'
+import { buildTransaction, buildTransactionStatus, hasSignerConfirmed, OperationType } from './transactions'
 
 describe('OperationType', () => {
   it('has Call as 0', () => {
@@ -27,5 +27,50 @@ describe('buildTransaction', () => {
   it('passes custom data', () => {
     const tx = buildTransaction({ to: '0x0000000000000000000000000000000000000001', data: '0xdeadbeef' })
     expect(tx.data).toBe('0xdeadbeef')
+  })
+})
+
+describe('buildTransactionStatus', () => {
+  it('uses signer list length when larger than explicit confirmations', () => {
+    const status = buildTransactionStatus({
+      safeTxHash: '0xhash',
+      threshold: 2,
+      confirmations: 1,
+      confirmedBy: [
+        '0x1111111111111111111111111111111111111111',
+        '0x2222222222222222222222222222222222222222',
+      ],
+      source: 'transaction-service',
+    })
+
+    expect(status.confirmations).toBe(2)
+    expect(status.isReady).toBe(true)
+  })
+
+  it('is not ready when executed, even if threshold is met', () => {
+    const status = buildTransactionStatus({
+      safeTxHash: '0xhash',
+      threshold: 1,
+      confirmations: 1,
+      source: 'local',
+      isExecuted: true,
+    })
+
+    expect(status.isExecuted).toBe(true)
+    expect(status.isReady).toBe(false)
+  })
+})
+
+describe('hasSignerConfirmed', () => {
+  it('matches signer addresses case-insensitively', () => {
+    const status = buildTransactionStatus({
+      safeTxHash: '0xhash',
+      threshold: 2,
+      source: 'transaction-service',
+      confirmedBy: ['0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'],
+    })
+
+    expect(hasSignerConfirmed(status, '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')).toBe(true)
+    expect(hasSignerConfirmed(status, '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')).toBe(false)
   })
 })

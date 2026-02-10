@@ -1,4 +1,5 @@
 import type { TransactionStatus } from '../core/types'
+import { hasSignerConfirmed } from './transactions'
 
 interface TransactionFlowProps {
   transaction: {
@@ -9,7 +10,6 @@ interface TransactionFlowProps {
     status: TransactionStatus
   }
   currentAddress?: string
-  confirmedBy?: string[]
   onConfirm?: (safeTxHash: string) => void
   onExecute?: (safeTxHash: string) => void
 }
@@ -17,14 +17,11 @@ interface TransactionFlowProps {
 export default function TransactionFlow({
   transaction,
   currentAddress,
-  confirmedBy = [],
   onConfirm,
   onExecute,
 }: TransactionFlowProps) {
   const { status } = transaction
-  const hasConfirmed = currentAddress
-    ? confirmedBy.some((addr) => addr.toLowerCase() === currentAddress.toLowerCase())
-    : false
+  const hasConfirmed = hasSignerConfirmed(status, currentAddress)
 
   return (
     <div className="bg-gray-800 rounded-xl p-6 mb-4">

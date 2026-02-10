@@ -167,8 +167,16 @@ export async function getSafeInfo(safe: SafeInstance, provider?: string): Promis
 export async function createTransaction(
   safe: SafeInstance,
   transactions: Array<{ to: string; value: string; data: string; operation?: number }>,
+  options?: {
+    safeTxGas?: string
+    baseGas?: string
+    gasPrice?: string
+    gasToken?: string
+    refundReceiver?: string
+    nonce?: number
+  },
 ) {
-  return safe.createTransaction({ transactions })
+  return safe.createTransaction({ transactions, options })
 }
 
 /**

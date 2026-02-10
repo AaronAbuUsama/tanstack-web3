@@ -10,10 +10,14 @@ import type { SafeTransaction } from '@safe-global/types-kit'
 export type SafeInstance = Safe
 export type { SafeTransaction }
 
+export type TxSourceMode = 'transaction-service' | 'local'
+
 export interface TransactionStatus {
   safeTxHash: string
   confirmations: number
+  confirmedBy: string[]
   threshold: number
   isReady: boolean
   isExecuted: boolean
+  source: TxSourceMode
 }

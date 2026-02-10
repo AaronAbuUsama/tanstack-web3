@@ -244,15 +244,19 @@ When you click "Build Transaction", the following happens:
 2. `createTransaction()` from `standalone.ts` wraps it into a Safe transaction via Protocol Kit
 3. The transaction is added to the local queue
 
-### Local-First Flow
+### Dual-Mode Flow (Transaction Service vs Local-only)
 
-This boilerplate uses a **local-first** transaction flow. There is no external Transaction Service required for basic operation. Transactions are created, signed, and executed entirely through Protocol Kit and on-chain calls.
+The boilerplate now uses a **dual-mode** transaction path in `apps/web/src/safe/transactions/use-transactions.ts`:
 
-The transaction lifecycle:
+- **Transaction Service mode** (`txSourceMode = transaction-service`):
+  - Used on supported hosted chains (Mainnet, Gnosis, Sepolia, Chiado) when the RPC endpoint is not local.
+  - Proposals/confirmations are shared via Safe Transaction Service (API Kit).
+- **Local-only mode** (`txSourceMode = local`):
+  - Used automatically for localhost/Anvil RPC and unsupported chains.
+  - Pending queue metadata is kept in local browser storage.
+  - Confirmation state is synchronized from chain approvals where available.
 
-```
-Build -> Sign -> Execute
-```
+In both modes, transaction creation and execution use Protocol Kit.
 
 ### 1-of-1 Safe: Auto Sign and Execute
 
@@ -269,9 +273,12 @@ This all happens in one click.
 
 For a Safe with threshold > 1 (e.g., 2-of-3):
 
-1. **Propose**: Owner A builds and signs the transaction. It enters the queue as "pending"
-2. **Confirm**: Owner B opens the same Safe and adds their signature via the "Confirm" button
-3. **Execute**: Once enough signatures are collected (confirmations >= threshold), anyone can click "Execute" to submit on-chain
+1. **Propose**: Owner A builds the transaction.
+2. **Confirm**: Owner B confirms it.
+3. **Execute**: Once confirmations meet the threshold, any owner can execute on-chain.
+
+In Transaction Service mode, these transitions are shared across sessions through Safe Transaction Service.
+In Local-only mode, queue metadata is local to the environment and intended for deterministic local development.
 
 The **TxQueue** component shows pending transactions with a confirmation progress bar (e.g., "1/2 confirmations").
 
@@ -454,7 +461,7 @@ tanstack-web3/
           ModulePanel.tsx          # Module deploy/allowance management
         transactions/
           transactions.ts          # buildTransaction helper
-          use-transactions.ts      # local-first transaction flow state
+          use-transactions.ts      # dual-mode tx flow (service/local fallback)
           TxBuilder.tsx            # Transaction input form
           TxQueue.tsx              # Pending transaction list
           TxHistory.tsx            # Executed transaction list
@@ -526,7 +533,13 @@ The Safe SDK is organized into three layers, each used for a different purpose:
 | **API Kit**      | `@safe-global/api-kit`        | Transaction Service: propose, confirm, query |
 | **Safe Apps SDK**| `@safe-global/safe-apps-sdk`  | Iframe: communicate with Safe web app       |
 
-This boilerplate primarily uses Protocol Kit for standalone operation. API Kit is available in `multisig.ts` for use with the Safe Transaction Service. Safe Apps SDK is used in `iframe.ts` for iframe mode.
+This boilerplate primarily uses Protocol Kit for standalone operation. API Kit is integrated via `apps/web/src/safe/core/api.ts` for Safe Transaction Service mode. Safe Apps SDK is used in `apps/web/src/safe/core/iframe.ts` for iframe mode.
+Current file ownership:
+
+- API adapter: `apps/web/src/safe/core/api.ts`
+- Runtime policy resolver: `apps/web/src/safe/runtime/resolve-runtime-policy.ts`
+- Transaction orchestration: `apps/web/src/safe/transactions/use-transactions.ts`
+- Safe Apps iframe integration: `apps/web/src/safe/core/iframe.ts`
 
 ### Buffer Polyfill
 
@@ -585,14 +598,15 @@ const signed = await signTransaction(safeInstance, safeTx)
 await executeTransaction(safeInstance, signed)
 ```
 
-### Enabling the Transaction Service
+### Transaction Service Configuration
 
-For production multi-sig workflows across multiple sessions, you can use the Safe Transaction Service:
+The app automatically chooses Transaction Service mode when:
 
-1. Run the Safe Transaction Service locally via Docker (see Safe docs)
-2. The `multisig.ts` file already contains `proposeMultisigTransaction()`, `confirmMultisigTransaction()`, and `executeMultisigTransaction()` functions
-3. These use API Kit to submit and retrieve pending transactions from the service
-4. Wire up the UI to call these functions instead of the local-first flow
+1. the chain ID is supported by `apps/web/src/safe/core/api.ts`
+2. runtime is standalone
+3. RPC endpoint is not local (`localhost`/`127.0.0.1`)
+
+On local Anvil/forked development RPCs, the app intentionally falls back to Local-only mode.
 
 ### Enabling Gelato Relay (Gasless Transactions)
 

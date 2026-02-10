@@ -77,6 +77,24 @@ export default function SetupView({ address, safe, rpcUrl, runtimePolicy }: Setu
 
   return (
     <>
+      <div
+        className={`rounded-xl p-4 mb-6 border ${
+          runtimePolicy.txSubmissionPath === 'transaction-service'
+            ? 'bg-cyan-900/20 border-cyan-700'
+            : 'bg-amber-900/30 border-amber-700'
+        }`}
+      >
+        {runtimePolicy.txSubmissionPath === 'transaction-service' ? (
+          <p className="text-cyan-300 text-sm">
+            <strong>Transaction Service mode:</strong> Pending transactions and confirmations are shared through the hosted Safe Transaction Service.
+          </p>
+        ) : (
+          <p className="text-amber-300 text-sm">
+            <strong>Local-only mode:</strong> On local Anvil or unsupported chains, pending transaction coordination is stored in browser state for this environment.
+          </p>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Create New Safe */}
         <div className="bg-gray-800 rounded-xl p-6">

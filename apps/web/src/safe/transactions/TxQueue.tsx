@@ -1,20 +1,35 @@
+import type { TxSourceMode } from '../core/types'
+
 interface PendingTx {
   safeTxHash: string
   to: string
   value: string
+  data: string
   confirmations: number
+  confirmedBy: string[]
   threshold: number
+  isReady: boolean
+  source: TxSourceMode
   submittedAt?: string
 }
 
 interface TxQueueProps {
   transactions: PendingTx[]
   threshold?: number
+  modeLabel?: string
+  modeHelpText?: string
   onConfirm?: (safeTxHash: string) => void
   onExecute?: (safeTxHash: string) => void
 }
 
-export default function TxQueue({ transactions, threshold, onConfirm, onExecute }: TxQueueProps) {
+export default function TxQueue({
+  transactions,
+  threshold,
+  modeLabel,
+  modeHelpText,
+  onConfirm,
+  onExecute,
+}: TxQueueProps) {
   if (transactions.length === 0) {
     let emptyMessage = 'No pending transactions'
     if (threshold === 1) {
@@ -33,23 +48,40 @@ export default function TxQueue({ transactions, threshold, onConfirm, onExecute 
 
   return (
     <div className="bg-gray-800 rounded-xl p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">
-        Pending Transactions ({transactions.length})
-      </h3>
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-white">
+          Pending Transactions ({transactions.length})
+        </h3>
+        {modeLabel && (
+          <p className="text-xs text-gray-400 mt-1">
+            <span className="font-semibold text-gray-300">{modeLabel}:</span>{' '}
+            {modeHelpText}
+          </p>
+        )}
+      </div>
       <div className="space-y-3">
         {transactions.map((tx) => {
-          const isReady = tx.confirmations >= tx.threshold
+          const isReady = tx.isReady
           return (
             <div key={tx.safeTxHash} className="bg-gray-900 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-mono text-xs text-gray-400 truncate max-w-[200px]">
                   {tx.safeTxHash}
                 </span>
-                <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                  isReady ? 'bg-cyan-900 text-cyan-300' : 'bg-yellow-900 text-yellow-300'
-                }`}>
-                  {isReady ? 'Ready' : 'Pending'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    tx.source === 'transaction-service'
+                      ? 'bg-cyan-900 text-cyan-300'
+                      : 'bg-gray-700 text-gray-300'
+                  }`}>
+                    {tx.source === 'transaction-service' ? 'Service' : 'Local'}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    isReady ? 'bg-cyan-900 text-cyan-300' : 'bg-yellow-900 text-yellow-300'
+                  }`}>
+                    {isReady ? 'Ready' : 'Pending'}
+                  </span>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm mb-3">
                 <div>

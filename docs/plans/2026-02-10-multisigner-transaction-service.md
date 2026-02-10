@@ -315,33 +315,43 @@ git commit -m "chore: stabilize multi-signer transaction service flow"
 
 ## Validation Evidence
 
-Date: YYYY-MM-DD
+Date: 2026-02-10
 
 ### Automated validation
 
-- `cd apps/web && bun run vitest run <focused-tests>`
-  - PASS/FAIL:
+- `cd apps/web && bun run vitest run src/safe/core/api.test.ts src/safe/transactions/transactions.test.ts src/safe/transactions/use-transactions.test.ts src/safe/transactions/TxQueue.test.tsx`
+  - PASS
 - `bun run test`
-  - PASS/FAIL:
+  - PASS
 - `bun run check`
-  - PASS/FAIL:
-  - Notes:
+  - FAIL
+  - Notes: Existing Biome debt outside PRD2 scope still fails `check` (import ordering, button `type`, formatting, and generated-file style noise in pre-existing files such as `apps/web/src/components/layout/Header.tsx`, `apps/web/src/safe/contracts/bytecodes.ts`, and `apps/web/vite.config.ts`).
 
 ### Real browser validation
 
 - `cd apps/web && bun run e2e:safe-multisig`
-  - PASS/FAIL:
+  - PASS
+  - Notes: Initially failed during implementation (expected while dual-mode logic was incomplete), then rerun to green after hook/UI/e2e updates.
   - Artifacts:
-    - `apps/web/e2e/artifacts/prd2/<file>.png`
+    - `apps/web/e2e/artifacts/prd2/01-owner-a-proposed-tx.png`
+    - `apps/web/e2e/artifacts/prd2/02-owner-b-sees-pending.png`
+    - `apps/web/e2e/artifacts/prd2/03-owner-b-confirmed.png`
+    - `apps/web/e2e/artifacts/prd2/04-owner-a-sees-updated-confirmations.png`
+    - `apps/web/e2e/artifacts/prd2/05-owner-a-executed-transaction.png`
 
 - `cd apps/web && bun run e2e:safe-smoke`
-  - PASS/FAIL:
+  - PASS
   - Artifacts:
-    - `apps/web/e2e/artifacts/<file>.png`
+    - `apps/web/e2e/artifacts/01-safe-connected-dev-account-0.png`
+    - `apps/web/e2e/artifacts/02-safe-switched-dev-account-1.png`
+    - `apps/web/e2e/artifacts/03-safe-setup-view.png`
+    - `apps/web/e2e/artifacts/04-safe-deployed-dashboard.png`
+    - `apps/web/e2e/artifacts/05-safe-pending-created.png`
+    - `apps/web/e2e/artifacts/06-safe-pending-not-ready-before-threshold.png`
 
 ### Regression sweep
 
-- Cross-session pending visibility: PASS/FAIL
-- Confirmation increment correctness: PASS/FAIL
-- Execute gating correctness: PASS/FAIL
-- Local fallback labeling and behavior: PASS/FAIL
+- Cross-session pending visibility: PASS
+- Confirmation increment correctness: PASS
+- Execute gating correctness: PASS
+- Local fallback labeling and behavior: PASS

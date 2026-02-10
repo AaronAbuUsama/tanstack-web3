@@ -30,11 +30,25 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
   const [operationError, setOperationError] = useState<string | null>(null)
   const resolveSigner = () => getDevWalletActiveSigner()
 
-  const { transactions, pendingTxs, executedTxs, txError, txBusy, handleBuild, handleConfirm, handleExecute } = useTransactions({
+  const {
+    pendingTxs,
+    executedTxs,
+    txError,
+    txBusy,
+    txSourceMode,
+    txModeLabel,
+    txModeHelpText,
+    handleBuild,
+    handleConfirm,
+    handleExecute,
+  } = useTransactions({
     safeAddress: safe.safeAddress,
     safeInstance: safe.safeInstance,
     threshold: safe.threshold,
     mode: safe.mode,
+    chainId: safe.chainId,
+    rpcUrl,
+    currentAddress: address,
   })
 
   const handleAddOwner = async (ownerAddress: string) => {
@@ -210,8 +224,20 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
           </div>
         )}
 
+        <div
+          className={`rounded-xl p-4 border ${
+            txSourceMode === 'transaction-service'
+              ? 'bg-cyan-900/20 border-cyan-700'
+              : 'bg-amber-900/30 border-amber-700'
+          }`}
+        >
+          <p className={`text-sm ${txSourceMode === 'transaction-service' ? 'text-cyan-300' : 'text-amber-300'}`}>
+            <strong>{txModeLabel}:</strong> {txModeHelpText}
+          </p>
+        </div>
+
         {safe.threshold > 1 && (
-          <div className="bg-amber-900/30 border border-amber-700 rounded-xl p-4">
+          <div className="bg-amber-900/20 border border-amber-700 rounded-xl p-4">
             <p className="text-amber-300 text-sm">
               <strong>Multi-sig mode:</strong> This Safe requires {safe.threshold} of {safe.owners.length} confirmations.
             </p>
@@ -221,26 +247,24 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
         <TxBuilder onBuild={handleBuild} />
 
         {/* Latest pending tx detail */}
-        {transactions.filter((t) => t.status !== 'executed').length > 0 && (() => {
-          const latest = transactions.find((t) => t.status !== 'executed')!
-          const isRestored = latest.safeTransaction === null
+        {pendingTxs.length > 0 && (() => {
+          const latest = pendingTxs[0]
           return (
             <>
-              {isRestored && (
-                <p className="text-amber-400 text-xs mb-2">This transaction was restored from cache and will be rebuilt when confirmed.</p>
-              )}
               <TransactionFlow
                 transaction={{
-                  safeTxHash: latest.id,
+                  safeTxHash: latest.safeTxHash,
                   to: latest.to,
                   value: latest.value,
                   data: latest.data,
                   status: {
-                    safeTxHash: latest.id,
+                    safeTxHash: latest.safeTxHash,
                     confirmations: latest.confirmations,
-                    threshold: safe.threshold,
-                    isReady: latest.confirmations >= safe.threshold,
+                    confirmedBy: latest.confirmedBy,
+                    threshold: latest.threshold,
+                    isReady: latest.isReady,
                     isExecuted: false,
+                    source: latest.source,
                   },
                 }}
                 currentAddress={address}
@@ -254,6 +278,8 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
         <TxQueue
           transactions={pendingTxs}
           threshold={safe.threshold}
+          modeLabel={txModeLabel}
+          modeHelpText={txModeHelpText}
           onConfirm={handleConfirm}
           onExecute={handleExecute}
         />

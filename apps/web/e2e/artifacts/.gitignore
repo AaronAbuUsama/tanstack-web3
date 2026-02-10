@@ -1,2 +1,3 @@
+# Keep this folder but ignore all generated screenshots/videos/test output.
 *
 !.gitignore

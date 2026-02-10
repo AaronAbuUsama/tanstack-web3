@@ -27,6 +27,14 @@ function getRpcUrl(chainId: number): string {
   }
 }
 
+function isLocalRpcUrl(rpcUrl: string) {
+  return /localhost|127\.0\.0\.1|0\.0\.0\.0/.test(rpcUrl)
+}
+
+function isTxServiceSupportedChain(chainId: number) {
+  return chainId === 1 || chainId === 100 || chainId === 10200 || chainId === 11155111
+}
+
 export const Route = createFileRoute('/safe')({
   component: SafeDashboard,
 })
@@ -36,10 +44,14 @@ function SafeDashboard() {
   const chainId = useChainId()
   const safe = useSafe()
   const rpcUrl = getRpcUrl(chainId)
+  const txServiceSupportedChain = isTxServiceSupportedChain(chainId)
+  const txServiceEnabled = txServiceSupportedChain && !isLocalRpcUrl(rpcUrl)
   const runtimePolicy = resolveRuntimePolicy({
     appContext: safe.mode === 'iframe' ? 'safe-app-iframe' : 'standalone',
     isConnected,
     connectorId: connector?.id ?? null,
+    txServiceEnabled,
+    txServiceSupportedChain,
   })
 
   // Track the chainId the Safe was connected on to detect chain switches
