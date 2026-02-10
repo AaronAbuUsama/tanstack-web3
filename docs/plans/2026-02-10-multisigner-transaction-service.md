@@ -2,15 +2,15 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Enable real multi-owner Safe signing across sessions/devices by integrating Safe Transaction Service via API Kit, while preserving a clear local fallback mode.
+**Goal:** Enable real multi-owner Safe signing across sessions/devices by integrating Safe Transaction Service via API Kit, while preserving a clear local fallback mode and deterministic scripted validation.
 
-**Architecture:** Add a thin API abstraction in `safe/core`, then migrate transaction orchestration from local-only storage to dual-mode behavior: hosted Safe Transaction Service on supported chains, local fallback on unsupported dev chains. Keep UI components mostly unchanged but feed them real confirmation state.
+**Architecture:** Add a thin API abstraction in `safe/core`, then migrate transaction orchestration from local-only storage to dual-mode behavior: hosted Safe Transaction Service on supported chains, local fallback on unsupported dev chains. Use the PRD1 mnemonic-based dev wallet account switching as the signer source for both browser contexts, and validate with scripted Playwright multi-session flows instead of ad hoc clicks.
 
 **Tech Stack:** React, TypeScript, Safe Protocol Kit, `@safe-global/api-kit`, wagmi, viem, Vitest
 
 ---
 
-**Relevant skills:** @writing-plans, @subagent-driven-development
+**Relevant skills:** @writing-plans, @subagent-driven-development, @agent-browser
 
 ## Validation Contract (Mandatory For Every Task)
 
@@ -21,15 +21,54 @@ No task is complete without both automated and real browser validation.
 - Full `apps/web` test run before task sign-off.
 
 2. **Real multi-session browser checks (non-unit)**
-- Validate with two browser sessions/users for signer A and signer B.
+- Run scripted multi-session validation first (`cd apps/web && bun run e2e:safe-multisig`).
+- Validate with two browser contexts/users for signer A and signer B (derived from dev mnemonic indices).
 - Confirm cross-session visibility of pending tx, confirmation updates, and execute gating.
-- Use `@agent-browser`/Playwright and capture screenshots from both sessions.
+- Capture screenshots from both sessions.
 
 3. **Fallback mode checks**
 - Validate local-only path behavior on unsupported tx-service chains.
 - Confirm UI labels clearly indicate fallback mode.
 
 Hard rule: no task closed without evidence for the user-visible flow it changes.
+
+## Preconditions
+
+- PRD1 Task 2 (mnemonic-based dev signer with account switching) must be complete first.
+- PRD1 Task 6 (`e2e:safe-smoke`) must exist; this plan extends that harness.
+
+### Task 0: Extend Scripted E2E Harness for Multi-Signer Service Flow
+
+**Files:**
+- Modify: `apps/web/package.json`
+- Create: `apps/web/e2e/safe-multisig.spec.ts`
+- Modify: `apps/web/e2e/README.md`
+
+**Step 1: Implement two-context Playwright flow**
+
+Script must:
+- launch signer A and signer B in separate browser contexts.
+- connect both using dev mnemonic account indices (`0` and `1`).
+- assert pending tx appears in both contexts after proposal.
+
+**Step 2: Add deterministic assertions**
+
+Assert:
+- confirmation count increments after signer B confirms.
+- execute is disabled before threshold and enabled after threshold.
+- executed state appears in both contexts after execution.
+
+**Step 3: Run focused e2e script**
+
+Run: `cd apps/web && bun run e2e:safe-multisig`
+Expected: FAIL first, then PASS after implementation.
+
+**Step 4: Commit**
+
+```bash
+git add apps/web/package.json apps/web/e2e/safe-multisig.spec.ts apps/web/e2e/README.md
+git commit -m "test(e2e): add scripted multisigner transaction-service validation"
+```
 
 ### Task 1: Add API Kit Adapter Layer
 
@@ -228,20 +267,24 @@ Run:
 
 Expected: PASS.
 
-**Step 2: Manual sanity flow (supported chain)**
+**Step 2: Scripted sanity flow (supported chain)**
 
-- Owner A proposes tx.
-- Owner B sees same pending tx in separate session and confirms.
-- Execute after threshold is met.
+Run: `cd apps/web && bun run e2e:safe-multisig`
 
-Capture screenshots from both sessions and attach notes to this plan under `Validation Evidence`.
+Expected:
+- PASS
+- screenshots/artifacts captured for both signer contexts.
 
-**Step 3: Manual sanity flow (local fallback)**
+Attach notes to this plan under `Validation Evidence`.
 
-- Verify explicit local-only label appears.
-- Build/confirm/execute still works single-session.
+**Step 3: Scripted sanity flow (local fallback)**
 
-Capture fallback screenshots and note expected/actual behavior.
+Run: `cd apps/web && bun run e2e:safe-smoke -- --grep \"local fallback\"`
+
+Expected:
+- fallback label present
+- build/confirm/execute still works in local mode
+- fallback screenshots captured.
 
 **Step 4: Commit any final fixes**
 

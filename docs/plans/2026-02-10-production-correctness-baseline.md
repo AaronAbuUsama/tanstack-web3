@@ -2,9 +2,9 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Eliminate known correctness regressions in Safe setup/transaction UX and establish a green quality baseline before larger multi-signer and UI-system work.
+**Goal:** Eliminate known correctness regressions in Safe setup/transaction UX, lock in a deterministic mnemonic-based dev signer flow, and establish a green quality baseline before larger multi-signer and UI-system work.
 
-**Architecture:** Introduce a single runtime policy resolver so three concepts are explicit and consistent across the app: `AppContext` (standalone vs Safe iframe), `SignerProvider` (dev private key vs injected wallet vs none), and `TxSubmissionPath` (Protocol Kit direct vs Safe Apps SDK vs none). Keep this policy derived in-memory (not persisted), centralize dev signer constants, and align UI state/docs with actual transaction behavior.
+**Architecture:** Introduce a single runtime policy resolver so three concepts are explicit and consistent across the app: `AppContext` (standalone vs Safe iframe), `SignerProvider` (dev wallet mnemonic account vs injected wallet vs none), and `TxSubmissionPath` (Protocol Kit direct vs Safe Apps SDK vs none). Keep this policy derived in-memory (not persisted), move dev signing from a single fixed key to mnemonic-derived account selection, and enforce deterministic browser validation through a scripted Playwright smoke flow.
 
 **Tech Stack:** TanStack Start, React, TypeScript, wagmi, Safe Protocol Kit, Safe Apps SDK, Vitest, Biome
 
@@ -21,8 +21,8 @@ No task is complete without validation evidence in all three categories below.
 - Run impacted package checks (at minimum `apps/web` test suite).
 
 2. **Real browser validation (non-unit)**
-- Run local app and exercise the changed behavior in a browser.
-- Use `@agent-browser` (or Playwright MCP equivalent) for deterministic click-path validation.
+- Run local app and execute scripted browser coverage first (`cd apps/web && bun run e2e:safe-smoke`).
+- If a changed flow is not covered yet, validate via `@agent-browser`/Playwright MCP and then extend the script in the same task.
 - Capture at least one screenshot per changed user flow.
 
 3. **Regression sweep**
@@ -51,6 +51,22 @@ Hard rule: unit tests alone are insufficient for sign-off.
 - `safe-app-iframe` context must use `safe-apps-sdk` submission path.
 - Standalone context can only sign when signer provider is not `none`.
 
+## Dev Wallet Signer Strategy (Locked)
+
+**Code location:**
+- Modify: `apps/web/src/web3/dev-wallet.ts`
+- Modify: `apps/web/src/web3/ConnectWallet.tsx`
+- Modify: `apps/web/src/routes/safe.tsx`
+- Modify: `apps/web/src/safe/governance/SetupView.tsx`
+- Modify: `apps/web/src/safe/transactions/DashboardView.tsx`
+- Test: `apps/web/src/web3/dev-wallet.test.ts` (Create)
+
+**Hard rules:**
+- Dev signing uses mnemonic derivation, not a single hardcoded private key constant.
+- Default mnemonic is the Anvil test mnemonic; allow override by env var in dev only.
+- Account switching is index-based (`0`, `1`, `2`, ...), with a visible dev-only selector.
+- Current dev account index is runtime-only (in-memory or URL param), never persisted in localStorage.
+
 ### Task 1: Add Runtime Policy Module + Architecture Doc
 
 **Files:**
@@ -65,7 +81,7 @@ Hard rule: unit tests alone are insufficient for sign-off.
 
 Cover:
 - iframe context resolves to `safe-apps-sdk` + no local signer.
-- standalone + dev connector resolves to `dev-private-key`.
+- standalone + dev connector resolves to `dev-mnemonic-account`.
 - standalone + injected resolves to `injected-eip1193`.
 - standalone + no wallet resolves to `none` + no submit.
 
@@ -103,34 +119,62 @@ git add apps/web/src/safe/runtime docs/architecture/runtime-policy.md
 git commit -m "feat(safe): add runtime policy resolver and architecture documentation"
 ```
 
-### Task 2: Centralize Dev Signer Constant (No Behavior Change)
+### Task 2: Replace Fixed Dev Private Key with Mnemonic + Account Index
 
 **Files:**
 - Modify: `apps/web/src/web3/dev-wallet.ts`
+- Modify: `apps/web/src/web3/ConnectWallet.tsx`
 - Modify: `apps/web/src/routes/safe.tsx`
 - Modify: `apps/web/src/safe/governance/SetupView.tsx`
 - Modify: `apps/web/src/safe/transactions/DashboardView.tsx`
+- Test: `apps/web/src/web3/dev-wallet.test.ts` (Create)
 
-**Step 1: Write failing static check expectation**
+**Step 1: Write failing derivation/account-switch tests**
 
-Run: `rg -n "const DEV_SIGNER|HARDHAT_PRIVATE_KEY" apps/web/src/routes/safe.tsx apps/web/src/safe/governance/SetupView.tsx apps/web/src/safe/transactions/DashboardView.tsx apps/web/src/web3/dev-wallet.ts`
-Expected: duplicate constants in multiple files.
+Cover:
+- index `0` and `1` derive distinct expected addresses from the Anvil mnemonic.
+- signer resolver returns the private key/account for the currently selected index.
+- invalid index (negative or non-integer) is rejected with a clear error.
 
-**Step 2: Implement shared export**
+**Step 2: Run focused tests**
 
-- Export `DEV_WALLET_PRIVATE_KEY` from `apps/web/src/web3/dev-wallet.ts`.
-- Replace local constants in consuming files with imports.
+Run: `cd apps/web && bun run vitest run src/web3/dev-wallet.test.ts`
+Expected: FAIL.
 
-**Step 3: Re-run check command**
+**Step 3: Implement shared mnemonic-based signer exports**
 
-Run same `rg` command.
-Expected: single source-of-truth key declaration.
+- Replace `DEV_WALLET_PRIVATE_KEY`-centric usage with:
+  - `DEV_WALLET_MNEMONIC`
+  - `getDevWalletAccount(index)`
+  - `getDevWalletSigner(index)`
+  - `setActiveDevWalletAccountIndex(index)` / `getActiveDevWalletAccountIndex()`
+- Add a dev-only account index selector in `ConnectWallet` that reconnects with the selected signer.
+- Update Safe route/setup/dashboard paths to resolve signer from the active dev account index.
 
-**Step 4: Commit**
+**Step 4: Re-run focused tests + static checks**
+
+Run:
+- `cd apps/web && bun run vitest run src/web3/dev-wallet.test.ts`
+- `rg -n "DEV_WALLET_PRIVATE_KEY" apps/web/src`
+
+Expected:
+- tests PASS
+- no production path depends on a fixed single private key constant.
+
+**Step 5: Real browser validation for signer switching**
+
+Validate on `/safe`:
+- connect with Dev Wallet account index `0`, capture address.
+- switch to account index `1`, reconnect, verify rendered address changed.
+- deploy/connect flow still works after account switch.
+
+Capture screenshots under `apps/web/e2e/artifacts/`.
+
+**Step 6: Commit**
 
 ```bash
-git add apps/web/src/web3/dev-wallet.ts apps/web/src/routes/safe.tsx apps/web/src/safe/governance/SetupView.tsx apps/web/src/safe/transactions/DashboardView.tsx
-git commit -m "refactor(web3): centralize dev wallet private key constant"
+git add apps/web/src/web3/dev-wallet.ts apps/web/src/web3/ConnectWallet.tsx apps/web/src/routes/safe.tsx apps/web/src/safe/governance/SetupView.tsx apps/web/src/safe/transactions/DashboardView.tsx apps/web/src/web3/dev-wallet.test.ts
+git commit -m "feat(web3): support mnemonic-derived dev signer account switching"
 ```
 
 ### Task 3: Fix Connect-to-Existing-Safe Signer Wiring + Guard Rails
@@ -234,7 +278,42 @@ git add apps/web/src/safe/transactions/use-transactions.ts apps/web/src/safe/tra
 git commit -m "fix(transactions): make pending and readiness status truthful"
 ```
 
-### Task 6: Doc Sync + Baseline Validation
+### Task 6: Add Scripted Playwright Smoke Validation
+
+**Files:**
+- Modify: `apps/web/package.json`
+- Create: `apps/web/playwright.config.ts`
+- Create: `apps/web/e2e/safe-smoke.spec.ts`
+- Create: `apps/web/e2e/README.md`
+
+**Step 1: Add deterministic e2e runner**
+
+Configure Playwright with:
+- base URL pointing to web app dev server.
+- artifact output folder (`apps/web/e2e/artifacts/`).
+- one command (`bun run e2e:safe-smoke`) for local and agent execution.
+
+**Step 2: Implement `safe-smoke` script flow**
+
+Minimum scripted assertions:
+- `/safe` loads and wallet can connect.
+- dev account index can switch from `0` to `1`.
+- Safe setup deploy/connect screen works after signer switch.
+- pending tx UI does not claim `Ready` before threshold.
+
+**Step 3: Run scripted browser validation**
+
+Run: `cd apps/web && bun run e2e:safe-smoke`
+Expected: PASS with screenshot artifacts generated.
+
+**Step 4: Commit**
+
+```bash
+git add apps/web/package.json apps/web/playwright.config.ts apps/web/e2e
+git commit -m "test(e2e): add scripted safe smoke validation flow"
+```
+
+### Task 7: Doc Sync + Baseline Validation
 
 **Files:**
 - Modify: `docs/development.md`
@@ -256,17 +335,11 @@ Expected: zero matches.
 Run:
 - `bun run check`
 - `bun run test`
+- `cd apps/web && bun run e2e:safe-smoke`
 
 Expected: PASS.
 
-**Step 4: Run real browser validation**
-
-Run local stack and validate with browser automation:
-- Start blockchain + web app.
-- Open `/safe`.
-- Connect with Dev Wallet.
-- Deploy/create Safe and verify dashboard transition.
-- Build + confirm transaction and verify confirmation UI is truthful (no premature `Ready`).
+**Step 4: Record validation evidence**
 
 Record screenshots and notes in `docs/plans/2026-02-10-production-correctness-baseline.md` under `Validation Evidence`.
 
