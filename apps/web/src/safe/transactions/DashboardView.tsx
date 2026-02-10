@@ -236,9 +236,9 @@ export default function DashboardView({ address, chain, safe, rpcUrl }: Dashboar
                   data: latest.data,
                   status: {
                     safeTxHash: latest.id,
-                    confirmations: latest.status === 'signed' ? safe.threshold : 0,
+                    confirmations: latest.confirmations,
                     threshold: safe.threshold,
-                    isReady: latest.status === 'signed',
+                    isReady: latest.confirmations >= safe.threshold,
                     isExecuted: false,
                   },
                 }}

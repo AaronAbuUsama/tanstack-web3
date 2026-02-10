@@ -11,6 +11,7 @@ export interface LocalTx {
   to: string
   value: string
   data: string
+  confirmations: number
   safeTransaction: SafeTransaction | null
   status: 'pending' | 'signed' | 'executed'
   txHash?: string
@@ -21,6 +22,7 @@ interface PersistedTx {
   to: string
   value: string
   data: string
+  confirmations?: number
   status: 'pending' | 'signed' | 'executed'
   txHash?: string
 }
@@ -40,8 +42,8 @@ function loadPersistedTxs(safeAddress: string): PersistedTx[] {
 
 function persistTxs(safeAddress: string, txs: LocalTx[]) {
   try {
-    const serializable: PersistedTx[] = txs.map(({ id, to, value, data, status, txHash }) => ({
-      id, to, value, data, status, txHash,
+    const serializable: PersistedTx[] = txs.map(({ id, to, value, data, confirmations, status, txHash }) => ({
+      id, to, value, data, confirmations, status, txHash,
     }))
     localStorage.setItem(getTxStorageKey(safeAddress), JSON.stringify(serializable))
   } catch {
@@ -68,6 +70,12 @@ export function useTransactions({ safeAddress, safeInstance, threshold, mode }: 
       if (persisted.length > 0) {
         setTransactions(persisted.map(p => ({
           ...p,
+          confirmations:
+            typeof p.confirmations === 'number'
+              ? p.confirmations
+              : p.status === 'signed' || p.status === 'executed'
+                ? 1
+                : 0,
           safeTransaction: null,
         })))
       }
@@ -99,8 +107,9 @@ export function useTransactions({ safeAddress, safeInstance, threshold, mode }: 
           to: tx.to,
           value: tx.value || '0',
           data: tx.data || '0x',
+          confirmations: 0,
           safeTransaction: null,
-          status: 'executed',
+          status: 'pending',
           txHash: safeTxHash,
         }
         updateTransactions((prev) => [localTx, ...prev])
@@ -132,6 +141,7 @@ export function useTransactions({ safeAddress, safeInstance, threshold, mode }: 
         to: tx.to,
         value: tx.value,
         data: tx.data,
+        confirmations: 0,
         safeTransaction: safeTx,
         status: 'pending',
       }
@@ -140,6 +150,7 @@ export function useTransactions({ safeAddress, safeInstance, threshold, mode }: 
       if (threshold === 1) {
         const signed = await signTransaction(safeInstance, safeTx)
         localTx.safeTransaction = signed
+        localTx.confirmations = 1
         localTx.status = 'signed'
 
         const result = await executeTransaction(safeInstance, signed)
@@ -168,6 +179,14 @@ export function useTransactions({ safeAddress, safeInstance, threshold, mode }: 
     try {
       const tx = transactions.find((t) => t.id === safeTxHash)
       if (!tx) return
+      if (tx.status === 'executed') {
+        setTxError('Transaction is already executed')
+        return
+      }
+      if (tx.confirmations > 0) {
+        setTxError('Transaction already confirmed by current signer')
+        return
+      }
 
       let safeTx = tx.safeTransaction
       if (!safeTx && safeInstance) {
@@ -188,10 +207,19 @@ export function useTransactions({ safeAddress, safeInstance, threshold, mode }: 
       }
 
       const signed = await signTransaction(safeInstance, safeTx)
+      const nextConfirmations = Math.min(tx.confirmations + 1, threshold)
+      const nextStatus = nextConfirmations >= threshold ? 'signed' : 'pending'
 
       updateTransactions((prev) =>
         prev.map((t) =>
-          t.id === safeTxHash ? { ...t, safeTransaction: signed, status: 'signed' as const } : t,
+          t.id === safeTxHash
+            ? {
+                ...t,
+                safeTransaction: signed,
+                confirmations: nextConfirmations,
+                status: nextStatus,
+              }
+            : t,
         ),
       )
     } catch (err) {
@@ -214,6 +242,10 @@ export function useTransactions({ safeAddress, safeInstance, threshold, mode }: 
     try {
       const tx = transactions.find((t) => t.id === safeTxHash)
       if (!tx) return
+      if (tx.confirmations < threshold) {
+        setTxError(`Not enough confirmations: ${tx.confirmations}/${threshold}`)
+        return
+      }
 
       let safeTx = tx.safeTransaction
       if (!safeTx && safeInstance) {
@@ -238,7 +270,7 @@ export function useTransactions({ safeAddress, safeInstance, threshold, mode }: 
       updateTransactions((prev) =>
         prev.map((t) =>
           t.id === safeTxHash
-            ? { ...t, status: 'executed' as const, txHash: result.hash }
+            ? { ...t, status: 'executed', txHash: result.hash }
             : t,
         ),
       )
@@ -255,7 +287,7 @@ export function useTransactions({ safeAddress, safeInstance, threshold, mode }: 
       safeTxHash: t.id,
       to: t.to,
       value: t.value,
-      confirmations: t.status === 'signed' ? threshold : 0,
+      confirmations: t.confirmations,
       threshold,
       restored: t.safeTransaction === null,
     }))
