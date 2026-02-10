@@ -1,29 +1,45 @@
 import { useState } from 'react'
 import { DEV_WALLET_PRIVATE_KEY } from '../../web3/dev-wallet'
 import type { useSafe } from '../core/use-safe'
+import type { RuntimePolicy } from '../runtime'
 
 interface SetupViewProps {
   address: string | undefined
   safe: ReturnType<typeof useSafe>
   rpcUrl: string
+  runtimePolicy: RuntimePolicy
 }
 
-export default function SetupView({ address, safe, rpcUrl }: SetupViewProps) {
+function resolveSetupSigner(runtimePolicy: RuntimePolicy) {
+  if (runtimePolicy.signerProvider === 'dev-private-key') {
+    return DEV_WALLET_PRIVATE_KEY
+  }
+  return undefined
+}
+
+export default function SetupView({ address, safe, rpcUrl, runtimePolicy }: SetupViewProps) {
   const [owners, setOwners] = useState<string[]>([address ?? ''])
   const [threshold, setThreshold] = useState(1)
   const [deploying, setDeploying] = useState(false)
 
   const [connectAddress, setConnectAddress] = useState('')
   const [connecting, setConnecting] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
 
   const handleDeploy = async () => {
+    const signer = resolveSetupSigner(runtimePolicy)
+    if (!signer) {
+      setLocalError('Current wallet path cannot sign Safe setup operations in standalone mode yet.')
+      return
+    }
     setDeploying(true)
+    setLocalError(null)
     try {
       await safe.deploySafe({
         owners,
         threshold,
         provider: rpcUrl,
-        signer: DEV_WALLET_PRIVATE_KEY,
+        signer,
       })
     } finally {
       setDeploying(false)
@@ -32,9 +48,15 @@ export default function SetupView({ address, safe, rpcUrl }: SetupViewProps) {
 
   const handleConnect = async () => {
     if (!connectAddress) return
+    const signer = resolveSetupSigner(runtimePolicy)
+    if (!signer) {
+      setLocalError('Current wallet path cannot sign Safe setup operations in standalone mode yet.')
+      return
+    }
     setConnecting(true)
+    setLocalError(null)
     try {
-      await safe.connectSafe(connectAddress, rpcUrl, DEV_WALLET_PRIVATE_KEY)
+      await safe.connectSafe(connectAddress, rpcUrl, signer)
     } finally {
       setConnecting(false)
     }
@@ -146,9 +168,9 @@ export default function SetupView({ address, safe, rpcUrl }: SetupViewProps) {
         </div>
       </div>
 
-      {safe.error && (
+      {(safe.error || localError) && (
         <div className="bg-red-900/30 border border-red-700 rounded-xl p-4 text-red-300 text-sm">
-          {safe.error}
+          {localError ?? safe.error}
         </div>
       )}
     </>

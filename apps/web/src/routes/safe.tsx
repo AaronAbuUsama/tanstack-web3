@@ -6,6 +6,7 @@ import { DEV_WALLET_PRIVATE_KEY } from '../web3/dev-wallet'
 import { useSafe } from '../safe/core/use-safe'
 import SetupView from '../safe/governance/SetupView'
 import DashboardView from '../safe/transactions/DashboardView'
+import { resolveRuntimePolicy } from '../safe/runtime'
 
 /**
  * Map a wallet chainId to the correct RPC URL for Protocol Kit.
@@ -31,10 +32,15 @@ export const Route = createFileRoute('/safe')({
 })
 
 function SafeDashboard() {
-  const { isConnected, address, chain } = useAccount()
+  const { isConnected, address, chain, connector } = useAccount()
   const chainId = useChainId()
   const safe = useSafe()
   const rpcUrl = getRpcUrl(chainId)
+  const runtimePolicy = resolveRuntimePolicy({
+    appContext: safe.mode === 'iframe' ? 'safe-app-iframe' : 'standalone',
+    isConnected,
+    connectorId: connector?.id ?? null,
+  })
 
   // Track the chainId the Safe was connected on to detect chain switches
   const prevChainRef = useRef<number | null>(null)
@@ -87,7 +93,12 @@ function SafeDashboard() {
         )}
 
         {!safe.isInSafe && isConnected && (
-          <SetupView address={address} safe={safe} rpcUrl={rpcUrl} />
+          <SetupView
+            address={address}
+            safe={safe}
+            rpcUrl={rpcUrl}
+            runtimePolicy={runtimePolicy}
+          />
         )}
 
         {safe.isInSafe && (
