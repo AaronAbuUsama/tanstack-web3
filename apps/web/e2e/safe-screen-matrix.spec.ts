@@ -30,14 +30,20 @@ async function connectDevWallet(page: Page, accountIndex: number) {
 	await page.goto("/safe");
 	await expect(page.getByRole("heading", { name: "Safe Dashboard" })).toBeVisible();
 	const disconnectButton = page.getByRole("button", { name: "Disconnect" });
+	const devWalletButton = page.getByRole("button", { name: "Dev Wallet" }).first();
+	await expect
+		.poll(
+			async () =>
+				(await disconnectButton.count()) > 0 || (await devWalletButton.count()) > 0,
+			{ timeout: 60_000 },
+		)
+		.toBe(true);
+
 	if ((await disconnectButton.count()) === 0) {
 		let connected = false;
 		for (let attempt = 0; attempt < 5; attempt += 1) {
 			try {
-				await page
-					.getByRole("button", { name: "Dev Wallet" })
-					.first()
-					.click({ timeout: 10_000 });
+				await devWalletButton.click({ timeout: 10_000 });
 				connected = true;
 				break;
 			} catch (error) {
@@ -49,6 +55,7 @@ async function connectDevWallet(page: Page, accountIndex: number) {
 			throw new Error("Unable to connect with Dev Wallet");
 		}
 	}
+	await expect(disconnectButton).toBeVisible();
 
 	const walletBar = getWalletBar(page);
 	const chainSelect = walletBar.locator("select").nth(1);
@@ -169,12 +176,15 @@ test(
 	await takeArtifact(page, "t2-transactions", "mobile");
 
 	await page.setViewportSize(desktopViewport);
-	await setScreenSearch(page, null);
-	await page.getByRole("heading", { name: /Owners \(\d+\)/ }).first().scrollIntoViewIfNeeded();
+	await setScreenSearch(page, "owners");
+	await expect(
+		page.getByRole("heading", { name: "Owners & Threshold", exact: true }),
+	).toBeVisible();
 	await takeArtifact(page, "t3-owners-2of3", "desktop");
 	await takeArtifact(page, "t3-owners", "mobile");
 
 	await page.setViewportSize(desktopViewport);
+	await setScreenSearch(page, null);
 	await page.getByRole("heading", { name: /Transaction Guard \(0\)/ }).scrollIntoViewIfNeeded();
 	await takeArtifact(page, "t4-guard-inactive", "desktop");
 	await takeArtifact(page, "t4-guard", "mobile");

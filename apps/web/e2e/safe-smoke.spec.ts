@@ -32,10 +32,16 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
   await expect(page.getByRole('heading', { name: 'Safe Dashboard' })).toBeVisible()
 
   const disconnectButton = page.getByRole('button', { name: 'Disconnect' })
+  const devWalletButton = page.getByRole('button', { name: 'Dev Wallet' }).first()
+  await expect.poll(
+    async () => (await disconnectButton.count()) > 0 || (await devWalletButton.count()) > 0,
+    { timeout: 60_000 },
+  ).toBe(true)
+
   if ((await disconnectButton.count()) === 0) {
     for (let attempt = 0; attempt < 5; attempt += 1) {
       try {
-        await page.getByRole('button', { name: 'Dev Wallet' }).first().click({ timeout: 10_000 })
+        await devWalletButton.click({ timeout: 10_000 })
         break
       } catch (error) {
         if (attempt === 4) throw error
@@ -43,6 +49,8 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
       }
     }
   }
+
+  await expect(disconnectButton).toBeVisible()
 
   const walletBar = getWalletBar(page)
   const addressText = walletBar.locator('span.font-mono').first()

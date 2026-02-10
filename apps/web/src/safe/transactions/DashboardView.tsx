@@ -2,6 +2,7 @@ import { useState } from "react";
 import { formatUnits } from "viem";
 import {
 	CommandCenterOverview,
+	CommandCenterOwners,
 	CommandCenterTransactions,
 } from "../../design-system/compositions/command-center";
 import {
@@ -26,6 +27,7 @@ import SafeOverview from "../governance/SafeOverview";
 import Threshold from "../governance/Threshold";
 import GuardPanel from "../guard/GuardPanel";
 import ModulePanel from "../module/ModulePanel";
+import { mapOwnersScreen } from "../screens/mappers/owners";
 import { mapTransactionsScreen } from "../screens/mappers/transactions";
 import { navItemForScreen } from "../screens/screen-layout";
 import type { SafeScreenId } from "../screens/types";
@@ -248,12 +250,42 @@ export default function DashboardView({
 			}
 		: undefined;
 
+	const ownersScreen = mapOwnersScreen({
+		owners: safe.owners,
+		currentAddress: address,
+	});
+
 	const transactionsScreen = mapTransactionsScreen({
 		pendingTxs,
 		executedTxs,
 		onConfirm: handleConfirm,
 		onExecute: handleExecute,
 	});
+
+	if (activeScreen === "owners") {
+		return (
+			<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
+				<CommandCenterOwners
+					address={address}
+					chainLabel={chain?.name ?? "gnosis chain"}
+					embedded
+					navSections={navSections}
+					onAddOwner={handleAddOwner}
+					onChangeThreshold={handleChangeThreshold}
+					onRemoveOwner={handleRemoveOwner}
+					ownerActionBusy={operationLoading}
+					ownerActionError={operationError}
+					ownerCount={ownersScreen.ownerCount}
+					owners={ownersScreen.owners}
+					safeAddress={safe.safeAddress ?? "0x..."}
+					safeBalanceLabel={safeBalanceEth}
+					statusBalanceLabel={`${safeBalanceEth} ETH`}
+					threshold={safe.threshold}
+					thresholdLabel={thresholdLabel}
+				/>
+			</div>
+		);
+	}
 
 	if (activeScreen === "transactions") {
 		return (

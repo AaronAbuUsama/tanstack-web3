@@ -530,7 +530,30 @@ Status:
   - Notes: `safe-smoke` validated wallet connect/disconnect, setup flow, pending confirmation behavior, and local mode status text. Matrix checks validated tx-service and local-mode transaction artifacts. Full `e2e:safe-screen-matrix` also passed after Task 2 wiring.
 
 ### Task 3 Evidence
-- Pending.
+- Fail-first:
+  - Command: `cd apps/web && bun run vitest run src/safe/screens/mappers/owners.test.ts`
+  - Result: FAIL
+  - Reason: No owners mapper test existed before implementation (`No test files found`).
+- Automated:
+  - Command(s):
+    - `cd apps/web && bun run vitest run src/safe/screens/mappers/owners.test.ts src/safe/governance/Owners.test.tsx`
+    - `cd apps/web && bun run test`
+  - Result: PASS (`owners.test.ts` + `Owners.test.tsx` + full `apps/web` suite).
+- Browser:
+  - Command(s):
+    - `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "owners.*1of1"`
+    - `cd apps/web && bun run e2e:safe-screen-matrix -- --grep "owners.*2of3"`
+    - `cd apps/web && bun run e2e:safe-smoke`
+  - Result: PASS
+  - Screenshots:
+    - `apps/web/e2e/artifacts/prd4/t3-owners-1of1-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t3-owners-2of3-desktop.png`
+    - `apps/web/e2e/artifacts/prd4/t3-owners-mobile.png`
+- Artifact assertion:
+  - Command: `ls -la apps/web/e2e/artifacts/prd4 | rg 't3-owners-(1of1|2of3|mobile).*\.png'`
+  - Result: PASS
+- Regression sweep:
+  - Notes: Owners 2-of-3 capture now validates `/safe?screen=owners` rendering via URL-state switch. `safe-smoke` still passes end-to-end wallet/setup/pending confirmation flow, and full `e2e:safe-screen-matrix` passes after owners wiring.
 
 ### Task 4 Evidence
 - Pending.
