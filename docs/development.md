@@ -26,6 +26,14 @@ This project uses Turborepo with Bun workspaces:
 - `apps/web` - TanStack Start web application
 - `packages/contracts` - Foundry smart contracts
 
+## Runtime Policy
+
+Runtime behavior for Safe setup/sign/submit paths is defined in:
+
+- `docs/architecture/runtime-policy.md`
+
+This is the source of truth for `AppContext`, `SignerProvider`, and `TxSubmissionPath`.
+
 ## Dev Wallet
 
 In development mode (`import.meta.env.DEV`), a Dev Wallet connector is available that uses Hardhat's account #0:

@@ -4,6 +4,8 @@ A comprehensive guide to building multi-signature dApps with Gnosis Safe, TanSta
 
 **Target audience**: Web3 developers who know React but are new to Gnosis Safe.
 
+**Runtime policy reference**: `docs/architecture/runtime-policy.md` (source of truth for context, signer provider, and transaction submission path decisions).
+
 ---
 
 ## Table of Contents
@@ -100,7 +102,7 @@ Navigate to `/wallet` to see the wallet connection page. This page demonstrates:
 
 ### Connectors: MetaMask vs Dev Wallet
 
-The wagmi config (`apps/web/src/lib/wagmi.ts`) registers two connectors:
+The wagmi config (`apps/web/src/web3/config.ts`) registers two connectors:
 
 1. **Injected** -- connects to browser wallets like MetaMask, Rabby, or Coinbase Wallet
 2. **Dev Wallet** -- only available in dev mode; auto-connects Anvil's default account

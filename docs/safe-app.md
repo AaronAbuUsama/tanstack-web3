@@ -30,7 +30,11 @@ Your app needs a `manifest.json` in the public directory:
 
 ## How Detection Works
 
-The `detectSafeMode()` function in `apps/web/src/lib/safe/detect.ts` checks if `window.parent !== window`. If the app is in an iframe, it assumes Safe App mode and initializes the Safe Apps SDK.
+The `detectSafeMode()` function in `apps/web/src/safe/core/detect.ts` checks if `window.parent !== window`. If the app is in an iframe, it assumes Safe App mode and initializes the Safe Apps SDK.
+
+For full runtime behavior (context + signer + submission path), see:
+
+- `docs/architecture/runtime-policy.md`
 
 ## Permissions
 
