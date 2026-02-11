@@ -16,6 +16,10 @@
 	min-height: calc(100vh - var(--ds-layout-status-bar-height));
 }
 
+.ds-command-center__layout.is-single-column {
+	grid-template-columns: minmax(0, 1fr);
+}
+
 .ds-command-center.is-embedded .ds-command-center__layout {
 	min-height: 0;
 }
@@ -25,6 +29,12 @@
 	display: grid;
 	gap: var(--ds-space-24);
 	padding: var(--ds-space-32);
+}
+
+.ds-command-center__layout.is-single-column .ds-command-center__main {
+	margin: 0 auto;
+	max-width: 1040px;
+	width: 100%;
 }
 
 .ds-command-center__title {

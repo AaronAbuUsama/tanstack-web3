@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { formatEther, formatUnits, parseEther } from "viem";
 import {
 	CommandCenterGuard,
@@ -68,6 +68,7 @@ interface DashboardViewProps {
 	onDisconnect?: () => void;
 	safe: ReturnType<typeof useSafe>;
 	rpcUrl: string;
+	statusBarWalletControls?: ReactNode;
 }
 
 export default function DashboardView({
@@ -77,6 +78,7 @@ export default function DashboardView({
 	onDisconnect,
 	safe,
 	rpcUrl,
+	statusBarWalletControls,
 }: DashboardViewProps) {
 	const [operationLoading, setOperationLoading] = useState(false);
 	const [operationError, setOperationError] = useState<string | null>(null);
@@ -481,6 +483,7 @@ export default function DashboardView({
 				onDisableGuard={handleDisableGuard}
 				onEnableGuard={handleEnableGuard}
 				onDisconnect={onDisconnect}
+				statusBarWalletControls={statusBarWalletControls}
 				onSpendingLimitChange={setGuardSpendingLimit}
 				safeAddress={safe.safeAddress ?? "0x..."}
 				safeBalanceLabel={safeBalanceEth}
@@ -504,6 +507,7 @@ export default function DashboardView({
 				moduleName={moduleScreen.moduleName}
 				navSections={navSections}
 				onDisconnect={onDisconnect}
+				statusBarWalletControls={statusBarWalletControls}
 				onPrimaryAction={() => {
 					if (moduleScreen.mode === "active") {
 						void handleDisableModule();
@@ -534,6 +538,7 @@ export default function DashboardView({
 				onAddOwner={handleAddOwner}
 				onChangeThreshold={handleChangeThreshold}
 				onDisconnect={onDisconnect}
+				statusBarWalletControls={statusBarWalletControls}
 				onRemoveOwner={handleRemoveOwner}
 				ownerActionBusy={operationLoading}
 				ownerActionError={operationError}
@@ -558,6 +563,7 @@ export default function DashboardView({
 				modeLabel={txModeLabel}
 				navSections={navSections}
 				onDisconnect={onDisconnect}
+				statusBarWalletControls={statusBarWalletControls}
 				onBuildTransaction={async (tx) => {
 					await handleBuild({
 						to: tx.to,
@@ -590,6 +596,7 @@ export default function DashboardView({
 			guardTitle={guardActive ? "Guard active" : "Guard inactive"}
 			navSections={navSections}
 			onDisconnect={onDisconnect}
+			statusBarWalletControls={statusBarWalletControls}
 			pendingPreview={pendingPreview}
 			safeAddress={safe.safeAddress ?? "0x..."}
 			safeBalanceLabel={safeBalanceEth}

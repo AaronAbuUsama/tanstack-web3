@@ -10,7 +10,7 @@ export default function Header() {
     select: (state) => state.location.pathname,
   })
 
-  if (pathname === '/safe' || pathname.startsWith('/safe/')) {
+  if (pathname === '/' || pathname === '/safe' || pathname.startsWith('/safe/')) {
     return null
   }
 

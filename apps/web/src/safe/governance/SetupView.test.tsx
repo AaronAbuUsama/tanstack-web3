@@ -6,12 +6,6 @@ import {
 } from '../../web3/dev-wallet'
 import SetupView from './SetupView'
 
-vi.mock('../../web3/ConnectWallet', () => ({
-  default: function ConnectWalletMock() {
-    return <div data-testid="connect-wallet-mock" />
-  },
-}))
-
 describe('SetupView', () => {
   beforeEach(() => {
     setDevWalletActiveAccountIndex(0)
@@ -138,7 +132,7 @@ describe('SetupView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Connect' }))
 
     await waitFor(() => {
-      expect(screen.getByText('Current signer path cannot sign Safe setup operations in standalone mode. Use Dev Wallet in development.')).toBeInTheDocument()
+      expect(screen.getByText('Current signer path cannot sign Safe setup operations in standalone mode. Use Anvil (Chiado Fork) for deterministic dev signing in development.')).toBeInTheDocument()
     })
     expect(safe.connectSafe).not.toHaveBeenCalled()
   })

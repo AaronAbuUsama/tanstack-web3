@@ -32,30 +32,36 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
   await page.goto('/safe')
   await expect(page).toHaveURL(/\/safe(?:\?.*)?$/)
 
-  const disconnectButton = page.locator('button.ds-shell-statusbar__disconnect').first()
-  const devWalletButton = page.getByRole('button', { name: 'Dev Wallet' }).first()
-  await expect.poll(
-    async () => (await disconnectButton.count()) > 0 || (await devWalletButton.count()) > 0,
-    { timeout: 60_000 },
-  ).toBe(true)
+  const chainSelect = page.locator('select').filter({
+    has: page.locator('option[value="10200"]'),
+  }).first()
+  await expect(chainSelect).toBeVisible()
+  await chainSelect.selectOption('10200')
+  await expect(chainSelect).toHaveValue('10200')
 
-  if ((await disconnectButton.count()) === 0) {
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      if ((await devWalletButton.count()) === 0) break
-      try {
-        await devWalletButton.click({ timeout: 10_000 })
-        break
-      } catch (error) {
-        if (attempt === 4) throw error
-        await page.waitForTimeout(250)
-      }
+  const connectWalletButton = page.getByRole('button', { name: 'Connect Wallet' }).first()
+  await expect(connectWalletButton).toBeVisible()
+  const disconnectButton = page.locator('button.ds-shell-statusbar__disconnect').first()
+  let connected = false
+  let connectError: unknown = null
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await chainSelect.selectOption('10200')
+    await connectWalletButton.click()
+    try {
+      await expect(disconnectButton).toBeVisible({ timeout: 10_000 })
+      connected = true
+      break
+    } catch (error) {
+      connectError = error
+      await page.waitForTimeout(300)
     }
   }
-
-  await expect(disconnectButton).toBeVisible({ timeout: 60_000 })
+  if (!connected && connectError) {
+    throw connectError
+  }
+  await expect(page.getByRole('button', { name: 'Dev Wallet' })).toHaveCount(0)
 
   const addressText = page.locator('.ds-shell-statusbar__address, span.font-mono').first()
-
   await expect.poll(async () => (await addressText.textContent()) ?? '').toMatch(/0xf39f/i)
 
   const devAccountSelect = page.getByLabel('Dev Account')
@@ -70,13 +76,6 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
   expect(afterSwitch).not.toBe(beforeSwitch)
 
   await takeArtifact(page, '02-safe-switched-dev-account-1.png')
-
-  const chainSelect = page.locator('select').filter({
-    has: page.locator('option[value="10200"]'),
-  }).first()
-  await expect(chainSelect).toBeVisible()
-  await chainSelect.selectOption('10200')
-  await expect(chainSelect).toHaveValue('10200')
 
   const createSafePanel = getCreateSafePanel(page)
   await expect(createSafePanel).toBeVisible()

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import "./shells.css";
 
 export interface StatusBarShellProps {
@@ -6,6 +7,7 @@ export interface StatusBarShellProps {
 	chainLabel: string;
 	connected?: boolean;
 	onDisconnect?: () => void;
+	walletControls?: ReactNode;
 }
 
 export function StatusBarShell({
@@ -14,6 +16,7 @@ export function StatusBarShell({
 	chainLabel,
 	connected = false,
 	onDisconnect,
+	walletControls,
 }: StatusBarShellProps) {
 	return (
 		<header className="ds-shell-statusbar">
@@ -28,7 +31,9 @@ export function StatusBarShell({
 				className="ds-shell-statusbar__wallet-region"
 				data-testid="status-bar-wallet-region"
 			>
-				{connected ? (
+				{walletControls ? (
+					walletControls
+				) : connected ? (
 					<>
 						<span className="ds-shell-statusbar__balance-pill">
 							{balanceLabel}

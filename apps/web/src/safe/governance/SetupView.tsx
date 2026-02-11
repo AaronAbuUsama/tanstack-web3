@@ -1,20 +1,14 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   CommandCenterScreenShell,
-  CommandCenterSetupRuntime,
 } from '../../design-system/compositions/command-center'
-import { commandCenterSidebarSections } from '../../design-system/fixtures/command-center'
 import { Button, Input } from '../../design-system/primitives'
 import { PanelShell } from '../../design-system/shells'
-import ConnectWallet from '../../web3/ConnectWallet'
 import {
-  getDevWalletActiveAccountIndex,
   getDevWalletActiveSigner,
 } from '../../web3/dev-wallet'
 import type { useSafe } from '../core/use-safe'
 import type { RuntimePolicy } from '../runtime'
-import { mapSetupRuntimeScreen } from '../screens/mappers/setup-runtime'
-import { navItemForScreen, safeHrefForNavItem } from '../screens/screen-layout'
 import type { SafeScreenId } from '../screens/types'
 
 interface SetupViewProps {
@@ -25,6 +19,7 @@ interface SetupViewProps {
   safe: ReturnType<typeof useSafe>
   rpcUrl: string
   runtimePolicy: RuntimePolicy
+  statusBarWalletControls?: ReactNode
 }
 
 function resolveSetupSigner(runtimePolicy: RuntimePolicy) {
@@ -42,7 +37,10 @@ export default function SetupView({
   safe,
   rpcUrl,
   runtimePolicy,
+  statusBarWalletControls,
 }: SetupViewProps) {
+  void activeScreen
+
   const [owners, setOwners] = useState<string[]>([address ?? ''])
   const [threshold, setThreshold] = useState(1)
   const [deploying, setDeploying] = useState(false)
@@ -53,20 +51,6 @@ export default function SetupView({
 
   const signer = resolveSetupSigner(runtimePolicy)
   const signerUnavailable = !signer
-  const activeNavItem = navItemForScreen(activeScreen)
-
-  const navSections = commandCenterSidebarSections.map((section) => ({
-    ...section,
-    items: section.items.map((item) => ({
-      ...item,
-      active: item.id === activeNavItem,
-      href: safeHrefForNavItem(item.id),
-      badge:
-        item.id === 'transactions' || item.id === 'modules'
-          ? undefined
-          : item.badge,
-    })),
-  }))
 
   const handleDeploy = async () => {
     if (!signer) {
@@ -119,38 +103,17 @@ export default function SetupView({
   const canDeploy = !deploying && owners.every((owner) => owner.trim()) && !signerUnavailable
   const canConnect = !connecting && Boolean(connectAddress.trim()) && !signerUnavailable
 
-  if (activeScreen === 'setup-runtime') {
-    const setupRuntimeScreen = mapSetupRuntimeScreen({
-      activeChainLabel: chainLabel ?? 'Chiado (Anvil Fork)',
-      activeDevIndex: getDevWalletActiveAccountIndex(),
-      policy: runtimePolicy,
-    })
-
-    return (
-      <CommandCenterSetupRuntime
-        {...setupRuntimeScreen}
-        address={address}
-        chainLabel={chainLabel ?? 'gnosis chain'}
-        connected={Boolean(address)}
-        navSections={navSections}
-        onDisconnect={onDisconnect}
-        safeAddress={connectAddress || owners[0] || '0x...'}
-        safeBalanceLabel='0'
-        statusBalanceLabel='0 ETH'
-        thresholdLabel={`${threshold} of ${owners.length}`}
-      />
-    )
-  }
-
   return (
     <CommandCenterScreenShell
       address={address}
       chainLabel={chainLabel ?? 'gnosis chain'}
       connected={Boolean(address)}
-      navSections={navSections}
+      navSections={[]}
       onDisconnect={onDisconnect}
       safeAddress={connectAddress || owners[0] || '0x...'}
       safeBalanceLabel='0'
+      showSidebar={false}
+      statusBarWalletControls={statusBarWalletControls}
       statusBalanceLabel='0 ETH'
       thresholdLabel={`${threshold} of ${owners.length}`}
       title='Safe Setup'
@@ -170,22 +133,9 @@ export default function SetupView({
         )}
       </div>
 
-      <PanelShell title={address ? 'Wallet Session' : 'Connect Wallet'}>
-        <div className='ds-command-form-stack'>
-          <p className='ds-command-copy'>
-            {address
-              ? 'Switch chain or dev account before creating or connecting a Safe.'
-              : 'Connect a wallet to deploy a new Safe or connect an existing Safe.'}
-          </p>
-          <div className='ds-command-form-stack__actions'>
-            <ConnectWallet />
-          </div>
-        </div>
-      </PanelShell>
-
       {signerUnavailable ? (
         <div className='ds-command-notice is-error'>
-          Current signer path cannot sign Safe setup operations in standalone mode. Use Dev Wallet in development.
+          Current signer path cannot sign Safe setup operations in standalone mode. Use Anvil (Chiado Fork) for deterministic dev signing in development.
         </div>
       ) : null}
 

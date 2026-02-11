@@ -6,6 +6,7 @@ import { useSafe } from '../safe/core/use-safe'
 import SetupView from '../safe/governance/SetupView'
 import DashboardView from '../safe/transactions/DashboardView'
 import { resolveRuntimePolicy } from '../safe/runtime'
+import { SafeStatusBarWalletControls } from '../safe/runtime/SafeStatusBarWalletControls'
 import { normalizeSafeScreenSearch } from '../safe/screens/screen-state'
 
 /**
@@ -113,6 +114,7 @@ function SafeDashboard() {
           safe={safe}
           rpcUrl={rpcUrl}
           runtimePolicy={runtimePolicy}
+          statusBarWalletControls={<SafeStatusBarWalletControls onDisconnect={handleDisconnect} />}
         />
       )}
 
@@ -124,6 +126,7 @@ function SafeDashboard() {
           onDisconnect={handleDisconnect}
           safe={safe}
           rpcUrl={rpcUrl}
+          statusBarWalletControls={<SafeStatusBarWalletControls onDisconnect={handleDisconnect} />}
         />
       )}
     </>

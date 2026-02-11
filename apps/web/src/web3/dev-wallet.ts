@@ -11,6 +11,7 @@ export const DEV_WALLET_DEFAULT_MNEMONIC =
 export const DEV_WALLET_MNEMONIC = DEV_WALLET_DEFAULT_MNEMONIC
 
 let activeAccountIndex = 0
+let authorized = false
 
 function getDevWalletMnemonic() {
   if (import.meta.env.DEV) {
@@ -73,15 +74,19 @@ export function devWallet() {
         const chain = config.chains.find((c) => c.id === chainId) ?? config.chains[0]
         const account = getDevWalletActiveAccount()
         currentChainId = chain.id
+        authorized = true
         return {
           accounts: [account.address] as readonly `0x${string}`[],
           chainId: chain.id,
         }
       },
 
-      async disconnect() {},
+      async disconnect() {
+        authorized = false
+      },
 
       async getAccounts() {
+        if (!authorized) return []
         const account = getDevWalletActiveAccount()
         return [account.address] as readonly `0x${string}`[]
       },
@@ -104,7 +109,7 @@ export function devWallet() {
       },
 
       async isAuthorized() {
-        return true
+        return authorized
       },
 
       async switchChain({ chainId }) {

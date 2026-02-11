@@ -18,6 +18,12 @@ export default function ConnectWallet() {
   const [switchingDevAccount, setSwitchingDevAccount] = useState(false)
 
   const isDevWalletConnected = import.meta.env.DEV && connector?.id === 'dev-wallet'
+  const devConnector = connectors.find((item) => item.id === 'dev-wallet')
+  const injectedConnector = connectors.find((item) => item.id === 'injected')
+  const selectedChainIsDev = Boolean(chain?.id && (chain.id === 31337 || chain.id === 10200))
+  const preferredConnector = selectedChainIsDev && devConnector
+    ? devConnector
+    : (injectedConnector ?? devConnector ?? connectors[0])
 
   const handleDevAccountSwitch = async (nextIndex: number) => {
     if (!isDevWalletConnected || nextIndex === devAccountIndex || switchingDevAccount) return
@@ -42,15 +48,16 @@ export default function ConnectWallet() {
   if (!isConnected) {
     return (
       <div className="flex gap-2">
-        {connectors.map((connector) => (
-          <button
-            key={connector.uid}
-            onClick={() => connect({ connector })}
-            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-colors"
-          >
-            {connector.name === 'Injected' ? 'Connect Wallet' : connector.name}
-          </button>
-        ))}
+        <button
+          onClick={() => {
+            if (!preferredConnector) return
+            connect({ connector: preferredConnector })
+          }}
+          className="px-4 py-2 border-2 border-white bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-bold transition-colors disabled:opacity-50"
+          disabled={!preferredConnector}
+        >
+          Connect Wallet
+        </button>
       </div>
     )
   }

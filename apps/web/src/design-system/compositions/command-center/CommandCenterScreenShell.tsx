@@ -15,6 +15,8 @@ export interface CommandCenterScreenShellProps {
 	onDisconnect?: () => void;
 	safeAddress: string;
 	safeBalanceLabel: string;
+	showSidebar?: boolean;
+	statusBarWalletControls?: ReactNode;
 	statusBalanceLabel: string;
 	thresholdLabel: string;
 	title: string;
@@ -31,6 +33,8 @@ export function CommandCenterScreenShell({
 	onDisconnect,
 	safeAddress,
 	safeBalanceLabel,
+	showSidebar = true,
+	statusBarWalletControls,
 	statusBalanceLabel,
 	thresholdLabel,
 	title,
@@ -65,14 +69,17 @@ export function CommandCenterScreenShell({
 				chainLabel={chainLabel}
 				connected={connected}
 				onDisconnect={disconnectHandler}
+				walletControls={statusBarWalletControls}
 			/>
-			<div className="ds-command-center__layout">
-				<SidebarNav
-					navSections={navSections}
-					safeAddress={safeAddress}
-					safeBalanceLabel={safeBalanceLabel}
-					thresholdLabel={thresholdLabel}
-				/>
+			<div className={`ds-command-center__layout ${showSidebar ? "" : "is-single-column"}`}>
+				{showSidebar ? (
+					<SidebarNav
+						navSections={navSections}
+						safeAddress={safeAddress}
+						safeBalanceLabel={safeBalanceLabel}
+						thresholdLabel={thresholdLabel}
+					/>
+				) : null}
 				<main className="ds-command-center__main">
 					<h2 className="ds-command-center__title">
 						<span aria-hidden className="ds-command-center__title-icon">

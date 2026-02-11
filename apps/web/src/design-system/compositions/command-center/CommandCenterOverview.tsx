@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
 	GuardStatusBanner,
 	OwnerThresholdChip,
@@ -32,10 +33,12 @@ export interface CommandCenterOverviewProps {
 	guardDescription: string;
 	guardTitle: string;
 	navSections: SidebarNavSection[];
+	onDisconnect?: () => void;
 	pendingPreview?: PendingPreview;
 	safeAddress: string;
 	safeBalanceLabel: string;
 	stats: StatStripItem[];
+	statusBarWalletControls?: ReactNode;
 	statusBalanceLabel: string;
 	thresholdLabel: string;
 }
@@ -54,6 +57,7 @@ export function CommandCenterOverview({
 	safeAddress,
 	safeBalanceLabel,
 	stats,
+	statusBarWalletControls,
 	statusBalanceLabel,
 	thresholdLabel,
 }: CommandCenterOverviewProps) {
@@ -66,6 +70,7 @@ export function CommandCenterOverview({
 			onDisconnect={onDisconnect}
 			safeAddress={safeAddress}
 			safeBalanceLabel={safeBalanceLabel}
+			statusBarWalletControls={statusBarWalletControls}
 			statusBalanceLabel={statusBalanceLabel}
 			thresholdLabel={thresholdLabel}
 			title="Command Center Overview"
