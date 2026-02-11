@@ -33,6 +33,7 @@ export function CommandCenterOwners({
 	chainLabel,
 	embedded,
 	navSections,
+	onDisconnect,
 	onAddOwner,
 	onChangeThreshold,
 	onRemoveOwner,
@@ -74,6 +75,7 @@ export function CommandCenterOwners({
 			chainLabel={chainLabel}
 			embedded={embedded}
 			navSections={navSections}
+			onDisconnect={onDisconnect}
 			safeAddress={safeAddress}
 			safeBalanceLabel={safeBalanceLabel}
 			statusBalanceLabel={statusBalanceLabel}

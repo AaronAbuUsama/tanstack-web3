@@ -1,9 +1,6 @@
 import { formatUnits } from "viem";
 import type { PendingTxRowProps } from "../../../design-system/domains/safe";
-import {
-	commandCenterActivity,
-	type ActivityListItem,
-} from "../../../design-system/fixtures/command-center";
+import type { ActivityListItem } from "../../../design-system/fixtures/command-center";
 import type { ExecutedTx, PendingTx } from "../../transactions/use-transactions";
 
 function shortenAddress(address: string) {
@@ -78,7 +75,7 @@ export function mapTransactionsScreen({
 	];
 
 	return {
-		historyEntries: historyEntries.length > 0 ? historyEntries : commandCenterActivity,
+		historyEntries,
 		pendingTransactions,
 	};
 }

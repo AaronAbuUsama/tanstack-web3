@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
-import { useAccount, useChainId } from 'wagmi'
-import ConnectWallet from '../web3/ConnectWallet'
+import { useAccount, useChainId, useDisconnect } from 'wagmi'
 import { getDevWalletActiveSigner } from '../web3/dev-wallet'
 import { useSafe } from '../safe/core/use-safe'
 import SetupView from '../safe/governance/SetupView'
@@ -44,6 +43,7 @@ export const Route = createFileRoute('/safe')({
 function SafeDashboard() {
   const { screen } = Route.useSearch()
   const { isConnected, address, chain, connector } = useAccount()
+  const { disconnect } = useDisconnect()
   const chainId = useChainId()
   const safe = useSafe()
   const rpcUrl = getRpcUrl(chainId)
@@ -59,6 +59,21 @@ function SafeDashboard() {
 
   // Track the chainId the Safe was connected on to detect chain switches
   const prevChainRef = useRef<number | null>(null)
+  const clearScreenSearch = () => {
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has('screen')) return
+    url.searchParams.delete('screen')
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
+
+  const handleDisconnect = () => {
+    safe.disconnectSafe()
+    clearScreenSearch()
+    if (isConnected) {
+      disconnect()
+    }
+  }
 
   useEffect(() => {
     if (!safe.isInSafe || !safe.safeAddress || !chainId) {
@@ -83,54 +98,34 @@ function SafeDashboard() {
       : undefined
     safe.connectSafe(safe.safeAddress, newRpc, signer).catch(() => {
       safe.disconnectSafe()
+      clearScreenSearch()
     })
   }, [chainId, runtimePolicy.signerProvider, safe.isInSafe, safe.safeAddress])
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2">Safe Dashboard</h1>
-        <p className="text-gray-400 mb-8">
-          Gnosis Safe multi-sig management
-        </p>
+    <>
+      {!safe.isInSafe && (
+        <SetupView
+          activeScreen={screen}
+          address={address}
+          chainLabel={chain?.name}
+          onDisconnect={handleDisconnect}
+          safe={safe}
+          rpcUrl={rpcUrl}
+          runtimePolicy={runtimePolicy}
+        />
+      )}
 
-        {!isConnected && (
-          <div className="bg-gray-800 rounded-xl p-12 text-center mb-6">
-            <h2 className="text-2xl font-semibold mb-4">Connect Your Wallet</h2>
-            <p className="text-gray-400 mb-6">
-              Connect a wallet to create or manage a Safe.
-            </p>
-            <ConnectWallet />
-          </div>
-        )}
-
-        {safe.loading && !isConnected && (
-          <div className="bg-gray-800 rounded-xl p-12 text-center mb-6">
-            <div className="animate-pulse text-gray-400">Detecting Safe environment...</div>
-          </div>
-        )}
-
-        {!safe.isInSafe && isConnected && (
-          <SetupView
-            activeScreen={screen}
-            address={address}
-            chainLabel={chain?.name}
-            safe={safe}
-            rpcUrl={rpcUrl}
-            runtimePolicy={runtimePolicy}
-          />
-        )}
-
-        {safe.isInSafe && (
-          <DashboardView
-            activeScreen={screen}
-            address={address}
-            chain={chain}
-            safe={safe}
-            rpcUrl={rpcUrl}
-          />
-        )}
-      </div>
-    </div>
+      {safe.isInSafe && (
+        <DashboardView
+          activeScreen={screen}
+          address={address}
+          chain={chain}
+          onDisconnect={handleDisconnect}
+          safe={safe}
+          rpcUrl={rpcUrl}
+        />
+      )}
+    </>
   )
 }

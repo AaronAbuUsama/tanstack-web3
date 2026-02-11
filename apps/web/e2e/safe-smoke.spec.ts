@@ -7,12 +7,8 @@ const artifactsDir = path.join(process.cwd(), 'e2e', 'artifacts')
 const ACCOUNT_ZERO = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
 const ACCOUNT_ONE = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
 
-function getWalletBar(page: Page): Locator {
-  return page.getByRole('button', { name: 'Disconnect' }).locator('xpath=..')
-}
-
 function getCreateSafePanel(page: Page): Locator {
-  return page.locator('div.bg-gray-800').filter({
+  return page.locator('section.ds-shell-panel').filter({
     has: page.getByRole('heading', { name: 'Create New Safe' }),
   }).first()
 }
@@ -25,27 +21,18 @@ async function takeArtifact(page: Page, fileName: string) {
   })
 }
 
-async function setScreenSearch(page: Page, screen: string | null) {
-  await page.evaluate((nextScreen) => {
-    const url = new URL(window.location.href)
-    if (nextScreen) {
-      url.searchParams.set('screen', nextScreen)
-    } else {
-      url.searchParams.delete('screen')
-    }
-    window.history.pushState({}, '', `${url.pathname}${url.search}`)
-    window.dispatchEvent(new PopStateEvent('popstate'))
-  }, screen)
-  await page.waitForTimeout(150)
+async function clickSidebarNav(page: Page, label: string, expectedScreen: string | null) {
+  await page.getByRole('link', { name: new RegExp(label, 'i') }).first().click()
+  await expect.poll(() => new URL(page.url()).searchParams.get('screen')).toBe(expectedScreen)
 }
 
 test('safe smoke: connect, switch dev account, setup flow, pending status correctness', async ({ page }) => {
   await page.addInitScript(() => window.localStorage.clear())
 
   await page.goto('/safe')
-  await expect(page.getByRole('heading', { name: 'Safe Dashboard' })).toBeVisible()
+  await expect(page).toHaveURL(/\/safe(?:\?.*)?$/)
 
-  const disconnectButton = page.getByRole('button', { name: 'Disconnect' })
+  const disconnectButton = page.locator('button.ds-shell-statusbar__disconnect').first()
   const devWalletButton = page.getByRole('button', { name: 'Dev Wallet' }).first()
   await expect.poll(
     async () => (await disconnectButton.count()) > 0 || (await devWalletButton.count()) > 0,
@@ -54,6 +41,7 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
 
   if ((await disconnectButton.count()) === 0) {
     for (let attempt = 0; attempt < 5; attempt += 1) {
+      if ((await devWalletButton.count()) === 0) break
       try {
         await devWalletButton.click({ timeout: 10_000 })
         break
@@ -64,10 +52,9 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
     }
   }
 
-  await expect(disconnectButton).toBeVisible()
+  await expect(disconnectButton).toBeVisible({ timeout: 60_000 })
 
-  const walletBar = getWalletBar(page)
-  const addressText = walletBar.locator('span.font-mono').first()
+  const addressText = page.locator('.ds-shell-statusbar__address, span.font-mono').first()
 
   await expect.poll(async () => (await addressText.textContent()) ?? '').toMatch(/0xf39f/i)
 
@@ -84,7 +71,9 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
 
   await takeArtifact(page, '02-safe-switched-dev-account-1.png')
 
-  const chainSelect = walletBar.locator('select').nth(1)
+  const chainSelect = page.locator('select').filter({
+    has: page.locator('option[value="10200"]'),
+  }).first()
   await expect(chainSelect).toBeVisible()
   await chainSelect.selectOption('10200')
   await expect(chainSelect).toHaveValue('10200')
@@ -107,7 +96,7 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
   await expect(
     page.getByRole('heading', { name: 'Command Center Overview', exact: true }),
   ).toBeVisible({ timeout: 120_000 })
-  await setScreenSearch(page, 'transactions')
+  await clickSidebarNav(page, 'Transactions', 'transactions')
   await expect(page.getByRole('heading', { name: 'Transactions', exact: true })).toBeVisible()
   await expect(page.getByText(/Local-only:/)).toBeVisible()
 
@@ -126,4 +115,8 @@ test('safe smoke: connect, switch dev account, setup flow, pending status correc
   await expect(page.getByRole('button', { name: 'Execute' })).toHaveCount(0)
 
   await takeArtifact(page, '06-safe-pending-not-ready-before-threshold.png')
+
+  await page.locator('button.ds-shell-statusbar__disconnect').first().click()
+  await expect(page.getByRole('heading', { name: 'Create New Safe' })).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: 'Command Center Overview', exact: true })).toHaveCount(0)
 })

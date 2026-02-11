@@ -8,7 +8,6 @@ import {
 	CommandCenterTransactions,
 } from "../../design-system/compositions/command-center";
 import {
-	commandCenterActivity,
 	commandCenterSidebarSections,
 	commandCenterStats,
 } from "../../design-system/fixtures/command-center";
@@ -32,7 +31,7 @@ import { mapGuardScreen } from "../screens/mappers/guard";
 import { mapModulesScreen } from "../screens/mappers/modules";
 import { mapOwnersScreen } from "../screens/mappers/owners";
 import { mapTransactionsScreen } from "../screens/mappers/transactions";
-import { navItemForScreen } from "../screens/screen-layout";
+import { navItemForScreen, safeHrefForNavItem } from "../screens/screen-layout";
 import type { SafeScreenId } from "../screens/types";
 import { useTransactions } from "./use-transactions";
 
@@ -66,6 +65,7 @@ interface DashboardViewProps {
 	activeScreen: SafeScreenId;
 	address: string | undefined;
 	chain: { name: string; id: number } | undefined;
+	onDisconnect?: () => void;
 	safe: ReturnType<typeof useSafe>;
 	rpcUrl: string;
 }
@@ -74,6 +74,7 @@ export default function DashboardView({
 	activeScreen,
 	address,
 	chain,
+	onDisconnect,
 	safe,
 	rpcUrl,
 }: DashboardViewProps) {
@@ -350,6 +351,7 @@ export default function DashboardView({
 					...item,
 					active: baseActive,
 					badge: pendingTxs.length > 0 ? String(pendingTxs.length) : undefined,
+					href: safeHrefForNavItem(item.id),
 				};
 			}
 			if (item.id === "modules") {
@@ -358,11 +360,13 @@ export default function DashboardView({
 					active: baseActive,
 					badge:
 						safe.modules.length > 0 ? String(safe.modules.length) : undefined,
+					href: safeHrefForNavItem(item.id),
 				};
 			}
 			return {
 				...item,
 				active: baseActive,
+				href: safeHrefForNavItem(item.id),
 			};
 		}),
 	}));
@@ -416,7 +420,7 @@ export default function DashboardView({
 		})),
 	];
 
-	const activity = txActivity.length > 0 ? txActivity : commandCenterActivity;
+	const activity = txActivity;
 	const latestPending = pendingTxs[0];
 	const pendingPreview = latestPending
 		? {
@@ -462,146 +466,136 @@ export default function DashboardView({
 
 	if (activeScreen === "guard") {
 		return (
-			<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
-				<CommandCenterGuard
-					active={guardScreen.active}
-					address={address}
-					chainLabel={chain?.name ?? "gnosis chain"}
-					deployedGuardAddress={deployedGuardAddress}
-					embedded
-					errorMessage={guardError}
-					guardAddress={guardScreen.guardAddress}
-					guardName={guardScreen.guardName}
-					isBusy={guardLoading}
-					limitSummary={guardScreen.limitSummary}
-					navSections={navSections}
-					onDeployGuard={handleDeployGuard}
-					onDisableGuard={handleDisableGuard}
-					onEnableGuard={handleEnableGuard}
-					onSpendingLimitChange={setGuardSpendingLimit}
-					safeAddress={safe.safeAddress ?? "0x..."}
-					safeBalanceLabel={safeBalanceEth}
-					spendingLimitValue={guardSpendingLimit}
-					statusBalanceLabel={`${safeBalanceEth} ETH`}
-					thresholdLabel={thresholdLabel}
-				/>
-			</div>
+			<CommandCenterGuard
+				active={guardScreen.active}
+				address={address}
+				chainLabel={chain?.name ?? "gnosis chain"}
+				deployedGuardAddress={deployedGuardAddress}
+				errorMessage={guardError}
+				guardAddress={guardScreen.guardAddress}
+				guardName={guardScreen.guardName}
+				isBusy={guardLoading}
+				limitSummary={guardScreen.limitSummary}
+				navSections={navSections}
+				onDeployGuard={handleDeployGuard}
+				onDisableGuard={handleDisableGuard}
+				onEnableGuard={handleEnableGuard}
+				onDisconnect={onDisconnect}
+				onSpendingLimitChange={setGuardSpendingLimit}
+				safeAddress={safe.safeAddress ?? "0x..."}
+				safeBalanceLabel={safeBalanceEth}
+				spendingLimitValue={guardSpendingLimit}
+				statusBalanceLabel={`${safeBalanceEth} ETH`}
+				thresholdLabel={thresholdLabel}
+			/>
 		);
 	}
 
 	if (activeScreen === "modules") {
 		return (
-			<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
-				<CommandCenterModules
-					address={address}
-					chainLabel={chain?.name ?? "gnosis chain"}
-					delegates={moduleScreen.delegates}
-					embedded
-					errorMessage={moduleError}
-					isBusy={moduleLoading}
-					mode={moduleScreen.mode}
-					moduleAddress={moduleScreen.moduleAddress}
-					moduleName={moduleScreen.moduleName}
-					navSections={navSections}
-					onPrimaryAction={() => {
-						if (moduleScreen.mode === "active") {
-							void handleDisableModule();
-							return;
-						}
-						if (moduleScreen.mode === "deploy-ready") {
-							void handleEnableModule();
-							return;
-						}
-						void handleDeployModule();
-					}}
-					primaryActionLabel={moduleScreen.primaryActionLabel}
-					safeAddress={safe.safeAddress ?? "0x..."}
-					safeBalanceLabel={safeBalanceEth}
-					statusBalanceLabel={`${safeBalanceEth} ETH`}
-					statusDescription={moduleScreen.statusDescription}
-					thresholdLabel={thresholdLabel}
-				/>
-			</div>
+			<CommandCenterModules
+				address={address}
+				chainLabel={chain?.name ?? "gnosis chain"}
+				delegates={moduleScreen.delegates}
+				errorMessage={moduleError}
+				isBusy={moduleLoading}
+				mode={moduleScreen.mode}
+				moduleAddress={moduleScreen.moduleAddress}
+				moduleName={moduleScreen.moduleName}
+				navSections={navSections}
+				onDisconnect={onDisconnect}
+				onPrimaryAction={() => {
+					if (moduleScreen.mode === "active") {
+						void handleDisableModule();
+						return;
+					}
+					if (moduleScreen.mode === "deploy-ready") {
+						void handleEnableModule();
+						return;
+					}
+					void handleDeployModule();
+				}}
+				primaryActionLabel={moduleScreen.primaryActionLabel}
+				safeAddress={safe.safeAddress ?? "0x..."}
+				safeBalanceLabel={safeBalanceEth}
+				statusBalanceLabel={`${safeBalanceEth} ETH`}
+				statusDescription={moduleScreen.statusDescription}
+				thresholdLabel={thresholdLabel}
+			/>
 		);
 	}
 
 	if (activeScreen === "owners") {
 		return (
-			<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
-				<CommandCenterOwners
-					address={address}
-					chainLabel={chain?.name ?? "gnosis chain"}
-					embedded
-					navSections={navSections}
-					onAddOwner={handleAddOwner}
-					onChangeThreshold={handleChangeThreshold}
-					onRemoveOwner={handleRemoveOwner}
-					ownerActionBusy={operationLoading}
-					ownerActionError={operationError}
-					ownerCount={ownersScreen.ownerCount}
-					owners={ownersScreen.owners}
-					safeAddress={safe.safeAddress ?? "0x..."}
-					safeBalanceLabel={safeBalanceEth}
-					statusBalanceLabel={`${safeBalanceEth} ETH`}
-					threshold={safe.threshold}
-					thresholdLabel={thresholdLabel}
-				/>
-			</div>
+			<CommandCenterOwners
+				address={address}
+				chainLabel={chain?.name ?? "gnosis chain"}
+				navSections={navSections}
+				onAddOwner={handleAddOwner}
+				onChangeThreshold={handleChangeThreshold}
+				onDisconnect={onDisconnect}
+				onRemoveOwner={handleRemoveOwner}
+				ownerActionBusy={operationLoading}
+				ownerActionError={operationError}
+				ownerCount={ownersScreen.ownerCount}
+				owners={ownersScreen.owners}
+				safeAddress={safe.safeAddress ?? "0x..."}
+				safeBalanceLabel={safeBalanceEth}
+				statusBalanceLabel={`${safeBalanceEth} ETH`}
+				threshold={safe.threshold}
+				thresholdLabel={thresholdLabel}
+			/>
 		);
 	}
 
 	if (activeScreen === "transactions") {
 		return (
-			<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
-				<CommandCenterTransactions
-					address={address}
-					chainLabel={chain?.name ?? "gnosis chain"}
-					embedded
-					historyEntries={transactionsScreen.historyEntries}
-					modeHelpText={txModeHelpText}
-					modeLabel={txModeLabel}
-					navSections={navSections}
-					onBuildTransaction={async (tx) => {
-						await handleBuild({
-							to: tx.to,
-							value: tx.value,
-							data: tx.data,
-						});
-					}}
-					pendingTransactions={transactionsScreen.pendingTransactions}
-					safeAddress={safe.safeAddress ?? "0x..."}
-					safeBalanceLabel={safeBalanceEth}
-					statusBalanceLabel={`${safeBalanceEth} ETH`}
-					thresholdLabel={thresholdLabel}
-					txBusy={txBusy}
-					txError={txError}
-				/>
-			</div>
+			<CommandCenterTransactions
+				address={address}
+				chainLabel={chain?.name ?? "gnosis chain"}
+				historyEntries={transactionsScreen.historyEntries}
+				modeHelpText={txModeHelpText}
+				modeLabel={txModeLabel}
+				navSections={navSections}
+				onDisconnect={onDisconnect}
+				onBuildTransaction={async (tx) => {
+					await handleBuild({
+						to: tx.to,
+						value: tx.value,
+						data: tx.data,
+					});
+				}}
+				pendingTransactions={transactionsScreen.pendingTransactions}
+				safeAddress={safe.safeAddress ?? "0x..."}
+				safeBalanceLabel={safeBalanceEth}
+				statusBalanceLabel={`${safeBalanceEth} ETH`}
+				thresholdLabel={thresholdLabel}
+				txBusy={txBusy}
+				txError={txError}
+			/>
 		);
 	}
 
 	return (
-		<div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
-			<CommandCenterOverview
-				activity={activity}
-				address={address}
-				chainLabel={chain?.name ?? "gnosis chain"}
-				embedded
-				guardActive={guardActive}
-				guardDescription={
-					guardActive
-						? "Daily spending limit checks are currently enforced."
-						: "No guard contract is configured for this Safe."
-				}
-				guardTitle={guardActive ? "Guard active" : "Guard inactive"}
-				navSections={navSections}
-				pendingPreview={pendingPreview}
-				safeAddress={safe.safeAddress ?? "0x..."}
-				safeBalanceLabel={safeBalanceEth}
-				stats={stats}
-				statusBalanceLabel={`${safeBalanceEth} ETH`}
-				thresholdLabel={thresholdLabel}
-			/>
-		</div>
+		<CommandCenterOverview
+			activity={activity}
+			address={address}
+			chainLabel={chain?.name ?? "gnosis chain"}
+			guardActive={guardActive}
+			guardDescription={
+				guardActive
+					? "Daily spending limit checks are currently enforced."
+					: "No guard contract is configured for this Safe."
+			}
+			guardTitle={guardActive ? "Guard active" : "Guard inactive"}
+			navSections={navSections}
+			onDisconnect={onDisconnect}
+			pendingPreview={pendingPreview}
+			safeAddress={safe.safeAddress ?? "0x..."}
+			safeBalanceLabel={safeBalanceEth}
+			stats={stats}
+			statusBalanceLabel={`${safeBalanceEth} ETH`}
+			thresholdLabel={thresholdLabel}
+		/>
 	);
 }

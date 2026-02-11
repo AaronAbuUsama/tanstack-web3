@@ -45,6 +45,7 @@ export function CommandCenterGuard({
 	isBusy = false,
 	limitSummary,
 	navSections,
+	onDisconnect,
 	onDeployGuard,
 	onDisableGuard,
 	onEnableGuard,
@@ -87,6 +88,7 @@ export function CommandCenterGuard({
 			chainLabel={chainLabel}
 			embedded={embedded}
 			navSections={navSections}
+			onDisconnect={onDisconnect}
 			safeAddress={safeAddress}
 			safeBalanceLabel={safeBalanceLabel}
 			statusBalanceLabel={statusBalanceLabel}

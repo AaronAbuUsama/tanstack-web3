@@ -1,6 +1,12 @@
 import { useState } from 'react'
-import { CommandCenterSetupRuntime } from '../../design-system/compositions/command-center'
+import {
+  CommandCenterScreenShell,
+  CommandCenterSetupRuntime,
+} from '../../design-system/compositions/command-center'
 import { commandCenterSidebarSections } from '../../design-system/fixtures/command-center'
+import { Button, Input } from '../../design-system/primitives'
+import { PanelShell } from '../../design-system/shells'
+import ConnectWallet from '../../web3/ConnectWallet'
 import {
   getDevWalletActiveAccountIndex,
   getDevWalletActiveSigner,
@@ -8,12 +14,14 @@ import {
 import type { useSafe } from '../core/use-safe'
 import type { RuntimePolicy } from '../runtime'
 import { mapSetupRuntimeScreen } from '../screens/mappers/setup-runtime'
+import { navItemForScreen, safeHrefForNavItem } from '../screens/screen-layout'
 import type { SafeScreenId } from '../screens/types'
 
 interface SetupViewProps {
   activeScreen?: SafeScreenId
   address: string | undefined
   chainLabel?: string
+  onDisconnect?: () => void
   safe: ReturnType<typeof useSafe>
   rpcUrl: string
   runtimePolicy: RuntimePolicy
@@ -30,6 +38,7 @@ export default function SetupView({
   activeScreen = 'overview',
   address,
   chainLabel,
+  onDisconnect,
   safe,
   rpcUrl,
   runtimePolicy,
@@ -42,8 +51,24 @@ export default function SetupView({
   const [connecting, setConnecting] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
 
+  const signer = resolveSetupSigner(runtimePolicy)
+  const signerUnavailable = !signer
+  const activeNavItem = navItemForScreen(activeScreen)
+
+  const navSections = commandCenterSidebarSections.map((section) => ({
+    ...section,
+    items: section.items.map((item) => ({
+      ...item,
+      active: item.id === activeNavItem,
+      href: safeHrefForNavItem(item.id),
+      badge:
+        item.id === 'transactions' || item.id === 'modules'
+          ? undefined
+          : item.badge,
+    })),
+  }))
+
   const handleDeploy = async () => {
-    const signer = resolveSetupSigner(runtimePolicy)
     if (!signer) {
       setLocalError('Current wallet path cannot sign Safe setup operations in standalone mode yet.')
       return
@@ -64,7 +89,6 @@ export default function SetupView({
 
   const handleConnect = async () => {
     if (!connectAddress) return
-    const signer = resolveSetupSigner(runtimePolicy)
     if (!signer) {
       setLocalError('Current wallet path cannot sign Safe setup operations in standalone mode yet.')
       return
@@ -88,8 +112,12 @@ export default function SetupView({
   }
 
   const updateOwner = (index: number, value: string) => {
-    setOwners((prev) => prev.map((o, i) => (i === index ? value : o)))
+    setOwners((prev) => prev.map((owner, i) => (i === index ? value : owner)))
   }
+
+  const thresholdOptions = Array.from({ length: owners.length }, (_, i) => i + 1)
+  const canDeploy = !deploying && owners.every((owner) => owner.trim()) && !signerUnavailable
+  const canConnect = !connecting && Boolean(connectAddress.trim()) && !signerUnavailable
 
   if (activeScreen === 'setup-runtime') {
     const setupRuntimeScreen = mapSetupRuntimeScreen({
@@ -98,147 +126,146 @@ export default function SetupView({
       policy: runtimePolicy,
     })
 
-    const navSections = commandCenterSidebarSections.map((section) => ({
-      ...section,
-      items: section.items.map((item) => ({
-        ...item,
-        active: item.id === 'overview',
-      })),
-    }))
-
     return (
-      <div className="mb-6 overflow-hidden rounded-xl border border-gray-700">
-        <CommandCenterSetupRuntime
-          {...setupRuntimeScreen}
-          address={address}
-          chainLabel={chainLabel ?? 'gnosis chain'}
-          embedded
-          navSections={navSections}
-          safeAddress={connectAddress || '0x...'}
-          safeBalanceLabel="0.0"
-          statusBalanceLabel="0 ETH"
-          thresholdLabel={`${threshold} of ${owners.length}`}
-        />
-      </div>
+      <CommandCenterSetupRuntime
+        {...setupRuntimeScreen}
+        address={address}
+        chainLabel={chainLabel ?? 'gnosis chain'}
+        connected={Boolean(address)}
+        navSections={navSections}
+        onDisconnect={onDisconnect}
+        safeAddress={connectAddress || owners[0] || '0x...'}
+        safeBalanceLabel='0'
+        statusBalanceLabel='0 ETH'
+        thresholdLabel={`${threshold} of ${owners.length}`}
+      />
     )
   }
 
   return (
-    <>
+    <CommandCenterScreenShell
+      address={address}
+      chainLabel={chainLabel ?? 'gnosis chain'}
+      connected={Boolean(address)}
+      navSections={navSections}
+      onDisconnect={onDisconnect}
+      safeAddress={connectAddress || owners[0] || '0x...'}
+      safeBalanceLabel='0'
+      statusBalanceLabel='0 ETH'
+      thresholdLabel={`${threshold} of ${owners.length}`}
+      title='Safe Setup'
+      titleIcon='◆'
+    >
       <div
-        className={`rounded-xl p-4 mb-6 border ${
-          runtimePolicy.txSubmissionPath === 'transaction-service'
-            ? 'bg-cyan-900/20 border-cyan-700'
-            : 'bg-amber-900/30 border-amber-700'
-        }`}
+        className={`ds-command-notice ${runtimePolicy.txSubmissionPath === 'transaction-service' ? 'is-info' : ''}`}
       >
         {runtimePolicy.txSubmissionPath === 'transaction-service' ? (
-          <p className="text-cyan-300 text-sm">
+          <>
             <strong>Transaction Service mode:</strong> Pending transactions and confirmations are shared through the hosted Safe Transaction Service.
-          </p>
+          </>
         ) : (
-          <p className="text-amber-300 text-sm">
-            <strong>Local-only mode:</strong> On local Anvil or unsupported chains, pending transaction coordination is stored in browser state for this environment.
-          </p>
+          <>
+            <strong>Local-only mode:</strong> Pending transaction coordination is stored in browser state for this local environment.
+          </>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Create New Safe */}
-        <div className="bg-gray-800 rounded-xl p-6">
-          <h2 className="text-xl font-semibold mb-4">Create New Safe</h2>
+      <PanelShell title={address ? 'Wallet Session' : 'Connect Wallet'}>
+        <div className='ds-command-form-stack'>
+          <p className='ds-command-copy'>
+            {address
+              ? 'Switch chain or dev account before creating or connecting a Safe.'
+              : 'Connect a wallet to deploy a new Safe or connect an existing Safe.'}
+          </p>
+          <div className='ds-command-form-stack__actions'>
+            <ConnectWallet />
+          </div>
+        </div>
+      </PanelShell>
 
-          <label className="block text-sm text-gray-400 mb-2">
-            Owners
-          </label>
-          <div className="space-y-2 mb-3">
-            {owners.map((owner, i) => (
-              <div key={i} className="flex gap-2">
-                <input
-                  type="text"
+      {signerUnavailable ? (
+        <div className='ds-command-notice is-error'>
+          Current signer path cannot sign Safe setup operations in standalone mode. Use Dev Wallet in development.
+        </div>
+      ) : null}
+
+      {(safe.error || localError) ? (
+        <div className='ds-command-notice is-error'>{localError ?? safe.error}</div>
+      ) : null}
+
+      <div className='ds-command-setup__grid'>
+        <PanelShell title='Create New Safe'>
+          <div className='ds-command-form-stack'>
+            {owners.map((owner, index) => (
+              <div className='flex items-end gap-2' key={`owner-${index}-${owners.length}`}>
+                <Input
+                  className='flex-1'
+                  label={`Owner ${index + 1}`}
+                  onChange={(event) => updateOwner(index, event.target.value)}
+                  placeholder='0x...'
                   value={owner}
-                  onChange={(e) => updateOwner(i, e.target.value)}
-                  placeholder="0x..."
-                  className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:border-cyan-500 focus:outline-none font-mono"
                 />
-                {owners.length > 1 && (
-                  <button
-                    onClick={() => removeOwner(i)}
-                    className="px-3 py-2 text-red-400 hover:text-red-300 text-sm transition-colors"
-                  >
+                {owners.length > 1 ? (
+                  <Button onClick={() => removeOwner(index)} variant='ghost'>
                     Remove
-                  </button>
-                )}
+                  </Button>
+                ) : null}
               </div>
             ))}
+
+            <div className='ds-command-form-stack__actions'>
+              <Button onClick={addOwner} variant='outline'>
+                + Add Owner
+              </Button>
+            </div>
+
+            <div className='ds-command-owners__threshold'>
+              <span className='ds-command-owners__threshold-label'>Threshold</span>
+              <div className='ds-command-owners__threshold-options'>
+                {thresholdOptions.map((option) => (
+                  <button
+                    className={`ds-command-owners__threshold-option ${option === threshold ? 'is-selected' : ''}`}
+                    key={option}
+                    onClick={() => setThreshold(option)}
+                    type='button'
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+              <span className='ds-command-owners__threshold-help'>
+                {threshold} of {owners.length} owners must sign
+              </span>
+            </div>
+
+            <Button
+              className='w-full'
+              disabled={!canDeploy}
+              onClick={handleDeploy}
+            >
+              {deploying ? 'Deploying...' : 'Deploy Safe'}
+            </Button>
           </div>
-          <button
-            onClick={addOwner}
-            className="text-sm text-cyan-400 hover:text-cyan-300 mb-4 transition-colors"
-          >
-            + Add Owner
-          </button>
+        </PanelShell>
 
-          <label className="block text-sm text-gray-400 mb-2">
-            Threshold ({threshold} of {owners.length})
-          </label>
-          <div className="flex gap-2 mb-6">
-            {Array.from({ length: owners.length }, (_, i) => i + 1).map(
-              (n) => (
-                <button
-                  key={n}
-                  onClick={() => setThreshold(n)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    n === threshold
-                      ? 'bg-cyan-600 text-white'
-                      : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
-                  }`}
-                >
-                  {n}
-                </button>
-              ),
-            )}
+        <PanelShell title='Connect to Existing Safe'>
+          <div className='ds-command-form-stack'>
+            <Input
+              label='Safe Address'
+              onChange={(event) => setConnectAddress(event.target.value)}
+              placeholder='0x...'
+              value={connectAddress}
+            />
+            <Button
+              className='w-full'
+              disabled={!canConnect}
+              onClick={handleConnect}
+            >
+              {connecting ? 'Connecting...' : 'Connect'}
+            </Button>
           </div>
-
-          <button
-            onClick={handleDeploy}
-            disabled={deploying || owners.some((o) => !o)}
-            className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
-          >
-            {deploying ? 'Deploying...' : 'Deploy Safe'}
-          </button>
-        </div>
-
-        {/* Connect to Existing Safe */}
-        <div className="bg-gray-800 rounded-xl p-6">
-          <h2 className="text-xl font-semibold mb-4">
-            Connect to Existing Safe
-          </h2>
-          <label className="block text-sm text-gray-400 mb-2">
-            Safe Address
-          </label>
-          <input
-            type="text"
-            value={connectAddress}
-            onChange={(e) => setConnectAddress(e.target.value)}
-            placeholder="0x..."
-            className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm border border-gray-600 focus:border-cyan-500 focus:outline-none font-mono mb-4"
-          />
-          <button
-            onClick={handleConnect}
-            disabled={connecting || !connectAddress}
-            className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
-          >
-            {connecting ? 'Connecting...' : 'Connect'}
-          </button>
-        </div>
+        </PanelShell>
       </div>
-
-      {(safe.error || localError) && (
-        <div className="bg-red-900/30 border border-red-700 rounded-xl p-4 text-red-300 text-sm">
-          {localError ?? safe.error}
-        </div>
-      )}
-    </>
+    </CommandCenterScreenShell>
   )
 }

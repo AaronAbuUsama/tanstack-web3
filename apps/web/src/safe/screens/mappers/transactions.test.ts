@@ -63,14 +63,14 @@ describe("mapTransactionsScreen", () => {
 		expect(onExecute).toHaveBeenCalledWith(pending[1].safeTxHash);
 	});
 
-	it("falls back to default activity when there are no transactions", () => {
+	it("returns empty activity when there are no transactions", () => {
 		const mapped = mapTransactionsScreen({
 			pendingTxs: [],
 			executedTxs: [],
 		});
 
 		expect(mapped.pendingTransactions).toEqual([]);
-		expect(mapped.historyEntries.length).toBeGreaterThan(0);
+		expect(mapped.historyEntries).toEqual([]);
 	});
 
 	it("builds activity entries from pending and executed transactions", () => {

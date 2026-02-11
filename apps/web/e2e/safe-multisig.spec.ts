@@ -7,12 +7,8 @@ const artifactsDir = path.join(process.cwd(), 'e2e', 'artifacts', 'prd2')
 const ACCOUNT_ZERO = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
 const ACCOUNT_ONE = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
 
-function getWalletBar(page: Page): Locator {
-  return page.getByRole('button', { name: 'Disconnect' }).locator('xpath=..')
-}
-
 function getCreateSafePanel(page: Page): Locator {
-  return page.locator('div.bg-gray-800').filter({
+  return page.locator('section.ds-shell-panel').filter({
     has: page.getByRole('heading', { name: 'Create New Safe' }),
   }).first()
 }
@@ -25,25 +21,16 @@ async function takeArtifact(page: Page, fileName: string) {
   })
 }
 
-async function setScreenSearch(page: Page, screen: string | null) {
-  await page.evaluate((nextScreen) => {
-    const url = new URL(window.location.href)
-    if (nextScreen) {
-      url.searchParams.set('screen', nextScreen)
-    } else {
-      url.searchParams.delete('screen')
-    }
-    window.history.pushState({}, '', `${url.pathname}${url.search}`)
-    window.dispatchEvent(new PopStateEvent('popstate'))
-  }, screen)
-  await page.waitForTimeout(150)
+async function clickSidebarNav(page: Page, label: string, expectedScreen: string | null) {
+  await page.getByRole('link', { name: new RegExp(label, 'i') }).first().click()
+  await expect.poll(() => new URL(page.url()).searchParams.get('screen')).toBe(expectedScreen)
 }
 
 async function connectDevWallet(page: Page, accountIndex: number) {
   await page.goto('/safe')
-  await expect(page.getByRole('heading', { name: 'Safe Dashboard' })).toBeVisible()
+  await expect(page).toHaveURL(/\/safe(?:\?.*)?$/)
 
-  const disconnectButton = page.getByRole('button', { name: 'Disconnect' })
+  const disconnectButton = page.locator('button.ds-shell-statusbar__disconnect').first()
   const devWalletButton = page.getByRole('button', { name: 'Dev Wallet' }).first()
   await expect.poll(
     async () => (await disconnectButton.count()) > 0 || (await devWalletButton.count()) > 0,
@@ -52,6 +39,7 @@ async function connectDevWallet(page: Page, accountIndex: number) {
 
   if ((await disconnectButton.count()) === 0) {
     for (let attempt = 0; attempt < 5; attempt += 1) {
+      if ((await devWalletButton.count()) === 0) break
       try {
         await devWalletButton.click({ timeout: 10_000 })
         break
@@ -62,10 +50,11 @@ async function connectDevWallet(page: Page, accountIndex: number) {
     }
   }
 
-  await expect(disconnectButton).toBeVisible()
+  await expect(disconnectButton).toBeVisible({ timeout: 60_000 })
 
-  const walletBar = getWalletBar(page)
-  const chainSelect = walletBar.locator('select').nth(1)
+  const chainSelect = page.locator('select').filter({
+    has: page.locator('option[value="10200"]'),
+  }).first()
   await expect(chainSelect).toBeVisible()
   await chainSelect.selectOption('10200')
   await expect(chainSelect).toHaveValue('10200')
@@ -74,7 +63,7 @@ async function connectDevWallet(page: Page, accountIndex: number) {
   await expect(devAccountSelect).toBeVisible()
   await devAccountSelect.selectOption(String(accountIndex))
 
-  const addressText = walletBar.locator('span.font-mono').first()
+  const addressText = page.locator('.ds-shell-statusbar__address, span.font-mono').first()
   if (accountIndex === 0) {
     await expect.poll(async () => (await addressText.textContent()) ?? '').toMatch(/0xf39f/i)
   } else {
@@ -122,7 +111,7 @@ async function deployTwoOwnerSafe(page: Page): Promise<string> {
 
 async function connectExistingSafe(page: Page, safeAddress: string) {
   await expect(page.getByRole('heading', { name: 'Connect to Existing Safe' })).toBeVisible()
-  const connectPanel = page.locator('div.bg-gray-800').filter({
+  const connectPanel = page.locator('section.ds-shell-panel').filter({
     has: page.getByRole('heading', { name: 'Connect to Existing Safe' }),
   }).first()
   await connectPanel.locator('input[placeholder="0x..."]').fill(safeAddress)
@@ -152,7 +141,7 @@ test('safe multisig: two signers can coordinate and execute in deterministic loc
   await connectDevWallet(pageA, 0)
   const safeAddress = await deployTwoOwnerSafe(pageA)
 
-  await setScreenSearch(pageA, 'transactions')
+  await clickSidebarNav(pageA, 'Transactions', 'transactions')
   await expect(pageA.getByRole('heading', { name: 'Transactions', exact: true })).toBeVisible()
   await pageA.getByLabel('Recipient Address').fill(ACCOUNT_ONE)
   await pageA.getByLabel('Value (ETH)').fill('0')
@@ -168,7 +157,7 @@ test('safe multisig: two signers can coordinate and execute in deterministic loc
 
   await connectDevWallet(pageB, 1)
   await connectExistingSafe(pageB, safeAddress)
-  await setScreenSearch(pageB, 'transactions')
+  await clickSidebarNav(pageB, 'Transactions', 'transactions')
   await expect(pageB.getByRole('heading', { name: 'Transactions', exact: true })).toBeVisible()
 
   const pendingPanelB = pageB.getByRole('button', { name: 'Sign' }).first()
@@ -182,7 +171,7 @@ test('safe multisig: two signers can coordinate and execute in deterministic loc
   await pageA.reload()
   await connectDevWallet(pageA, 0)
   await connectExistingSafe(pageA, safeAddress)
-  await setScreenSearch(pageA, 'transactions')
+  await clickSidebarNav(pageA, 'Transactions', 'transactions')
   await expect(pageA.getByRole('heading', { name: 'Transactions', exact: true })).toBeVisible()
 
   await expect(pageA.getByText(/1\/2 confirmed/)).toBeVisible({ timeout: 30_000 })

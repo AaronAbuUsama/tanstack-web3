@@ -1,6 +1,6 @@
 import { mkdirSync } from "node:fs";
 import path from "node:path";
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const artifactsDir = path.join(process.cwd(), "e2e", "artifacts", "prd4");
 
@@ -11,10 +11,6 @@ const CHIADO_CHAIN_ID = "10200";
 
 const desktopViewport = { width: 1440, height: 900 };
 const mobileViewport = { width: 390, height: 844 };
-
-function getWalletBar(page: Page): Locator {
-	return page.getByRole("button", { name: "Disconnect" }).locator("xpath=..");
-}
 
 async function takeArtifact(page: Page, fileName: string, viewport: "desktop" | "mobile") {
 	mkdirSync(artifactsDir, { recursive: true });
@@ -28,8 +24,8 @@ async function takeArtifact(page: Page, fileName: string, viewport: "desktop" | 
 
 async function connectDevWallet(page: Page, accountIndex: number) {
 	await page.goto("/safe");
-	await expect(page.getByRole("heading", { name: "Safe Dashboard" })).toBeVisible();
-	const disconnectButton = page.getByRole("button", { name: "Disconnect" });
+	await expect(page).toHaveURL(/\/safe(?:\?.*)?$/);
+	const disconnectButton = page.locator("button.ds-shell-statusbar__disconnect").first();
 	const devWalletButton = page.getByRole("button", { name: "Dev Wallet" }).first();
 	await expect
 		.poll(
@@ -40,25 +36,23 @@ async function connectDevWallet(page: Page, accountIndex: number) {
 		.toBe(true);
 
 	if ((await disconnectButton.count()) === 0) {
-		let connected = false;
 		for (let attempt = 0; attempt < 5; attempt += 1) {
+			if ((await devWalletButton.count()) === 0) break;
 			try {
 				await devWalletButton.click({ timeout: 10_000 });
-				connected = true;
 				break;
 			} catch (error) {
 				if (attempt === 4) throw error;
 				await page.waitForTimeout(250);
 			}
 		}
-		if (!connected) {
-			throw new Error("Unable to connect with Dev Wallet");
-		}
 	}
-	await expect(disconnectButton).toBeVisible();
+	await expect(disconnectButton).toBeVisible({ timeout: 60_000 });
 
-	const walletBar = getWalletBar(page);
-	const chainSelect = walletBar.locator("select").nth(1);
+	const chainSelect = page
+		.locator("select")
+		.filter({ has: page.locator('option[value="10200"]') })
+		.first();
 	await expect(chainSelect).toBeVisible();
 	await chainSelect.selectOption(CHIADO_CHAIN_ID);
 	await expect(chainSelect).toHaveValue(CHIADO_CHAIN_ID);
@@ -67,19 +61,19 @@ async function connectDevWallet(page: Page, accountIndex: number) {
 	await expect(devAccountSelect).toBeVisible();
 	await devAccountSelect.selectOption(String(accountIndex));
 
-	const addressText = walletBar.locator("span.font-mono").first();
+	const addressText = page.locator(".ds-shell-statusbar__address, span.font-mono").first();
 	if (accountIndex === 0) {
 		await expect.poll(async () => (await addressText.textContent()) ?? "").toMatch(/0xf39f/i);
 	} else if (accountIndex === 1) {
 		await expect.poll(async () => (await addressText.textContent()) ?? "").toMatch(/0x7099/i);
 	}
 
-	return { chainSelect, devAccountSelect, walletBar };
+	return { chainSelect, devAccountSelect };
 }
 
 async function deployThreeOwnerSafe(page: Page) {
 	const createSafePanel = page
-		.locator("div.bg-gray-800")
+		.locator("section.ds-shell-panel")
 		.filter({
 			has: page.getByRole("heading", { name: "Create New Safe" }),
 		})
@@ -97,13 +91,17 @@ async function deployThreeOwnerSafe(page: Page) {
 	await createSafePanel.getByRole("button", { name: /^2$/ }).click();
 	await createSafePanel.getByRole("button", { name: "Deploy Safe" }).click();
 
-	await expect(page.getByText("Safe Address")).toBeVisible({ timeout: 120_000 });
-	await expect(page.getByText("2 of 3")).toBeVisible({ timeout: 60_000 });
+	await expect(
+		page.getByRole("heading", { name: "Command Center Overview", exact: true }),
+	).toBeVisible({ timeout: 120_000 });
+	await expect(
+		page.locator(".ds-shell-sidebar__threshold").filter({ hasText: "2 of 3" }),
+	).toBeVisible({ timeout: 60_000 });
 }
 
 async function deploySingleOwnerSafe(page: Page) {
 	const createSafePanel = page
-		.locator("div.bg-gray-800")
+		.locator("section.ds-shell-panel")
 		.filter({
 			has: page.getByRole("heading", { name: "Create New Safe" }),
 		})
@@ -114,12 +112,16 @@ async function deploySingleOwnerSafe(page: Page) {
 	await ownerInput.fill(ACCOUNT_ZERO);
 	await createSafePanel.getByRole("button", { name: "Deploy Safe" }).click();
 
-	await expect(page.getByText("Safe Address")).toBeVisible({ timeout: 120_000 });
-	await expect(page.getByText("1 of 1")).toBeVisible({ timeout: 60_000 });
+	await expect(
+		page.getByRole("heading", { name: "Command Center Overview", exact: true }),
+	).toBeVisible({ timeout: 120_000 });
+	await expect(
+		page.locator(".ds-shell-sidebar__threshold").filter({ hasText: "1 of 1" }),
+	).toBeVisible({ timeout: 60_000 });
 }
 
 async function createPendingTransaction(page: Page) {
-	await setScreenSearch(page, "transactions");
+	await clickSidebarNav(page, "Transactions", "transactions");
 	await expect(
 		page.getByRole("heading", { name: "Transactions", exact: true }),
 	).toBeVisible();
@@ -129,26 +131,19 @@ async function createPendingTransaction(page: Page) {
 	await expect(page.getByText("Pending Signatures")).toBeVisible();
 }
 
-async function setScreenSearch(page: Page, screen: string | null) {
-	await page.evaluate((nextScreen) => {
-		const url = new URL(window.location.href);
-		if (nextScreen) {
-			url.searchParams.set("screen", nextScreen);
-		} else {
-			url.searchParams.delete("screen");
-		}
-		window.history.pushState({}, "", `${url.pathname}${url.search}`);
-		window.dispatchEvent(new PopStateEvent("popstate"));
-	}, screen);
-	await page.waitForTimeout(150);
+async function clickSidebarNav(page: Page, label: string, expectedScreen: string | null) {
+	await page.getByRole("link", { name: new RegExp(label, "i") }).first().click();
+	await expect
+		.poll(() => new URL(page.url()).searchParams.get("screen"))
+		.toBe(expectedScreen);
 }
 
 test(
 	"safe screen matrix [setup-runtime account0 account1 transactions tx-service owners 1of1]: setup and pre-safe account/chain states",
 	async ({ page }) => {
 	await page.addInitScript(() => window.localStorage.clear());
-	const { chainSelect, devAccountSelect, walletBar } = await connectDevWallet(page, 0);
-	const addressText = walletBar.locator("span.font-mono").first();
+	const { chainSelect, devAccountSelect } = await connectDevWallet(page, 0);
+	const addressText = page.locator(".ds-shell-statusbar__address, span.font-mono").first();
 
 	await takeArtifact(page, "t6-setup-runtime-account0", "desktop");
 
@@ -163,7 +158,7 @@ test(
 	await expect(page.getByText(/Transaction Service mode:/)).toBeVisible();
 	await takeArtifact(page, "t2-transactions-tx-service", "desktop");
 
-	await expect(page.getByText("Threshold (1 of 1)")).toBeVisible();
+	await expect(page.getByText("1 of 1 owners must sign")).toBeVisible();
 	await takeArtifact(page, "t3-owners-1of1", "desktop");
 	},
 );
@@ -186,7 +181,7 @@ test(
 	await takeArtifact(page, "t2-transactions", "mobile");
 
 	await page.setViewportSize(desktopViewport);
-	await setScreenSearch(page, "owners");
+	await clickSidebarNav(page, "Owners", "owners");
 	await expect(
 		page.getByRole("heading", { name: "Owners & Threshold", exact: true }),
 	).toBeVisible();
@@ -194,7 +189,7 @@ test(
 	await takeArtifact(page, "t3-owners", "mobile");
 
 	await page.setViewportSize(desktopViewport);
-	await setScreenSearch(page, "guard");
+	await clickSidebarNav(page, "Guard", "guard");
 	await expect(
 		page.getByRole("heading", { name: "Spending Guard", exact: true }),
 	).toBeVisible();
@@ -202,7 +197,7 @@ test(
 	await takeArtifact(page, "t4-guard", "mobile");
 
 	await page.setViewportSize(desktopViewport);
-	await setScreenSearch(page, "modules");
+	await clickSidebarNav(page, "Modules", "modules");
 	await expect(
 		page.getByRole("heading", { name: "Allowance Module", exact: true }),
 	).toBeVisible();
@@ -216,14 +211,14 @@ test(
 	"safe screen matrix [guard active modules active]: single-owner safe guard activation",
 	async ({ page }) => {
 		await page.addInitScript(() => window.localStorage.clear());
-		await connectDevWallet(page, 0);
-		await deploySingleOwnerSafe(page);
+	await connectDevWallet(page, 0);
+	await deploySingleOwnerSafe(page);
 
-		await page.setViewportSize(desktopViewport);
-		await setScreenSearch(page, "guard");
-		await expect(
-			page.getByRole("heading", { name: "Spending Guard", exact: true }),
-		).toBeVisible();
+	await page.setViewportSize(desktopViewport);
+	await clickSidebarNav(page, "Guard", "guard");
+	await expect(
+		page.getByRole("heading", { name: "Spending Guard", exact: true }),
+	).toBeVisible();
 		const deployGuardButton = page.getByRole("button", { name: "Deploy Guard" }).first();
 		await expect(deployGuardButton).toBeVisible();
 		await deployGuardButton.click();
@@ -237,7 +232,7 @@ test(
 		).toBeVisible({ timeout: 60_000 });
 		await takeArtifact(page, "t4-guard-active", "desktop");
 
-		await setScreenSearch(page, "modules");
+		await clickSidebarNav(page, "Modules", "modules");
 		await expect(
 			page.getByRole("heading", { name: "Allowance Module", exact: true }),
 		).toBeVisible();

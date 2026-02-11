@@ -49,6 +49,7 @@ export function CommandCenterOverview({
 	guardDescription,
 	guardTitle,
 	navSections,
+	onDisconnect,
 	pendingPreview,
 	safeAddress,
 	safeBalanceLabel,
@@ -62,6 +63,7 @@ export function CommandCenterOverview({
 			chainLabel={chainLabel}
 			embedded={embedded}
 			navSections={navSections}
+			onDisconnect={onDisconnect}
 			safeAddress={safeAddress}
 			safeBalanceLabel={safeBalanceLabel}
 			statusBalanceLabel={statusBalanceLabel}

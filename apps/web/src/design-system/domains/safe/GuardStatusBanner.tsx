@@ -16,6 +16,8 @@ export function GuardStatusBanner({
 	onEnable,
 	title,
 }: GuardStatusBannerProps) {
+	const actionHandler = active ? onDisable : onEnable;
+
 	return (
 		<section
 			className={`ds-safe-guard-banner ${active ? "is-active" : "is-inactive"}`}
@@ -27,17 +29,19 @@ export function GuardStatusBanner({
 				<h3 className="ds-safe-guard-banner__title">{title}</h3>
 				<p className="ds-safe-guard-banner__description">{description}</p>
 			</div>
-			<div className="ds-safe-guard-banner__actions">
-				{active ? (
-					<Button onClick={onDisable} variant="danger">
-						Disable
-					</Button>
-				) : (
-					<Button onClick={onEnable} variant="success">
-						Enable
-					</Button>
-				)}
-			</div>
+			{actionHandler ? (
+				<div className="ds-safe-guard-banner__actions">
+					{active ? (
+						<Button onClick={actionHandler} variant="danger">
+							Disable
+						</Button>
+					) : (
+						<Button onClick={actionHandler} variant="success">
+							Enable
+						</Button>
+					)}
+				</div>
+			) : null}
 		</section>
 	);
 }

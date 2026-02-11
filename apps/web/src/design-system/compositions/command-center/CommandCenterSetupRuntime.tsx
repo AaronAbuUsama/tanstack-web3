@@ -43,6 +43,7 @@ export function CommandCenterSetupRuntime({
 	devAccounts,
 	embedded,
 	navSections,
+	onDisconnect,
 	policy,
 	safeAddress,
 	safeBalanceLabel,
@@ -57,6 +58,7 @@ export function CommandCenterSetupRuntime({
 			chainLabel={chainLabel}
 			embedded={embedded}
 			navSections={navSections}
+			onDisconnect={onDisconnect}
 			safeAddress={safeAddress}
 			safeBalanceLabel={safeBalanceLabel}
 			statusBalanceLabel={statusBalanceLabel}

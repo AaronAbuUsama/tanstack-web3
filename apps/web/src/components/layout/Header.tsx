@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 
 import { useState } from 'react'
 import { Home, Menu, Shield, Wallet, X } from 'lucide-react'
@@ -6,6 +6,13 @@ import ConnectWallet from '../../web3/ConnectWallet'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
+
+  if (pathname === '/safe' || pathname.startsWith('/safe/')) {
+    return null
+  }
 
   return (
     <>

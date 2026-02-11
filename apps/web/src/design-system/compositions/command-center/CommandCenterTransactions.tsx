@@ -37,6 +37,7 @@ export function CommandCenterTransactions({
 	modeHelpText,
 	modeLabel,
 	navSections,
+	onDisconnect,
 	onBuildTransaction,
 	pendingTransactions,
 	safeAddress,
@@ -79,6 +80,7 @@ export function CommandCenterTransactions({
 			chainLabel={chainLabel}
 			embedded={embedded}
 			navSections={navSections}
+			onDisconnect={onDisconnect}
 			safeAddress={safeAddress}
 			safeBalanceLabel={safeBalanceLabel}
 			statusBalanceLabel={statusBalanceLabel}

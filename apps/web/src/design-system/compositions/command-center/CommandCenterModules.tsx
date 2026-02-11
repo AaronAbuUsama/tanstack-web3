@@ -43,6 +43,7 @@ export function CommandCenterModules({
 	moduleAddress,
 	moduleName,
 	navSections,
+	onDisconnect,
 	onPrimaryAction,
 	primaryActionLabel,
 	safeAddress,
@@ -75,6 +76,7 @@ export function CommandCenterModules({
 			chainLabel={chainLabel}
 			embedded={embedded}
 			navSections={navSections}
+			onDisconnect={onDisconnect}
 			safeAddress={safeAddress}
 			safeBalanceLabel={safeBalanceLabel}
 			statusBalanceLabel={statusBalanceLabel}
