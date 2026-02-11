@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { Button } from "../../primitives";
+import { useEffect, useState, type FormEvent } from "react";
+import { isAddress } from "viem";
+import { Button, Input } from "../../primitives";
 import { PanelShell } from "../../shells";
 import {
 	CommandCenterScreenShell,
@@ -48,6 +49,8 @@ export function CommandCenterOwners({
 	thresholdLabel,
 }: CommandCenterOwnersProps) {
 	const [pendingThreshold, setPendingThreshold] = useState(threshold);
+	const [pendingOwnerAddress, setPendingOwnerAddress] = useState("");
+	const [ownerInputError, setOwnerInputError] = useState<string | null>(null);
 	const thresholdOptions = Array.from(
 		{ length: ownerCount },
 		(_, index) => index + 1,
@@ -56,17 +59,26 @@ export function CommandCenterOwners({
 		typeof onChangeThreshold === "function" &&
 		pendingThreshold !== threshold &&
 		!ownerActionBusy;
+	const canAddOwner =
+		typeof onAddOwner === "function" &&
+		!ownerActionBusy &&
+		pendingOwnerAddress.trim().length > 0;
 
 	useEffect(() => {
 		setPendingThreshold(threshold);
 	}, [threshold]);
 
-	const handleAddOwner = async () => {
+	const handleOwnerSubmit = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
 		if (!onAddOwner || ownerActionBusy) return;
-		const promptedAddress = window.prompt("Enter owner address");
-		const nextOwnerAddress = promptedAddress?.trim();
-		if (!nextOwnerAddress) return;
+		const nextOwnerAddress = pendingOwnerAddress.trim();
+		if (!isAddress(nextOwnerAddress)) {
+			setOwnerInputError("Enter a valid owner address.");
+			return;
+		}
+		setOwnerInputError(null);
 		await onAddOwner(nextOwnerAddress);
+		setPendingOwnerAddress("");
 	};
 
 	return (
@@ -85,6 +97,9 @@ export function CommandCenterOwners({
 		>
 			{ownerActionError ? (
 				<div className="ds-command-notice is-error">{ownerActionError}</div>
+			) : null}
+			{ownerInputError ? (
+				<div className="ds-command-notice is-error">{ownerInputError}</div>
 			) : null}
 			{ownerActionBusy ? (
 				<div className="ds-command-notice is-info">
@@ -122,18 +137,24 @@ export function CommandCenterOwners({
 			</div>
 
 			<PanelShell
-				actions={
-					<Button
-						disabled={!onAddOwner || ownerActionBusy}
-						onClick={() => {
-							void handleAddOwner();
-						}}
-					>
-						+ Add Owner
-					</Button>
-				}
 				title={`Owners (${owners.length})`}
 			>
+				<form className="ds-command-owners__add-form" onSubmit={handleOwnerSubmit}>
+					<Input
+						label="Owner address"
+						onChange={(event) => {
+							setPendingOwnerAddress(event.target.value);
+							if (ownerInputError) setOwnerInputError(null);
+						}}
+						placeholder="0x..."
+						value={pendingOwnerAddress}
+					/>
+					<div className="ds-command-owners__add-actions">
+						<Button disabled={!canAddOwner} type="submit">
+							+ Add Owner
+						</Button>
+					</div>
+				</form>
 				<div className="ds-command-owners__list">
 					{owners.map((owner) => (
 						<div className="ds-command-owners__row" key={owner.id}>

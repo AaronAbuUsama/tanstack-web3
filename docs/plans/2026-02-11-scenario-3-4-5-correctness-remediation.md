@@ -392,16 +392,36 @@ Task 0:
   - Anvil RPC healthy on `127.0.0.1:8545`.
 
 Task 1:
-- Status:
+- Status: PASS
 - Automated checks:
+  - `cd apps/web && bun x vitest run src/safe/transactions/use-transactions.test.ts src/safe/governance/actions.test.ts src/safe/screens/mappers/transactions.test.ts` -> PASS
 - Browser evidence:
+  - `apps/web/e2e/artifacts/prd6/s3-threshold-proposed.png`
+  - `apps/web/e2e/artifacts/prd6/s3-threshold-proposed.txt`
+  - `apps/web/e2e/artifacts/prd6/s3-threshold-1of2.png`
+  - `apps/web/e2e/artifacts/prd6/s3-threshold-2of2-ready.png`
+  - `apps/web/e2e/artifacts/prd6/s3-threshold-executed.png`
 - Notes:
+  - Browser run performed in `agent-browser` session `prd6` on `http://localhost:3002/safe`.
+  - Verified complete threshold-governance lifecycle on a 2-of-3 Safe:
+    - proposal enters pending queue,
+    - first signer yields `1/2 confirmed` with no execute path,
+    - second signer yields `2/2 confirmed` and execute availability,
+    - execute clears pending queue and records `Threshold updated` activity.
 
 Task 2:
-- Status:
+- Status: PASS
 - Automated checks:
+  - `cd apps/web && bun x vitest run src/design-system/compositions/command-center/CommandCenterOwners.test.tsx` -> PASS
 - Browser evidence:
+  - `apps/web/e2e/artifacts/prd6/s3-owner-add-form.png`
+  - `apps/web/e2e/artifacts/prd6/s3-owner-add-proposed.png`
+  - `apps/web/e2e/artifacts/prd6/s3-owner-remove-proposed.png`
+  - `apps/web/e2e/artifacts/prd6/s3-owner-state-refreshed.png`
 - Notes:
+  - Verified deterministic inline add-owner form is present (no prompt-based path).
+  - Verified add-owner and remove-owner actions both create pending governance entries in Transactions view.
+  - Confirmed owner state refresh after confirmations by reconnecting to the Safe and observing updated owner set/threshold state.
 
 Task 3:
 - Status:

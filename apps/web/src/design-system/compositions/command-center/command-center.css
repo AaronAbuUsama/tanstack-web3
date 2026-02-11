@@ -208,6 +208,18 @@
 	margin: calc(var(--ds-space-20) * -1);
 }
 
+.ds-command-owners__add-form {
+	align-items: end;
+	display: grid;
+	gap: var(--ds-space-12);
+	grid-template-columns: minmax(0, 1fr) auto;
+	margin-bottom: var(--ds-space-20);
+}
+
+.ds-command-owners__add-actions {
+	padding-bottom: 1px;
+}
+
 .ds-command-owners__row {
 	align-items: center;
 	border-bottom: var(--ds-border-regular);
@@ -598,6 +610,14 @@
 
 	.ds-command-owners__threshold {
 		grid-template-columns: 1fr;
+	}
+
+	.ds-command-owners__add-form {
+		grid-template-columns: 1fr;
+	}
+
+	.ds-command-owners__add-actions {
+		padding-bottom: 0;
 	}
 
 	.ds-command-owners__threshold-help {
