@@ -424,19 +424,50 @@ Task 2:
   - Confirmed owner state refresh after confirmations by reconnecting to the Safe and observing updated owner set/threshold state.
 
 Task 3:
-- Status:
+- Status: PASS
 - Automated checks:
+  - `cd packages/contracts && forge test --match-contract SpendingLimitGuardTest -vv` -> PASS
+  - `cd apps/web && bun x vitest run src/safe/screens/mappers/guard.test.ts` -> PASS
 - Browser evidence:
+  - `apps/web/e2e/artifacts/prd6/s4-guard-deployed.png`
+  - `apps/web/e2e/artifacts/prd6/s4-guard-enabled.png`
+  - `apps/web/e2e/artifacts/prd6/s4-limit-update-submitted.png`
+  - `apps/web/e2e/artifacts/prd6/s4-limit-updated-refreshed.png`
+  - `apps/web/e2e/artifacts/prd6/s4-guard-disabled.png`
 - Notes:
+  - Verified full guard lifecycle in browser: deploy -> enable -> limit update -> refresh -> disable.
+  - Confirmed updated on-chain guard limit with `cast call` (`spendingLimit()` returned `0.5 ETH` after update).
+  - During manual refresh validation, wallet session reconnect was required before re-checking state.
 
 Task 4:
-- Status:
+- Status: PASS
 - Automated checks:
+  - `cd apps/web && bun x vitest run src/safe/module/allowance-service.test.ts src/safe/screens/mappers/modules.test.ts src/safe/screens/mappers/transactions.test.ts` -> PASS
 - Browser evidence:
+  - `apps/web/e2e/artifacts/prd6/s5-module-enabled.png`
+  - `apps/web/e2e/artifacts/prd6/s5-allowance-set-submitted.png`
+  - `apps/web/e2e/artifacts/prd6/s5-allowance-card-updated.png`
+  - `apps/web/e2e/artifacts/prd6/s5-allowance-refreshed.png`
+  - `apps/web/e2e/artifacts/prd6/s5-spend-submitted.png`
+  - `apps/web/e2e/artifacts/prd6/s5-allowance-after-spend.png`
 - Notes:
+  - Verified module activation and on-chain delegate allowance read model (no placeholder delegate rows).
+  - Verified set-allowance proposal path and persistence after refresh.
+  - Verified delegate spend execution from a different dev signer account with post-spend usage/availability updates.
+  - Safe funding was performed with `cast send` during manual run to guarantee spendable balance before delegate spend.
 
 Task 5:
-- Status:
+- Status: PASS
 - Automated checks:
+  - `cd apps/web && bun run test` -> PASS
+  - `cd apps/web && bun run e2e:safe-smoke` -> PASS
+  - `cd apps/web && bun run e2e:safe-screen-matrix` -> PASS
+  - `cd apps/web && bun run e2e:safe-multisig` -> PASS
+  - `cd packages/contracts && forge test -vv` -> PASS
 - Browser evidence:
+  - Scenario 3 evidence: `apps/web/e2e/artifacts/prd6/s3-*`
+  - Scenario 4 evidence: `apps/web/e2e/artifacts/prd6/s4-*`
+  - Scenario 5 evidence: `apps/web/e2e/artifacts/prd6/s5-*`
 - Notes:
+  - Regression gates for scenario-specific and full-suite checks are green.
+  - Remaining risk is external Safe Transaction Service uptime for hosted mode; local fallback flow passed in deterministic Anvil setup.

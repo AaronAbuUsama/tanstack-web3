@@ -1,6 +1,6 @@
-import type {
-	ModuleDelegate,
-} from "../../../design-system/compositions/command-center";
+import { formatUnits } from "viem";
+import type { ModuleDelegate } from "../../../design-system/compositions/command-center";
+import type { AllowanceDelegateState } from "../../module/types";
 
 function shortenAddress(address: string) {
 	if (address.length <= 10) return address;
@@ -10,8 +10,9 @@ function shortenAddress(address: string) {
 export type ModulesScreenMode = "active" | "inactive" | "deploy-ready";
 
 export interface MapModulesScreenInput {
+	activeModuleAddress: string | null;
+	allowanceDelegates: AllowanceDelegateState[];
 	deployedModuleAddress: string | null;
-	modules: string[];
 }
 
 export interface MapModulesScreenOutput {
@@ -24,18 +25,18 @@ export interface MapModulesScreenOutput {
 }
 
 export function mapModulesScreen({
+	activeModuleAddress,
+	allowanceDelegates,
 	deployedModuleAddress,
-	modules,
 }: MapModulesScreenInput): MapModulesScreenOutput {
-	const activeModule = modules[0] ?? null;
-	const mode: ModulesScreenMode = activeModule
+	const mode: ModulesScreenMode = activeModuleAddress
 		? "active"
 		: deployedModuleAddress
 			? "deploy-ready"
 			: "inactive";
 
-	const moduleAddress = activeModule
-		? shortenAddress(activeModule)
+	const moduleAddress = activeModuleAddress
+		? shortenAddress(activeModuleAddress)
 		: deployedModuleAddress
 			? shortenAddress(deployedModuleAddress)
 			: "not deployed";
@@ -55,14 +56,48 @@ export function mapModulesScreen({
 				: "Deploy AllowanceModule";
 
 	return {
-		delegates: modules.map((moduleAddressValue, index) => ({
-			address: shortenAddress(moduleAddressValue),
-			id: `${index}:${moduleAddressValue.toLowerCase()}`,
-			resetLabel: "Resets in n/a",
-			resetPeriod: "module",
-			usedLabel: "0.00 / 0.00 ETH",
-			utilizationPercent: 0,
-		})),
+		delegates: allowanceDelegates.map((delegate) => {
+			const amountEth = formatUnits(delegate.amountWei, 18);
+			const spentEth = formatUnits(delegate.spentWei, 18);
+			const availableEth = formatUnits(delegate.availableWei, 18);
+			const utilizationPercent =
+				delegate.amountWei > 0n
+					? Math.max(
+							0,
+							Math.min(
+								100,
+								Math.round(
+									Number((delegate.spentWei * 10000n) / delegate.amountWei) / 100,
+								),
+							),
+						)
+					: 0;
+
+			const resetPeriod =
+				delegate.resetPeriodSeconds === 0n
+					? "manual"
+					: delegate.resetPeriodSeconds === 86400n
+						? "daily"
+						: delegate.resetPeriodSeconds === 604800n
+							? "weekly"
+							: delegate.resetPeriodSeconds === 2592000n
+								? "monthly"
+								: "custom";
+			const resetLabel =
+				delegate.resetPeriodSeconds === 0n
+					? "No automatic reset"
+					: `Resets every ${delegate.resetPeriodSeconds}s`;
+
+			return {
+				address: shortenAddress(delegate.address),
+				id: delegate.address.toLowerCase(),
+				availableLabel: `${availableEth} ETH available`,
+				resetLabel,
+				resetPeriod,
+				usedLabel: `${spentEth} / ${amountEth} ETH`,
+				utilizationPercent,
+			};
+		}),
 		mode,
 		moduleAddress,
 		moduleName: "AllowanceModule",

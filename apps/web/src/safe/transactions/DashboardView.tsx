@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { formatEther, formatUnits, parseEther } from "viem";
+import { encodeFunctionData, formatEther, formatUnits, parseEther } from "viem";
 import {
 	CommandCenterGuard,
 	CommandCenterModules,
@@ -17,7 +17,11 @@ import {
 	deployAllowanceModule,
 	deploySpendingLimitGuard,
 } from "../contracts/deploy";
-import { executeTransaction, signTransaction } from "../core/standalone";
+import {
+	createTransaction,
+	executeTransaction,
+	signTransaction,
+} from "../core/standalone";
 import {
 	createAddOwnerGovernanceAction,
 	createChangeThresholdGovernanceAction,
@@ -30,6 +34,12 @@ import { mapOwnersScreen } from "../screens/mappers/owners";
 import { mapTransactionsScreen } from "../screens/mappers/transactions";
 import { navItemForScreen, safeHrefForNavItem } from "../screens/screen-layout";
 import type { SafeScreenId } from "../screens/types";
+import {
+	encodeSetAllowanceCalldata,
+	executeAllowanceAsDelegate,
+	loadAllowanceModuleState,
+} from "../module/allowance-service";
+import type { AllowanceDelegateState } from "../module/types";
 import { useTransactions } from "./use-transactions";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -93,6 +103,9 @@ export default function DashboardView({
 	const [deployedModuleAddress, setDeployedModuleAddress] = useState<
 		string | null
 	>(null);
+	const [moduleDelegates, setModuleDelegates] = useState<AllowanceDelegateState[]>(
+		[],
+	);
 	const resolveSigner = () => getDevWalletActiveSigner();
 
 	useEffect(() => {
@@ -310,6 +323,49 @@ export default function DashboardView({
 		}
 	};
 
+	const handleUpdateGuardLimit = async (nextLimitEth: string) => {
+		if (
+			!safe.safeInstance ||
+			!safe.safeAddress ||
+			!safe.guard ||
+			safe.guard === ZERO_ADDRESS
+		) {
+			return;
+		}
+
+		setGuardLoading(true);
+		setGuardError(null);
+		try {
+			const data = encodeFunctionData({
+				abi: SpendingLimitGuardABI,
+				functionName: "setSpendingLimit",
+				args: [parseEther(nextLimitEth)],
+			});
+			const safeTx = await createTransaction(safe.safeInstance, [
+				{
+					to: safe.guard,
+					value: "0",
+					data,
+				},
+			]);
+			const proposal = await handleProposeSafeTransaction({
+				safeTransaction: safeTx,
+				intent: "guard:update-limit",
+			});
+			if (proposal.executed) {
+				setGuardSpendingLimit(nextLimitEth);
+				setCurrentGuardLimit(nextLimitEth);
+				await refreshSafeState();
+			}
+		} catch (err) {
+			setGuardError(
+				err instanceof Error ? err.message : "Failed to update guard limit",
+			);
+		} finally {
+			setGuardLoading(false);
+		}
+	};
+
 	const handleDeployModule = async () => {
 		if (!safe.safeAddress) return;
 		setModuleLoading(true);
@@ -370,6 +426,95 @@ export default function DashboardView({
 		} catch (err) {
 			setModuleError(
 				err instanceof Error ? err.message : "Failed to disable module",
+			);
+		} finally {
+			setModuleLoading(false);
+		}
+	};
+
+	const refreshAllowanceDelegates = async (moduleAddress: string | null) => {
+		if (!moduleAddress) {
+			setModuleDelegates([]);
+			return;
+		}
+		const allowanceState = await loadAllowanceModuleState({
+			moduleAddress,
+			rpcUrl,
+		});
+		setModuleDelegates(allowanceState.delegates);
+	};
+
+	const handleSetAllowance = async ({
+		amountEth,
+		delegateAddress,
+		resetPeriodSeconds,
+	}: {
+		amountEth: string;
+		delegateAddress: string;
+		resetPeriodSeconds: bigint;
+	}) => {
+		if (!safe.safeInstance || safe.modules.length === 0) return;
+		setModuleLoading(true);
+		setModuleError(null);
+		try {
+			const moduleAddress = safe.modules[0];
+			const data = encodeSetAllowanceCalldata({
+				amountEth,
+				delegateAddress,
+				resetPeriodSeconds,
+			});
+			const safeTx = await createTransaction(safe.safeInstance, [
+				{
+					to: moduleAddress,
+					value: "0",
+					data,
+				},
+			]);
+			const proposal = await handleProposeSafeTransaction({
+				safeTransaction: safeTx,
+				intent: "module:set-allowance",
+			});
+			if (proposal.executed) {
+				await refreshSafeState();
+				await refreshAllowanceDelegates(moduleAddress);
+			}
+		} catch (err) {
+			setModuleError(
+				err instanceof Error ? err.message : "Failed to set allowance",
+			);
+		} finally {
+			setModuleLoading(false);
+		}
+	};
+
+	const handleExecuteModuleSpend = async ({
+		amountEth,
+		to,
+	}: {
+		amountEth: string;
+		to: string;
+	}) => {
+		if (safe.modules.length === 0) return;
+		setModuleLoading(true);
+		setModuleError(null);
+		try {
+			const moduleAddress = safe.modules[0];
+			await executeAllowanceAsDelegate(
+				{
+					amountEth,
+					signerPrivateKey: resolveSigner(),
+					to,
+				},
+				{
+					moduleAddress,
+					rpcUrl,
+				},
+			);
+			await refreshSafeState();
+			await refreshAllowanceDelegates(moduleAddress);
+		} catch (err) {
+			setModuleError(
+				err instanceof Error ? err.message : "Failed to execute delegate spend",
 			);
 		} finally {
 			setModuleLoading(false);
@@ -480,16 +625,46 @@ export default function DashboardView({
 		spendingLimitEth: guardSpendingLimit,
 		deployedGuardAddress,
 	});
+
+	useEffect(() => {
+		const activeModuleAddress = safe.modules[0] ?? null;
+		if (!activeModuleAddress) {
+			setModuleDelegates([]);
+			return;
+		}
+		let cancelled = false;
+		void loadAllowanceModuleState({
+			moduleAddress: activeModuleAddress,
+			rpcUrl,
+		})
+			.then((allowanceState) => {
+				if (cancelled) return;
+				setModuleDelegates(allowanceState.delegates);
+			})
+			.catch(() => {
+				if (cancelled) return;
+				setModuleDelegates([]);
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [safe.modules, rpcUrl]);
+
 	const moduleIsEnabled = deployedModuleAddress
 		? safe.modules.some((moduleAddress) =>
 				addressEq(moduleAddress, deployedModuleAddress),
 			)
 		: false;
 	const moduleScreen = mapModulesScreen({
-		modules: safe.modules,
+		activeModuleAddress: safe.modules[0] ?? null,
+		allowanceDelegates: moduleDelegates,
 		deployedModuleAddress:
 			deployedModuleAddress && !moduleIsEnabled ? deployedModuleAddress : null,
 	});
+	const currentDelegate = moduleDelegates.find((delegate) =>
+		address ? addressEq(delegate.address, address) : false,
+	);
 
 	const ownersScreen = mapOwnersScreen({
 		owners: safe.owners,
@@ -519,6 +694,7 @@ export default function DashboardView({
 				onDeployGuard={handleDeployGuard}
 				onDisableGuard={handleDisableGuard}
 				onEnableGuard={handleEnableGuard}
+				onUpdateLimit={handleUpdateGuardLimit}
 				onDisconnect={onDisconnect}
 				statusBarWalletControls={statusBarWalletControls}
 				onSpendingLimitChange={setGuardSpendingLimit}
@@ -556,12 +732,19 @@ export default function DashboardView({
 					}
 					void handleDeployModule();
 				}}
+				onSetAllowance={handleSetAllowance}
+				onExecuteSpend={handleExecuteModuleSpend}
 				primaryActionLabel={moduleScreen.primaryActionLabel}
 				safeAddress={safe.safeAddress ?? "0x..."}
 				safeBalanceLabel={safeBalanceEth}
 				statusBalanceLabel={`${safeBalanceEth} ETH`}
 				statusDescription={moduleScreen.statusDescription}
 				thresholdLabel={thresholdLabel}
+				delegateSpendAvailableLabel={
+					currentDelegate
+						? `${formatUnits(currentDelegate.availableWei, 18)} ETH`
+						: "0 ETH"
+				}
 			/>
 		);
 	}

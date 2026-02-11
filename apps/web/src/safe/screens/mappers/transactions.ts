@@ -38,6 +38,15 @@ function pendingTitle(tx: PendingTx) {
 	if (tx.intent === "governance:remove-owner") {
 		return tx.isReady ? "Remove owner ready" : "Remove owner proposed";
 	}
+	if (tx.intent === "guard:update-limit") {
+		return tx.isReady ? "Guard limit update ready" : "Guard limit update proposed";
+	}
+	if (tx.intent === "module:set-allowance") {
+		return tx.isReady ? "Allowance update ready" : "Allowance update proposed";
+	}
+	if (tx.intent === "module:execute-allowance") {
+		return tx.isReady ? "Delegate spend ready" : "Delegate spend proposed";
+	}
 	return tx.isReady ? "Ready for execution" : "Pending owner signatures";
 }
 
@@ -50,6 +59,15 @@ function executedTitle(tx: ExecutedTx) {
 	}
 	if (tx.intent === "governance:remove-owner") {
 		return "Owner removed";
+	}
+	if (tx.intent === "guard:update-limit") {
+		return "Guard limit updated";
+	}
+	if (tx.intent === "module:set-allowance") {
+		return "Allowance updated";
+	}
+	if (tx.intent === "module:execute-allowance") {
+		return "Delegate spend executed";
 	}
 	return "Transaction executed";
 }

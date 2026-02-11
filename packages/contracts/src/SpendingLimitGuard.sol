@@ -38,12 +38,25 @@ contract SpendingLimitGuard is ITransactionGuard, IERC165 {
     uint256 public spendingLimit;
 
     error ExceedsSpendingLimit(uint256 value, uint256 limit);
+    error OnlySafe();
 
     event TransactionChecked(address indexed to, uint256 value, bool allowed);
+    event SpendingLimitUpdated(uint256 previousLimit, uint256 nextLimit);
+
+    modifier onlySafe() {
+        if (msg.sender != safe) revert OnlySafe();
+        _;
+    }
 
     constructor(address _safe, uint256 _spendingLimit) {
         safe = _safe;
         spendingLimit = _spendingLimit;
+    }
+
+    function setSpendingLimit(uint256 nextLimit) external onlySafe {
+        uint256 previousLimit = spendingLimit;
+        spendingLimit = nextLimit;
+        emit SpendingLimitUpdated(previousLimit, nextLimit);
     }
 
     function checkTransaction(

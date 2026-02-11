@@ -56,11 +56,34 @@ export function SafeStatusBarWalletControls({ onDisconnect }: SafeStatusBarWalle
     return `${fixed} ${balance.symbol ?? 'ETH'}`
   }, [balance])
 
-  const handleChainChange = (nextChainId: number) => {
-    setSelectedChainId(nextChainId)
-    if (!isConnected) return
-    switchChain({ chainId: nextChainId })
-  }
+	const handleChainChange = async (nextChainId: number) => {
+		setSelectedChainId(nextChainId)
+		if (!isConnected) return
+
+		const nextChainIsDev = DEV_CHAIN_IDS.has(nextChainId)
+		const reconnectToDevWallet = Boolean(
+			nextChainIsDev && connector?.id !== 'dev-wallet' && devConnector,
+		)
+
+		if (reconnectToDevWallet) {
+			const nextConnector = devConnector
+			if (!nextConnector) return
+			let reconnected = false
+			try {
+				await disconnectAsync()
+				await connectAsync({
+					chainId: nextChainId,
+					connector: nextConnector,
+				})
+				reconnected = true
+			} catch {
+				// Fallback to regular switch flow below.
+			}
+			if (reconnected) return
+		}
+
+		switchChain({ chainId: nextChainId })
+	}
 
   const handleDevAccountSwitch = async (nextIndex: number) => {
     if (!showDevAccountSwitcher || nextIndex === devAccountIndex || switchingDevAccount) {
@@ -91,9 +114,11 @@ export function SafeStatusBarWalletControls({ onDisconnect }: SafeStatusBarWalle
             <span className='ds-shell-statusbar__control-label'>Network</span>
             <select
               className='ds-shell-statusbar__select'
-              onChange={(event) => handleChainChange(Number(event.target.value))}
-              value={selectedChainId}
-            >
+							onChange={(event) => {
+								void handleChainChange(Number(event.target.value))
+							}}
+							value={selectedChainId}
+						>
               {chains.map((network) => (
                 <option key={network.id} value={network.id}>
                   {network.name}
@@ -150,9 +175,11 @@ export function SafeStatusBarWalletControls({ onDisconnect }: SafeStatusBarWalle
           <span className='ds-shell-statusbar__control-label'>Network</span>
           <select
             className='ds-shell-statusbar__select'
-            onChange={(event) => handleChainChange(Number(event.target.value))}
-            value={chain?.id}
-          >
+							onChange={(event) => {
+								void handleChainChange(Number(event.target.value))
+							}}
+							value={chain?.id}
+						>
             {chains.map((network) => (
               <option key={network.id} value={network.id}>
                 {network.name}

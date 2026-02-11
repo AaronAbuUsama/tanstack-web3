@@ -29,6 +29,7 @@ export interface CommandCenterGuardProps
 	onDeployGuard?: () => void | Promise<void>;
 	onDisableGuard?: () => void | Promise<void>;
 	onEnableGuard?: () => void | Promise<void>;
+	onUpdateLimit?: (nextValue: string) => void | Promise<void>;
 	onSpendingLimitChange?: (nextValue: string) => void;
 	spendingLimitValue?: string;
 }
@@ -49,6 +50,7 @@ export function CommandCenterGuard({
 	onDeployGuard,
 	onDisableGuard,
 	onEnableGuard,
+	onUpdateLimit,
 	onSpendingLimitChange,
 	safeAddress,
 	safeBalanceLabel,
@@ -80,6 +82,12 @@ export function CommandCenterGuard({
 		if (!deployReady && onDeployGuard) {
 			void onDeployGuard();
 		}
+	};
+
+	const handleLimitUpdate = () => {
+		const nextValue = limitInput.trim();
+		if (!nextValue || !active || !onUpdateLimit || isBusy) return;
+		void onUpdateLimit(nextValue);
 	};
 
 	return (
@@ -165,15 +173,30 @@ export function CommandCenterGuard({
 							value={limitInput}
 						/>
 						<Button
+							disabled={isBusy || !active || !onUpdateLimit || !limitInput.trim()}
+							onClick={handleLimitUpdate}
+						>
+							Update Limit
+						</Button>
+						<Button
 							disabled={
 								isBusy ||
-								(active ? !onDisableGuard : deployReady ? !onEnableGuard : !onDeployGuard)
+								(active
+									? !onDisableGuard
+									: deployReady
+										? !onEnableGuard
+										: !onDeployGuard)
 							}
 							onClick={handlePrimaryAction}
 							variant={active ? "danger" : "primary"}
 						>
 							{primaryActionLabel}
 						</Button>
+						{!active ? (
+							<p className="ds-command-copy is-muted">
+								Enable an active guard before updating the spending limit.
+							</p>
+						) : null}
 						{deployReady ? (
 							<p className="ds-command-copy is-muted">
 								Enable deployed guard at {deployedGuardAddress} to activate

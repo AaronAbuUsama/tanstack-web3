@@ -9,6 +9,7 @@ import "./command-center.css";
 
 export interface ModuleDelegate {
 	address: string;
+	availableLabel?: string;
 	id: string;
 	resetLabel: string;
 	resetPeriod: string;
@@ -27,15 +28,26 @@ export interface CommandCenterModulesProps
 	mode?: "active" | "inactive" | "deploy-ready";
 	moduleAddress: string;
 	moduleName: string;
+	onExecuteSpend?: (input: {
+		amountEth: string;
+		to: string;
+	}) => void | Promise<void>;
 	onPrimaryAction?: () => void | Promise<void>;
+	onSetAllowance?: (input: {
+		amountEth: string;
+		delegateAddress: string;
+		resetPeriodSeconds: bigint;
+	}) => void | Promise<void>;
 	primaryActionLabel?: string;
 	statusDescription?: string;
+	delegateSpendAvailableLabel?: string;
 }
 
 export function CommandCenterModules({
 	address,
 	chainLabel,
 	delegates,
+	delegateSpendAvailableLabel,
 	errorMessage,
 	embedded,
 	isBusy = false,
@@ -44,7 +56,9 @@ export function CommandCenterModules({
 	moduleName,
 	navSections,
 	onDisconnect,
+	onExecuteSpend,
 	onPrimaryAction,
+	onSetAllowance,
 	primaryActionLabel,
 	safeAddress,
 	safeBalanceLabel,
@@ -54,13 +68,18 @@ export function CommandCenterModules({
 }: CommandCenterModulesProps) {
 	const [delegateAddress, setDelegateAddress] = useState("");
 	const [allowanceEth, setAllowanceEth] = useState("0.2");
+	const [resetPeriodSeconds, setResetPeriodSeconds] = useState("86400");
 	const [executeTo, setExecuteTo] = useState("");
 	const [executeAmount, setExecuteAmount] = useState("0.05");
 	const allowanceResetId = useId();
 	const active = mode === "active";
 	const resolvedPrimaryActionLabel =
 		primaryActionLabel ??
-		(active ? "Disable" : mode === "deploy-ready" ? "Enable Module" : "Deploy AllowanceModule");
+		(active
+			? "Disable"
+			: mode === "deploy-ready"
+				? "Enable Module"
+				: "Deploy AllowanceModule");
 	const resolvedStatusDescription =
 		statusDescription ??
 		(active
@@ -69,6 +88,33 @@ export function CommandCenterModules({
 				? `Deployed • ${moduleAddress} • enable this module to allow delegated spending.`
 				: "No module enabled • deploy AllowanceModule to configure delegated spending rules.");
 	const primaryVariant = active ? "danger" : "primary";
+	const canSetAllowance =
+		active && !isBusy && Boolean(onSetAllowance) && delegateAddress.trim() !== "";
+	const canExecuteSpend =
+		active &&
+		!isBusy &&
+		Boolean(onExecuteSpend) &&
+		executeTo.trim() !== "" &&
+		executeAmount.trim() !== "";
+
+	const handleSetAllowance = () => {
+		if (!canSetAllowance || !onSetAllowance) return;
+		const parsedReset = Number(resetPeriodSeconds);
+		if (!Number.isFinite(parsedReset) || parsedReset < 0) return;
+		void onSetAllowance({
+			delegateAddress: delegateAddress.trim(),
+			amountEth: allowanceEth.trim(),
+			resetPeriodSeconds: BigInt(parsedReset),
+		});
+	};
+
+	const handleExecuteSpend = () => {
+		if (!canExecuteSpend || !onExecuteSpend) return;
+		void onExecuteSpend({
+			to: executeTo.trim(),
+			amountEth: executeAmount.trim(),
+		});
+	};
 
 	return (
 		<CommandCenterScreenShell
@@ -120,10 +166,7 @@ export function CommandCenterModules({
 
 			<div className="ds-command-modules__grid">
 				{delegates.map((delegate) => (
-					<article
-						className="ds-command-modules__delegate-card"
-						key={delegate.id}
-					>
+					<article className="ds-command-modules__delegate-card" key={delegate.id}>
 						<div className="ds-command-modules__delegate-head">
 							<span aria-hidden className="ds-command-modules__delegate-avatar">
 								♛
@@ -160,6 +203,9 @@ export function CommandCenterModules({
 								{delegate.resetPeriod}
 							</span>
 						</div>
+						{delegate.availableLabel ? (
+							<p className="ds-command-copy is-muted">{delegate.availableLabel}</p>
+						) : null}
 					</article>
 				))}
 
@@ -193,15 +239,20 @@ export function CommandCenterModules({
 						<label className="ds-primitive-label" htmlFor={allowanceResetId}>
 							Reset Period
 						</label>
-						<select className="ds-command-select" id={allowanceResetId}>
-							<option>Daily (24h)</option>
-							<option>Weekly (7d)</option>
-							<option>Monthly (30d)</option>
-							<option>No reset</option>
+						<select
+							className="ds-command-select"
+							id={allowanceResetId}
+							onChange={(event) => setResetPeriodSeconds(event.target.value)}
+							value={resetPeriodSeconds}
+						>
+							<option value="86400">Daily (24h)</option>
+							<option value="604800">Weekly (7d)</option>
+							<option value="2592000">Monthly (30d)</option>
+							<option value="0">No reset</option>
 						</select>
 					</div>
 					<div className="ds-command-form-grid__full ds-command-form-grid__actions">
-						<Button disabled={!active || isBusy || !delegateAddress}>
+						<Button disabled={!canSetAllowance} onClick={handleSetAllowance}>
 							Set Allowance
 						</Button>
 					</div>
@@ -226,10 +277,11 @@ export function CommandCenterModules({
 					/>
 					<div className="ds-command-form-grid__full ds-command-form-grid__actions is-spread">
 						<span className="ds-command-copy is-muted">
-							Available: 0.08 ETH remaining
+							Available: {delegateSpendAvailableLabel ?? "0 ETH available"}
 						</span>
 						<Button
-							disabled={!active || isBusy || !executeTo || !executeAmount}
+							disabled={!canExecuteSpend}
+							onClick={handleExecuteSpend}
 							variant="success"
 						>
 							Execute Spend

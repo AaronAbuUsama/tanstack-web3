@@ -31,6 +31,9 @@ const TRANSACTION_INTENTS = [
 	"governance:add-owner",
 	"governance:remove-owner",
 	"governance:change-threshold",
+	"guard:update-limit",
+	"module:set-allowance",
+	"module:execute-allowance",
 ] as const;
 
 export type TransactionIntent = (typeof TRANSACTION_INTENTS)[number];

@@ -108,4 +108,31 @@ describe("mapTransactionsScreen", () => {
 
 		expect(mapped.historyEntries[0].title).toBe("Threshold update proposed");
 	});
+
+	it("labels guard and module intents with explicit activity titles", () => {
+		const mapped = mapTransactionsScreen({
+			pendingTxs: [
+				makePendingTx({
+					intent: "guard:update-limit",
+					isReady: false,
+				}),
+				makePendingTx({
+					safeTxHash:
+						"0xddddaaaaccccddddeeeeffff1111222233334444555566667777888899990000",
+					intent: "module:set-allowance",
+					isReady: true,
+					confirmations: 2,
+				}),
+			],
+			executedTxs: [
+				makeExecutedTx({
+					intent: "module:execute-allowance",
+				}),
+			],
+		});
+
+		expect(mapped.historyEntries[0].title).toBe("Guard limit update proposed");
+		expect(mapped.historyEntries[1].title).toBe("Allowance update ready");
+		expect(mapped.historyEntries[2].title).toBe("Delegate spend executed");
+	});
 });
