@@ -376,13 +376,20 @@ git commit -m "docs(prd6): record scenario 3/4/5 remediation validation evidence
 
 ## Validation Evidence Log (To Fill During Execution)
 
-Date:
+Date: 2026-02-11
 
 Task 0:
-- Status:
+- Status: PASS
 - Automated checks:
+  - `cd apps/web && bun run e2e:safe-smoke` -> PASS
+  - `cd apps/web && bun run e2e:safe-screen-matrix` -> PASS
+  - `cd apps/web && bun run e2e:safe-multisig` -> PASS
 - Browser evidence:
+  - `apps/web/e2e/artifacts/prd6/baseline-safe-connected.png`
+  - `apps/web/e2e/artifacts/prd6/baseline-safe-connected.txt`
 - Notes:
+  - Dedicated `agent-browser` session (`prd6`) used on `http://localhost:3002/safe`.
+  - Anvil RPC healthy on `127.0.0.1:8545`.
 
 Task 1:
 - Status:
