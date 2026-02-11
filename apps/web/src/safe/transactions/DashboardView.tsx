@@ -12,20 +12,17 @@ import {
 	commandCenterStats,
 } from "../../design-system/fixtures/command-center";
 import { getDevWalletActiveSigner } from "../../web3/dev-wallet";
-import {
-	SpendingLimitGuardABI,
-} from "../contracts/abis";
+import { SpendingLimitGuardABI } from "../contracts/abis";
 import {
 	deployAllowanceModule,
 	deploySpendingLimitGuard,
 } from "../contracts/deploy";
+import { executeTransaction, signTransaction } from "../core/standalone";
 import {
-	createAddOwnerTx,
-	createChangeThresholdTx,
-	createRemoveOwnerTx,
-	executeTransaction,
-	signTransaction,
-} from "../core/standalone";
+	createAddOwnerGovernanceAction,
+	createChangeThresholdGovernanceAction,
+	createRemoveOwnerGovernanceAction,
+} from "../governance/actions";
 import type { useSafe } from "../core/use-safe";
 import { mapGuardScreen } from "../screens/mappers/guard";
 import { mapModulesScreen } from "../screens/mappers/modules";
@@ -85,10 +82,12 @@ export default function DashboardView({
 	const [guardLoading, setGuardLoading] = useState(false);
 	const [guardError, setGuardError] = useState<string | null>(null);
 	const [guardSpendingLimit, setGuardSpendingLimit] = useState("1");
-	const [deployedGuardAddress, setDeployedGuardAddress] = useState<string | null>(
+	const [deployedGuardAddress, setDeployedGuardAddress] = useState<
+		string | null
+	>(null);
+	const [currentGuardLimit, setCurrentGuardLimit] = useState<string | null>(
 		null,
 	);
-	const [currentGuardLimit, setCurrentGuardLimit] = useState<string | null>(null);
 	const [moduleLoading, setModuleLoading] = useState(false);
 	const [moduleError, setModuleError] = useState<string | null>(null);
 	const [deployedModuleAddress, setDeployedModuleAddress] = useState<
@@ -156,6 +155,7 @@ export default function DashboardView({
 		txModeLabel,
 		txModeHelpText,
 		handleBuild,
+		handleProposeSafeTransaction,
 		handleConfirm,
 		handleExecute,
 	} = useTransactions({
@@ -173,10 +173,18 @@ export default function DashboardView({
 		setOperationLoading(true);
 		setOperationError(null);
 		try {
-			const tx = await createAddOwnerTx(safe.safeInstance, ownerAddress);
-			const signed = await signTransaction(safe.safeInstance, tx);
-			await executeTransaction(safe.safeInstance, signed);
-			await safe.connectSafe(safe.safeAddress, rpcUrl, resolveSigner());
+			const governanceAction = await createAddOwnerGovernanceAction(
+				safe.safeInstance,
+				ownerAddress,
+			);
+			const proposal = await handleProposeSafeTransaction({
+				safeTransaction: governanceAction.safeTransaction,
+				intent: governanceAction.intent,
+				origin: governanceAction.origin,
+			});
+			if (proposal.executed) {
+				await safe.connectSafe(safe.safeAddress, rpcUrl, resolveSigner());
+			}
 		} catch (err) {
 			setOperationError(
 				err instanceof Error ? err.message : "Failed to add owner",
@@ -192,14 +200,19 @@ export default function DashboardView({
 		setOperationError(null);
 		try {
 			const newThreshold = Math.min(safe.threshold, safe.owners.length - 1);
-			const tx = await createRemoveOwnerTx(
+			const governanceAction = await createRemoveOwnerGovernanceAction(
 				safe.safeInstance,
 				ownerAddress,
 				newThreshold,
 			);
-			const signed = await signTransaction(safe.safeInstance, tx);
-			await executeTransaction(safe.safeInstance, signed);
-			await safe.connectSafe(safe.safeAddress, rpcUrl, resolveSigner());
+			const proposal = await handleProposeSafeTransaction({
+				safeTransaction: governanceAction.safeTransaction,
+				intent: governanceAction.intent,
+				origin: governanceAction.origin,
+			});
+			if (proposal.executed) {
+				await safe.connectSafe(safe.safeAddress, rpcUrl, resolveSigner());
+			}
 		} catch (err) {
 			setOperationError(
 				err instanceof Error ? err.message : "Failed to remove owner",
@@ -214,10 +227,18 @@ export default function DashboardView({
 		setOperationLoading(true);
 		setOperationError(null);
 		try {
-			const tx = await createChangeThresholdTx(safe.safeInstance, newThreshold);
-			const signed = await signTransaction(safe.safeInstance, tx);
-			await executeTransaction(safe.safeInstance, signed);
-			await safe.connectSafe(safe.safeAddress, rpcUrl, resolveSigner());
+			const governanceAction = await createChangeThresholdGovernanceAction(
+				safe.safeInstance,
+				newThreshold,
+			);
+			const proposal = await handleProposeSafeTransaction({
+				safeTransaction: governanceAction.safeTransaction,
+				intent: governanceAction.intent,
+				origin: governanceAction.origin,
+			});
+			if (proposal.executed) {
+				await safe.connectSafe(safe.safeAddress, rpcUrl, resolveSigner());
+			}
 		} catch (err) {
 			setOperationError(
 				err instanceof Error ? err.message : "Failed to change threshold",
@@ -242,7 +263,9 @@ export default function DashboardView({
 			await executeTransaction(safe.safeInstance, signed);
 			await refreshSafeState();
 		} catch (err) {
-			setGuardError(err instanceof Error ? err.message : "Failed to disable guard");
+			setGuardError(
+				err instanceof Error ? err.message : "Failed to disable guard",
+			);
 		} finally {
 			setGuardLoading(false);
 		}
@@ -260,7 +283,9 @@ export default function DashboardView({
 			);
 			setDeployedGuardAddress(result.address);
 		} catch (err) {
-			setGuardError(err instanceof Error ? err.message : "Failed to deploy guard");
+			setGuardError(
+				err instanceof Error ? err.message : "Failed to deploy guard",
+			);
 		} finally {
 			setGuardLoading(false);
 		}
@@ -271,14 +296,15 @@ export default function DashboardView({
 		setGuardLoading(true);
 		setGuardError(null);
 		try {
-			const tx = await safe.safeInstance.createEnableGuardTx(
-				deployedGuardAddress,
-			);
+			const tx =
+				await safe.safeInstance.createEnableGuardTx(deployedGuardAddress);
 			const signed = await signTransaction(safe.safeInstance, tx);
 			await executeTransaction(safe.safeInstance, signed);
 			await refreshSafeState();
 		} catch (err) {
-			setGuardError(err instanceof Error ? err.message : "Failed to enable guard");
+			setGuardError(
+				err instanceof Error ? err.message : "Failed to enable guard",
+			);
 		} finally {
 			setGuardLoading(false);
 		}
@@ -295,12 +321,17 @@ export default function DashboardView({
 			);
 			setDeployedModuleAddress(result.address);
 			try {
-				localStorage.setItem(getAllowanceModuleKey(safe.safeAddress), result.address);
+				localStorage.setItem(
+					getAllowanceModuleKey(safe.safeAddress),
+					result.address,
+				);
 			} catch {
 				// ignore localStorage errors in private browsing contexts
 			}
 		} catch (err) {
-			setModuleError(err instanceof Error ? err.message : "Failed to deploy module");
+			setModuleError(
+				err instanceof Error ? err.message : "Failed to deploy module",
+			);
 		} finally {
 			setModuleLoading(false);
 		}
@@ -311,12 +342,16 @@ export default function DashboardView({
 		setModuleLoading(true);
 		setModuleError(null);
 		try {
-			const tx = await safe.safeInstance.createEnableModuleTx(deployedModuleAddress);
+			const tx = await safe.safeInstance.createEnableModuleTx(
+				deployedModuleAddress,
+			);
 			const signed = await signTransaction(safe.safeInstance, tx);
 			await executeTransaction(safe.safeInstance, signed);
 			await refreshSafeState();
 		} catch (err) {
-			setModuleError(err instanceof Error ? err.message : "Failed to enable module");
+			setModuleError(
+				err instanceof Error ? err.message : "Failed to enable module",
+			);
 		} finally {
 			setModuleLoading(false);
 		}
@@ -333,7 +368,9 @@ export default function DashboardView({
 			await executeTransaction(safe.safeInstance, signed);
 			await refreshSafeState();
 		} catch (err) {
-			setModuleError(err instanceof Error ? err.message : "Failed to disable module");
+			setModuleError(
+				err instanceof Error ? err.message : "Failed to disable module",
+			);
 		} finally {
 			setModuleLoading(false);
 		}

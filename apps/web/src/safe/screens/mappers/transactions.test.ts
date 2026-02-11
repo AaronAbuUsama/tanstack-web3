@@ -1,10 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ExecutedTx, PendingTx } from "../../transactions/use-transactions";
+import type {
+	ExecutedTx,
+	PendingTx,
+} from "../../transactions/use-transactions";
 import { mapTransactionsScreen } from "./transactions";
 
 function makePendingTx(overrides: Partial<PendingTx> = {}): PendingTx {
 	return {
-		safeTxHash: "0xaaaabbbbccccddddeeeeffff1111222233334444555566667777888899990000",
+		safeTxHash:
+			"0xaaaabbbbccccddddeeeeffff1111222233334444555566667777888899990000",
 		to: "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
 		value: "0.75",
 		data: "0x",
@@ -13,18 +17,21 @@ function makePendingTx(overrides: Partial<PendingTx> = {}): PendingTx {
 		threshold: 2,
 		isReady: false,
 		source: "local",
+		intent: "transfer",
 		...overrides,
 	};
 }
 
 function makeExecutedTx(overrides: Partial<ExecutedTx> = {}): ExecutedTx {
 	return {
-		safeTxHash: "0x1111222233334444555566667777888899990000aaaabbbbccccddddeeeeffff",
+		safeTxHash:
+			"0x1111222233334444555566667777888899990000aaaabbbbccccddddeeeeffff",
 		to: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
 		value: "1.25",
 		transactionHash:
 			"0xffffeeee1111222233334444555566667777888899990000aaaabbbbccccdddd",
 		source: "transaction-service",
+		intent: "transfer",
 		...overrides,
 	};
 }
@@ -84,5 +91,21 @@ describe("mapTransactionsScreen", () => {
 		expect(mapped.historyEntries[1].title).toBe("Transaction executed");
 		expect(mapped.historyEntries[0].amountLabel).toContain("ETH");
 		expect(mapped.historyEntries[1].amountLabel).toContain("ETH");
+	});
+
+	it("labels governance proposals as proposed until threshold is met", () => {
+		const mapped = mapTransactionsScreen({
+			pendingTxs: [
+				makePendingTx({
+					intent: "governance:change-threshold",
+					confirmations: 1,
+					threshold: 2,
+					isReady: false,
+				}),
+			],
+			executedTxs: [],
+		});
+
+		expect(mapped.historyEntries[0].title).toBe("Threshold update proposed");
 	});
 });
