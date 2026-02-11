@@ -232,34 +232,89 @@ agent-browser screenshot apps/web/e2e/artifacts/prd5/example.png
 
 ## Validation Log (To Fill During Execution)
 
-Date:
+Date: 2026-02-11
+
+Automated validation re-run:
+- `cd apps/web && bun run e2e:safe-smoke` -> PASS
+- `cd apps/web && bun run e2e:safe-screen-matrix` -> PASS
+- `cd apps/web && bun run e2e:safe-multisig` -> PASS
 
 Scenario 1:
-- Status:
+- Status: PASS
 - Notes:
+  - Setup screen connected/disconnected states were stable during agent-browser execution.
+  - No `Dev Wallet` button was rendered; connection used single `Connect Wallet` flow.
+  - Dev account switching `#0 -> #1` succeeded and changed signer address.
 - Artifacts:
+  - `apps/web/e2e/artifacts/prd5/s1-setup-disconnected.png`
+  - `apps/web/e2e/artifacts/prd5/s1-setup-connected-account0.png`
+  - `apps/web/e2e/artifacts/prd5/s1-setup-connected-account1.png`
 
 Scenario 2:
-- Status:
+- Status: PASS
 - Notes:
+  - 2-of-3 safe was created and command-center loaded.
+  - Navigation across Overview/Transactions/Owners/Guard/Modules worked.
 - Artifacts:
+  - `apps/web/e2e/artifacts/prd5/s2-overview-created.png`
+  - `apps/web/e2e/artifacts/prd5/s2-transactions-empty.png`
+  - `apps/web/e2e/artifacts/prd5/s2-owners-initial.png`
+  - `apps/web/e2e/artifacts/prd5/s2-guard-initial.png`
+  - `apps/web/e2e/artifacts/prd5/s2-modules-initial.png`
 
 Scenario 3:
-- Status:
+- Status: PARTIAL (Issues Found)
 - Notes:
+  - Threshold mutation flow produced pending-signature gating as expected for multisig.
+  - `+ Add Owner` click did not expose a deterministic owner entry flow in this UI pass (no visible input/modal change).
+  - Remove-owner action did not complete a visible list mutation in a single-signer pass (likely pending multisig confirmation path).
+  - State survived refresh.
 - Artifacts:
+  - `apps/web/e2e/artifacts/prd5/s3-owners-added.png`
+  - `apps/web/e2e/artifacts/prd5/s3-threshold-updated.png`
+  - `apps/web/e2e/artifacts/prd5/s3-owner-removed.png`
+  - `apps/web/e2e/artifacts/prd5/s3-owners-refreshed.png`
 
 Scenario 4:
-- Status:
+- Status: PARTIAL (Issue Found)
 - Notes:
+  - Guard deploy/enable/disable executed successfully.
+  - Guard limit update UX is incomplete after enable: no actionable `Update Limit` control was exposed in the validated state.
+  - This blocks true limit-change verification.
 - Artifacts:
+  - `apps/web/e2e/artifacts/prd5/s4-guard-deployed.png`
+  - `apps/web/e2e/artifacts/prd5/s4-guard-enabled.png`
+  - `apps/web/e2e/artifacts/prd5/s4-guard-limit-updated.png`
+  - `apps/web/e2e/artifacts/prd5/s4-guard-disabled.png`
 
 Scenario 5:
-- Status:
+- Status: FAIL (Critical Module/Allowance Defects Reproduced)
 - Notes:
+  - Module lifecycle deploy/enable worked.
+  - Allowance card identity/value behavior appears non-honest:
+    - displayed delegate card stayed on `0xb007...7E22` with `0.00 / 0.00 ETH`.
+    - setting allowance for `0x7099...79C8` did not update card usage/limit values.
+  - Execute spend action fired but allowance usage/remaining did not materially update in UI state.
+  - This reproduces your reported issue: allowance creation/spend flow is not functioning as a trustworthy end-to-end flow.
 - Artifacts:
+  - `apps/web/e2e/artifacts/prd5/s5-module-enabled.png`
+  - `apps/web/e2e/artifacts/prd5/s5-allowance-created.png`
+  - `apps/web/e2e/artifacts/prd5/s5-allowance-post-refresh.png`
+  - `apps/web/e2e/artifacts/prd5/s5-spend-submitted.png`
+  - `apps/web/e2e/artifacts/prd5/s5-allowance-after-spend.png`
 
 Scenario 6:
-- Status:
+- Status: PASS
 - Notes:
+  - Pending/sign/execute honesty validated in multisig path:
+    - tx created
+    - first signature left tx pending (no execute button)
+    - second signer made execute available
+    - execute cleared pending and wrote executed activity.
+  - Fresh safe overview showed empty activity (`No transactions yet`), so baseline activity honesty is correct on new safe state.
 - Artifacts:
+  - `apps/web/e2e/artifacts/prd5/s6-pending-created.png`
+  - `apps/web/e2e/artifacts/prd5/s6-pending-1of2.png`
+  - `apps/web/e2e/artifacts/prd5/s6-pending-2of2-ready.png`
+  - `apps/web/e2e/artifacts/prd5/s6-executed.png`
+  - `apps/web/e2e/artifacts/prd5/s6-fresh-safe-empty-activity.png`
